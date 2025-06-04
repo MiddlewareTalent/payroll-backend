@@ -1,0 +1,244 @@
+package com.payroll.uk.payroll_processing.service.incometax;
+
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
+import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+@Service
+public class IncomeTaxCalculation {
+    @Autowired
+    private TaxThresholdService taxThresholdService;
+    @Autowired
+    private ScotlandTaxCalculation scotlandTaxCalculation;
+
+    @Autowired
+    private PersonalAllowanceCalculation personalAllowanceCalculation;
+
+
+
+    BigDecimal calculateIncomeTax(BigDecimal grossIncome, BigDecimal personalAllowance, BigDecimal[][] taxSlabs, BigDecimal[] taxRates, String payPeriod) {
+        // Validate inputs
+        if (grossIncome == null || personalAllowance == null || taxSlabs == null || taxRates == null || payPeriod == null) {
+            throw new IllegalArgumentException("Parameters cannot be null");
+        }
+        if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Income cannot be negative");
+        }
+
+        //England, Wales and Northern Ireland Tax Slabs and Rates
+        BigDecimal personalRate = taxSlabs[0][1];
+        BigDecimal basicRate = (taxSlabs[1][1].subtract(taxSlabs[0][1]));//37700
+        BigDecimal higherRate = taxSlabs[2][1].subtract(taxSlabs[1][1]).add(basicRate).add(personalRate);//125140
+        BigDecimal additionalRate = taxSlabs[3][0]; //125140
+        BigDecimal taxPersonalRate=taxRates[0];//0
+        BigDecimal taxBasicRate=taxRates[1];  //0.20
+        BigDecimal taxHigherRate=taxRates[2];  //0.40
+        BigDecimal taxAdditionalRate=taxRates[3];    // 0.45
+
+
+        grossIncome= calculateGrossSalary(grossIncome,payPeriod);
+        System.out.println("Annual Gross Income: " + grossIncome);
+
+        // Calculate taxable income
+        BigDecimal totalIncomeTax = BigDecimal.ZERO;
+        BigDecimal taxableIncome = grossIncome.subtract(personalAllowance);
+        taxableIncome = taxableIncome.compareTo(BigDecimal.ZERO) > 0 ? taxableIncome : BigDecimal.ZERO;
+        System.out.println("Taxable Income: " + taxableIncome);
+        if(taxableIncome.compareTo(BigDecimal.ZERO) <= 0) {
+//            throw new RuntimeException("Taxable income is zero And No tax is applicable:"+income);
+            return totalIncomeTax;
+        }
+        if (taxableIncome.compareTo(taxSlabs[3][0]) > 0) {
+            // Additional rate (45%)
+            BigDecimal additionalTax = taxableIncome.subtract(taxSlabs[3][0]);
+            totalIncomeTax = totalIncomeTax.add(additionalTax.multiply(new BigDecimal("0.45")));
+            System.out.println("Annual Additional rate 45% : " + additionalTax.multiply(new BigDecimal("0.45").setScale(2, RoundingMode.HALF_UP)));
+
+            // Higher rate (40%)
+            BigDecimal highTax = taxSlabs[2][1].subtract(taxSlabs[2][0].subtract(taxSlabs[1][0]));
+            totalIncomeTax = totalIncomeTax.add(highTax.multiply(new BigDecimal("0.40")));
+            System.out.println("Annual High rate 40% : " + highTax.multiply(new BigDecimal("0.40").setScale(2, RoundingMode.HALF_UP)));
+
+            // Basic rate (20%)
+            BigDecimal basicTax = taxSlabs[2][0].subtract(taxSlabs[1][0].subtract(taxSlabs[0][0]));
+            totalIncomeTax = totalIncomeTax.add(basicTax.multiply(new BigDecimal("0.20")));
+            System.out.println("Annual Basic rate 20% : " + basicTax.multiply(new BigDecimal("0.20").setScale(2, RoundingMode.HALF_UP)));
+
+        }
+
+        else if (taxableIncome.compareTo(taxSlabs[2][0].subtract(taxSlabs[1][0])) >= 0
+                && taxableIncome.compareTo(taxSlabs[2][1]) <= 0)
+        {
+            // Higher rate (40%)
+            BigDecimal highTax = taxableIncome.subtract(taxSlabs[2][0].subtract(taxSlabs[1][0]));
+            totalIncomeTax = totalIncomeTax.add(highTax.multiply(new BigDecimal("0.40")));
+            System.out.println("Annual High rate 40% : " + highTax.multiply(new BigDecimal("0.40").setScale(2, RoundingMode.HALF_UP)));
+
+            // Basic rate (20%)
+            BigDecimal basicTax = taxSlabs[2][0].subtract(taxSlabs[1][0].subtract(taxSlabs[0][0]));
+            totalIncomeTax = totalIncomeTax.add(basicTax.multiply(new BigDecimal("0.20")));
+            System.out.println("Annual Basic rate 20% : " + basicTax.multiply(new BigDecimal("0.20").setScale(2, RoundingMode.HALF_UP)));
+        }
+        else if (taxableIncome.compareTo(taxSlabs[2][0].subtract(taxSlabs[1][0])) <= 0) {
+            // Basic rate only (20%)
+            totalIncomeTax = totalIncomeTax.add(taxableIncome.multiply(new BigDecimal("0.20")));
+            System.out.println("Annual Basic rate 20% : " + taxableIncome.multiply(new BigDecimal("0.20").setScale(2, RoundingMode.HALF_UP)));
+        }
+        System.out.println("Annual Total Income Tax: " + totalIncomeTax);
+
+
+        return totalIncomeTax.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal calculateTaxWithKCode(BigDecimal grossIncome, String normalizedTaxCode, BigDecimal[][] taxSlabs, BigDecimal[] taxRates,String payPeriod) {
+        // Validate inputs
+        if (grossIncome == null || normalizedTaxCode == null || taxSlabs == null || taxRates == null) {
+            throw new IllegalArgumentException("Parameters cannot be null");
+        }
+        if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Income cannot be negative");
+        }
+        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome, normalizedTaxCode);
+
+        if (normalizedTaxCode.startsWith("SK") || normalizedTaxCode.startsWith("CK")) {
+            // Remove the first character ('S' or 'C') from the code
+            String processedCode = normalizedTaxCode.substring(2);
+            // Convert the processed code to a numeric value
+            String numericPart = processedCode.replaceAll("[^0-9]", "");
+            if (numericPart.isEmpty()) {
+                return BigDecimal.ZERO; // No numeric allowance
+            }
+            // Calculate base allowance (numeric part × 10)
+            BigDecimal baseAllowance = new BigDecimal(numericPart)
+                    .multiply(new BigDecimal("10"))
+                    .setScale(0, RoundingMode.HALF_UP);
+            grossIncome=grossIncome.add(baseAllowance);
+            if(normalizedTaxCode.startsWith("SK")){
+               return scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome,personalAllowance,taxSlabs,taxRates,payPeriod);
+            }
+            else if(normalizedTaxCode.startsWith("CK")){
+               return calculateIncomeTax(grossIncome,personalAllowance,taxSlabs,taxRates,payPeriod);
+            }
+
+        }
+        else if (normalizedTaxCode.startsWith("K")) {
+            String processedCode = normalizedTaxCode.substring(1);
+            // Convert the processed code to a numeric value
+            String numericPart = processedCode.replaceAll("[^0-9]", "");
+            if (numericPart.isEmpty()) {
+                return BigDecimal.ZERO; // No numeric allowance
+            }
+            // Calculate base allowance (numeric part × 10)
+            BigDecimal baseAllowance = new BigDecimal(numericPart)
+                    .multiply(new BigDecimal("10"))
+                    .setScale(0, RoundingMode.HALF_UP);
+            // Add the base allowance to the gross income
+            grossIncome = grossIncome.add(baseAllowance);
+            // Calculate the income tax based on the adjusted gross income
+            return calculateIncomeTax(grossIncome, personalAllowance, taxSlabs, taxRates,payPeriod);
+        } else {
+            throw new IllegalArgumentException("Invalid K code: " + normalizedTaxCode);
+
+        }
+
+        return new BigDecimal(0);
+    }
+
+    public BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
+        BigDecimal annualGross;
+         switch (payPeriod.toUpperCase()) {
+            case "WEEKLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(52));
+            case "MONTHLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(12));
+            case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
+            case "YEARLY" -> annualGross=grossIncome;
+            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+        };
+        return annualGross.setScale(2, RoundingMode.HALF_UP);
+
+
+    }
+
+    public BigDecimal calculateIncomeTaxForUk(BigDecimal grossIncome, BigDecimal personalAllowance,String payPeriod) {
+        // Validate inputs
+        if (grossIncome == null || personalAllowance == null ) {
+            throw new IllegalArgumentException("Parameters cannot be null");
+        }
+        if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Income cannot be negative");
+        }
+
+        // Get tax thresholds and rates
+        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.TaxBandType.INCOME_TAX);
+        BigDecimal[] taxRates = taxThresholdService.getTaxRates("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.TaxBandType.INCOME_TAX);
+
+
+        //England, Wales and Northern Ireland Tax Slabs and Rates
+        BigDecimal personalRate = taxSlabs[0][1];
+        BigDecimal basicRate = (taxSlabs[1][1].subtract(taxSlabs[0][1]));//37700
+        BigDecimal higherRate = taxSlabs[2][1].subtract(taxSlabs[1][1]).add(basicRate).add(personalRate);//125140
+        BigDecimal additionalRate = taxSlabs[3][0]; //125140
+        BigDecimal taxPersonalTaxRate=taxRates[0];//0
+        BigDecimal taxBasicTaxRate=taxRates[1];  //0.20
+        BigDecimal taxHigherTaxRate=taxRates[2];  //0.40
+        BigDecimal taxAdditionalTaxRate=taxRates[3];    // 0.45
+
+
+        grossIncome= calculateGrossSalary(grossIncome,payPeriod);
+        System.out.println("Annual Gross Income: " + grossIncome);
+
+        // Calculate taxable income
+        BigDecimal totalIncomeTax = BigDecimal.ZERO;
+        BigDecimal taxableIncome = grossIncome.subtract(personalAllowance);
+        taxableIncome = taxableIncome.compareTo(BigDecimal.ZERO) > 0 ? taxableIncome : BigDecimal.ZERO;
+        System.out.println("Taxable Income: " + taxableIncome);
+        if(taxableIncome.compareTo(BigDecimal.ZERO) <= 0) {
+            return totalIncomeTax;
+        }
+        if (taxableIncome.compareTo(additionalRate) > 0) {
+            // Additional rate (45%)
+            BigDecimal additionalTax = taxableIncome.subtract(additionalRate);
+            totalIncomeTax = totalIncomeTax.add(additionalTax.multiply(taxAdditionalTaxRate));
+            System.out.println("Annual Additional rate 45% : " + additionalTax.multiply(taxAdditionalTaxRate.setScale(2, RoundingMode.HALF_UP)));
+
+            // Higher rate (40%)
+            BigDecimal highTax = higherRate.subtract(basicRate);
+            totalIncomeTax = totalIncomeTax.add(highTax.multiply(taxHigherTaxRate));
+            System.out.println("Annual High rate 40% : " + highTax.multiply(taxHigherTaxRate.setScale(2, RoundingMode.HALF_UP)));
+
+            // Basic rate (20%)
+            totalIncomeTax = totalIncomeTax.add(basicRate.multiply(taxBasicTaxRate));
+            System.out.println("Annual Basic rate 20% : " + basicRate.multiply(taxBasicTaxRate.setScale(2, RoundingMode.HALF_UP)));
+
+        }
+
+        else if (taxableIncome.compareTo(basicRate) > 0
+                && taxableIncome.compareTo(higherRate) <= 0)
+        {
+            // Higher rate (40%)
+            BigDecimal highTax = taxableIncome.subtract(basicRate);
+            totalIncomeTax = totalIncomeTax.add(highTax.multiply(taxHigherTaxRate));
+            System.out.println("Annual High rate 40% : " + highTax.multiply(taxHigherTaxRate.setScale(2, RoundingMode.HALF_UP)));
+
+            // Basic rate (20%)
+            totalIncomeTax = totalIncomeTax.add(basicRate.multiply(taxBasicTaxRate));
+            System.out.println("Annual Basic rate 20% : " + basicRate.multiply(taxBasicTaxRate.setScale(2, RoundingMode.HALF_UP)));
+        }
+        else if (taxableIncome.compareTo(basicRate) < 0) {
+            // Basic rate only (20%)
+            totalIncomeTax = totalIncomeTax.add(taxableIncome.multiply(taxBasicTaxRate));
+            System.out.println("Annual Basic rate 20% : " + taxableIncome.multiply(taxBasicTaxRate.setScale(2, RoundingMode.HALF_UP)));
+        }
+        System.out.println("Annual Total Income Tax: " + totalIncomeTax);
+
+
+        return totalIncomeTax.setScale(2, RoundingMode.HALF_UP);
+
+    }
+}
+
+
