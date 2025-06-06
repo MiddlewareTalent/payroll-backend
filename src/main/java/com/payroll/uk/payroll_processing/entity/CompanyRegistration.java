@@ -27,15 +27,11 @@ public class CompanyRegistration {
     private String taxYear;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "pay_frequency", nullable = false)
-    private PayPeriod payDates;
+    private PayPeriod payPeriod=PayPeriod.MONTHLY;
 
-
-
-
-
-
-
+    @Enumerated(EnumType.STRING)
+//    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES')", nullable = false)
+    private TaxThreshold.TaxRegion region;
 
 
 }

@@ -1,13 +1,13 @@
 package com.payroll.uk.payroll_processing.entity.employee;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Data
 @AllArgsConstructor
@@ -20,15 +20,15 @@ public class OtherEmployeeDetails {
 
 
     // Personal Allowance related fields
-    @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
-    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+//    @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
+//    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
+//    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
     @PositiveOrZero(message = "Used personal allowance must be zero or positive")
     private BigDecimal usedPersonalAllowance= BigDecimal.ZERO;
     @PositiveOrZero(message = "total Used Personal Allowance must be zero or positive")
     private BigDecimal totalUsedPersonalAllowance= BigDecimal.ZERO;
     @PositiveOrZero(message = "remaining Personal Allowance must be zero or positive")
-    private BigDecimal remainingPersonalAllowance= totalPersonalAllowanceInCompany;
+    private BigDecimal remainingPersonalAllowance = calculateRemainingPersonalAllowance();
 
     // Income Tax related fields
     @PositiveOrZero(message = "Income tax paid must be zero or positive")
@@ -55,5 +55,18 @@ public class OtherEmployeeDetails {
     private BigDecimal numberOfWeeksOfNIContributions= BigDecimal.ZERO;
     @PositiveOrZero(message = "number of Years of NI contributions must be zero or positive")
     private BigDecimal numberOfYearsOfNIContributions= BigDecimal.ZERO;
+
+
+
+
+
+    private BigDecimal calculateRemainingPersonalAllowance() {
+        BigDecimal total = Optional.ofNullable(new EmployeeDetails().getTotalPersonalAllowanceInCompany()).orElse(BigDecimal.ZERO);
+        BigDecimal used = Optional.ofNullable(new EmployeeDetails().getPreviouslyUsedPersonalAllowance()).orElse(BigDecimal.ZERO);
+        BigDecimal remaining = total.subtract(used);
+        return remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining;
+    }
+
+
 
 }

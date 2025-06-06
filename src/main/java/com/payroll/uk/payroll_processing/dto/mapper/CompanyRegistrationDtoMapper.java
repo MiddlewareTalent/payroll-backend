@@ -12,14 +12,17 @@ public class CompanyRegistrationDtoMapper {
         CompanyRegistrationDto dto = new CompanyRegistrationDto();
         dto.setCompanyName(companyRegistration.getCompanyName());
         dto.setTaxYear(companyRegistration.getTaxYear());
-        dto.setPayDates(companyRegistration.getPayDates());
+        dto.setPayPeriod(companyRegistration.getPayPeriod());
+        dto.setRegion(companyRegistration.getRegion());
+        dto.setId(companyRegistration.getId());
         return dto;
     }
     public CompanyRegistration changeToCompanyRegistration(CompanyRegistrationDto companyRegistrationDto) {
         CompanyRegistration companyRegistration = new CompanyRegistration();
         companyRegistration.setCompanyName(companyRegistrationDto.getCompanyName());
         companyRegistration.setTaxYear(companyRegistrationDto.getTaxYear());
-        companyRegistration.setPayDates(companyRegistrationDto.getPayDates());
+        companyRegistration.setPayPeriod(companyRegistrationDto.getPayPeriod());
+        companyRegistration.setRegion(companyRegistrationDto.getRegion());
         return companyRegistration;
     }
 }

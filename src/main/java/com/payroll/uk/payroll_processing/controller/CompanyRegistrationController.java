@@ -21,16 +21,9 @@ public class CompanyRegistrationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<CompanyRegistrationDto> registerCompany(@Valid @RequestParam("companyName") String companyName,
-                                                                  @Valid
-                                                                  @Parameter(description = "Tax year (yyyy-yyyy)", example = "2025-2026")
-                                                                  @RequestParam("taxYear") String taxYear,
-                                                                  @Valid @RequestParam("payDates") PayPeriod payDates) {
+    public ResponseEntity<CompanyRegistrationDto> registerCompany(@Valid @RequestBody CompanyRegistrationDto companyRegistrationDto) {
+        System.out.println("Received company registration request: " + companyRegistrationDto);
         try {
-            CompanyRegistrationDto companyRegistrationDto = new CompanyRegistrationDto();
-            companyRegistrationDto.setCompanyName(companyName);
-            companyRegistrationDto.setTaxYear(taxYear);
-            companyRegistrationDto.setPayDates(payDates);
 
             CompanyRegistrationDto data = companyRegistrationService.registerCompany(companyRegistrationDto);
             return ResponseEntity.ok(data);

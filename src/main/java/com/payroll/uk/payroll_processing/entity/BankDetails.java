@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.entity;
 
 
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -9,11 +10,13 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+//@ToString(exclude = {"employeeDetails", "employerDetails"})
 public class BankDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +54,13 @@ public class BankDetails {
     private String telephone;
     private int paymentLeadDays=0;
     private Boolean isRTIReturnsIncluded=false;
+    //EmployeeDetails
     @OneToOne(mappedBy = "bankDetails")
+    @ToString.Exclude
     private EmployeeDetails employeeDetails;
+    //EmployerDetails
+    @OneToOne(mappedBy = "bankDetails")
+    @ToString.Exclude
+    private EmployerDetails employerDetails;
 
 }

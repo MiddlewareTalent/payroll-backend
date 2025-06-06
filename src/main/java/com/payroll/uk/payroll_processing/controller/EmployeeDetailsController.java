@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.controller;
 
+import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService;
 import jakarta.persistence.EntityNotFoundException;
@@ -84,6 +85,8 @@ public class EmployeeDetailsController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateEmployeeDetails(
             @PathVariable Long id,
@@ -109,6 +112,35 @@ public class EmployeeDetailsController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal Server Error: " + e.getMessage()); // 500
+        }
+    }
+
+    @PutMapping("/update/bank-details/{id}")
+    public ResponseEntity<?> updateBankDetails(
+            @PathVariable Long id,
+            @Valid @RequestBody BankDetailsDTO bankDetailsDTO,
+            BindingResult bindingResult) {
+
+        // Handle validation errors (400 Bad Request)
+        if (bindingResult.hasErrors()) {
+            StringBuilder errors = new StringBuilder();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                errors.append(error.getField())
+                        .append(": ").append(error.getDefaultMessage()).append("; ");
+            }
+            return ResponseEntity.badRequest().body(errors.toString());
+        }
+
+        try {
+            BankDetailsDTO updatedBankDetails = employeeDetailsService.updateBankDetailsById(id, bankDetailsDTO);
+            return ResponseEntity.ok(updatedBankDetails); // 200 OK
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Employee not found with ID: " + id); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal server error: " + e.getMessage()); // 500 Internal Server Error
         }
     }
 

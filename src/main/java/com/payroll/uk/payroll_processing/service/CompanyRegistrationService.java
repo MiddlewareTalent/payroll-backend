@@ -21,11 +21,14 @@ public class CompanyRegistrationService {
         this.dtoMapper = dtoMapper;
     }
     public CompanyRegistrationDto registerCompany(CompanyRegistrationDto companyRegistrationDto) {
+        System.out.println("Service Received company registration request: " + companyRegistrationDto);
         try{
             CompanyRegistration companyRegistration=new CompanyRegistration();
             companyRegistration.setCompanyName(companyRegistrationDto.getCompanyName());
             companyRegistration.setTaxYear(companyRegistrationDto.getTaxYear());
-            companyRegistration.setPayDates(companyRegistrationDto.getPayDates());
+            companyRegistration.setPayPeriod(companyRegistrationDto.getPayPeriod());
+            companyRegistration.setRegion(companyRegistrationDto.getRegion());
+            System.out.println(" created Company Registration Details: " + companyRegistration);
 
             return dtoMapper.mapToDto(companyRegistrationRepository.save(companyRegistration));
         }

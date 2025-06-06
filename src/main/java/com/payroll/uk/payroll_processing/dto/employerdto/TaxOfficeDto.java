@@ -14,14 +14,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaxOfficeDto {
-    @Schema(description = "HMRC PAYE reference", example = "123/45678",defaultValue = "null")
+    @Schema(description = "HMRC PAYE reference", example = "123/45678")
     private String payeReference;
-    @Schema(description = "Accounts office reference", example = "123A456",defaultValue = "null")
+    @Schema(description = "Accounts office reference", example = "123A456")
     private String accountsOfficeReference;
 
     // ============== PAYMENT & TAX REFERENCES ==============
     @Enumerated(EnumType.STRING)
-    private TaxOffice.PaymentMethod paymentMethod ;
+    private TaxOffice.PaymentMethod paymentMethod= TaxOffice.PaymentMethod.ONLINE;
     @Schema(description = "Unique Taxpayer Reference", example = "1234567890",defaultValue = "null")
     private String uniqueTaxRef;
     @Schema(description = "Corporation Tax reference", example = "12345678",defaultValue = "null")

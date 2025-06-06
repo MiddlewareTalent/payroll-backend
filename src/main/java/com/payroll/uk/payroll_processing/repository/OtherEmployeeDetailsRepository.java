@@ -9,8 +9,8 @@
 //
 //public interface OtherEmployeeDetailsRepository extends JpaRepository<OtherEmployeeDetails, Long> {
 //
-////    @Query("SELECT e.numberOfMonthsOfIncomeTaxPaid FROM OtherEmployeeDetails e WHERE e.employeeId = :employeeId")
-////    BigDecimal findNumberOfMonthsOfIncomeTaxPaidByEmployeeId(@Param("employeeId") String employeeId);
+//    @Query("SELECT e.numberOfMonthsOfIncomeTaxPaid FROM OtherEmployeeDetails e WHERE e.employeeId = :employeeId")
+//    BigDecimal findNumberOfMonthsOfIncomeTaxPaidByEmployeeId(@Param("employeeId") String employeeId);
 //
 //    @Query("SELECT e.totalIncomeTaxPaidInCompany FROM OtherEmployeeDetails e WHERE e.totalIncomeTaxPaidInCompany = :totalIncomeTaxPaidInCompany")
 //    public abstract BigDecimal findByTotalIncomeTaxPaidInCompany(@Param("totalIncomeTaxPaidInCompany") String totalIncomeTaxPaidInCompany);

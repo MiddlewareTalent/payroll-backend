@@ -38,7 +38,7 @@ public class EmployeeDetails {
     private String address;
     private String postCode;
 
-
+    private String workingCompanyName;
     @Enumerated(EnumType.STRING)
     private EmploymentType employmentType;
 
@@ -52,16 +52,22 @@ public class EmployeeDetails {
     private LocalDate employmentStartedDate;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate employmentEndDate;
+    @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
+    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
+    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
 
+    private String employerId;
 
     private BigDecimal grossIncome;
     private String taxCode;
     private Boolean isEmergencyCode=false;
     private Boolean isPostgraduateLoan=false;
     @Enumerated(EnumType.STRING)
-    private StudentLoan studentLoan=StudentLoan.NONE;
+    private StudentLoan studentLoan;
     @Enumerated(EnumType.STRING)
-    private PayPeriod payPeriod=PayPeriod.MONTHLY;
+    private PayPeriod payPeriod;
+    @Enumerated(EnumType.STRING)
+    private TaxThreshold.TaxRegion region;
 
 //    @OneToOne
 //    @JoinColumn(name = "bank_details_id")
@@ -79,6 +85,8 @@ public class EmployeeDetails {
 
     @Embedded
     private OtherEmployeeDetails otherEmployeeDetails;
+
+
 
 
 //    @OneToOne

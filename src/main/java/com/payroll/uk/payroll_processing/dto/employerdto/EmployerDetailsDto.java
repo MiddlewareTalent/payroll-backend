@@ -1,11 +1,16 @@
 package com.payroll.uk.payroll_processing.dto.employerdto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.payroll.uk.payroll_processing.entity.employer.TaxOffice;
-import com.payroll.uk.payroll_processing.entity.employer.Terms;
+import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
+import com.payroll.uk.payroll_processing.entity.PayPeriod;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +27,9 @@ public class EmployerDetailsDto {
     @NotBlank(message = "Employer name cannot be blank")
     @Schema(description = "Employer name", example = "ABC Ltd")
     private String employerName;
+    @Schema(description = "Employer ID", example = "EMP12345")
+    @Column(unique = true)
+    private String employerId;
     @Schema(nullable = true)
     private String employerAddress;
     @Schema(nullable = true)
@@ -65,10 +73,27 @@ public class EmployerDetailsDto {
     @Lob
     private String companyLogo;
 
+    @Schema(description = "Company name", example = "ABC Ltd")
+    private String companyName;
+
+    @Schema(description = "Tax year in format yyyy-yyyy, e.g., 2025-2026", example = "2025-2026")
+    @Pattern(regexp = "^\\d{4}-\\d{4}$", message = "Tax year must be in the format YYYY-YYYY, e.g., 2025-2026")
+    private String taxYear;
+
+    @Enumerated(EnumType.STRING)
+    private PayPeriod payPeriod=PayPeriod.MONTHLY;
+
+    @Enumerated(EnumType.STRING)
+//    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES')", nullable = false)
+    private TaxThreshold.TaxRegion region;
+
+//    private String companyRegistrationNumber;
 
 
-    private TaxOffice taxOffice;
+
+    private TaxOfficeDto taxOfficeDto;
+    private BankDetailsDTO bankDetailsDTO;
 
     @Schema(nullable = true)
-    private Terms terms;
+    private TermsDto termsDto;
 }

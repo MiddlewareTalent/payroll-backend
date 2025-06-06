@@ -2,12 +2,15 @@ package com.payroll.uk.payroll_processing.entity.employer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.PayPeriod;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,7 +27,7 @@ public class EmployerDetails {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    private String employerReference;
+    private String employerId;
 
     // Company Information
     @NotBlank(message = "Employer name cannot be blank")
@@ -93,9 +96,23 @@ public class EmployerDetails {
     @Schema(defaultValue = "false")
     private Boolean showAgeOnHourlyTab= false;
 
-    private BigDecimal employmentAllowanceThreshold= new BigDecimal("10500");
-    private BigDecimal usedEmploymentAllowance = BigDecimal.ZERO;
-    private BigDecimal remainingEmploymentAllowance = BigDecimal.ZERO;
+//    private BigDecimal employmentAllowanceThreshold= new BigDecimal("10500");
+//    private BigDecimal usedEmploymentAllowance = BigDecimal.ZERO;
+//    private BigDecimal remainingEmploymentAllowance = BigDecimal.ZERO;
+
+    @Column(name = "company_name", nullable = false)
+    private String companyName;
+
+    @Schema(description = "Tax year in format yyyy-yyyy, e.g., 2025-2026", example = "2025-2026")
+    @Pattern(regexp = "^\\d{4}-\\d{4}$", message = "Tax year must be in the format YYYY-YYYY, e.g., 2025-2026")
+    private String taxYear;
+
+    @Enumerated(EnumType.STRING)
+    private PayPeriod payPeriod=PayPeriod.MONTHLY;
+
+    @Enumerated(EnumType.STRING)
+//    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES')", nullable = false)
+    private TaxThreshold.TaxRegion region;
 
 
     // Company Logo
@@ -112,9 +129,29 @@ public class EmployerDetails {
 //    @JoinColumn(name = "bank_details_id")
 //    private BankDetails bankDetails;
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "bank_details_id",referencedColumnName = "id")
-//    private BankDetails bankDetails;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "bank_details_id", referencedColumnName = "id")
+    @ToString.Exclude
+    private BankDetails bankDetails;
+
+    public void setBankDetails(BankDetails bankDetails) {
+        this.bankDetails = bankDetails;
+        if (bankDetails != null) {
+            bankDetails.setEmployerDetails(this);
+        }
+    }
+
+    /*// Helper method for bidirectional relationship
+    public void setBankDetails(BankDetails bankDetails) {
+        if (bankDetails == null) {
+            if (this.bankDetails != null) {
+                this.bankDetails.setEmployer(null);
+            }
+        } else {
+            bankDetails.setEmployer(this);
+        }
+        this.bankDetails = bankDetails;
+    }*/
 
 //    @Embedded
 //    private BankDetails bankDetails;

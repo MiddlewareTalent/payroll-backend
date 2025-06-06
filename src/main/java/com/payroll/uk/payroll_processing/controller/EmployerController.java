@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.controller;
 
+import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDto;
 import com.payroll.uk.payroll_processing.exception.EmployerRegistrationException;
 import com.payroll.uk.payroll_processing.service.EmployerService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/employer") // Base URL for the API
@@ -41,7 +43,7 @@ public class EmployerController {
         }
     }
 
-    @GetMapping("/employers")
+    @GetMapping("/employers/{id}")
     public ResponseEntity<?> getEmployerDetails(@RequestParam Long id) {
         try {
             EmployerDetailsDto employerDetails = employerService.getEmployerDetails(id);
@@ -53,17 +55,35 @@ public class EmployerController {
                     .body("Failed to fetch employer details");
         }
     }
-    @PutMapping("/update/employers/{id}")
-    public ResponseEntity<String> updateEmployer( @PathVariable Long id,@Valid @RequestBody EmployerDetailsDto employerDetailsDto) {
+    @GetMapping("/allEmployers")
+    public ResponseEntity<?> getAllEmployeeDetails() {
         try {
-            String result = employerService.updateEmployer(id,employerDetailsDto);
+            List<EmployerDetailsDto> employees = employerService.getAllEmployeeDetails();
+            return ResponseEntity.ok(employees); // 200 OK
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch employee details: " + e.getMessage()); // 500
+        }
+    }
+    @PutMapping("/update/employers/{id}")
+    public ResponseEntity<EmployerDetailsDto> updateEmployer( @PathVariable Long id,@Valid @RequestBody EmployerDetailsDto employerDetailsDto) {
+        try {
+            EmployerDetailsDto result = employerService.updateEmployerDetailsById(id,employerDetailsDto);
             return ResponseEntity.ok(result);
-        } catch (EmployerRegistrationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (EmployerRegistrationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Update failed. Please try again.");
+                    .body(null);
         }
+//        catch (EmployerRegistrationException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Update failed. Please try again.");
+//        }
     }
     @DeleteMapping("/delete/employers")
     public ResponseEntity<String> deleteEmployer(@RequestParam Long id) {

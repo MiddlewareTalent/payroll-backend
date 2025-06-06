@@ -26,6 +26,10 @@ public class PaySlipCreationService {
     private NationalInsuranceCalculation nationalInsuranceCalculation;
     @Autowired
     private  PaySlipCreateDtoMapper paySlipCreateDtoMapper;
+//    @Autowired
+//    private EmployeeDetailsDTO employeeDetailsDTO;
+//    @Autowired
+//    private EmployeeDetailsRepository employeeDetailsRepository;
 
 
 
@@ -86,6 +90,8 @@ public class PaySlipCreationService {
 
         PaySlip savedPaySlip=paySlipRepository.save(paySlip);
         System.out.println("Successfully saved PaySlip: " + savedPaySlip);
+//          employeeDetailsRepository.findByEmployeeId()
+
 
         return  paySlipCreateDtoMapper.mapToDto(savedPaySlip);
 

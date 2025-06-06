@@ -11,6 +11,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -61,8 +62,10 @@ public class EmployeeDetailsDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate employmentEndDate;
 
+    @Enumerated(EnumType.STRING)
+    private TaxThreshold.TaxRegion region=TaxThreshold.TaxRegion.ENGLAND;
 
-
+    private String workingCompanyName;
     private BigDecimal grossIncome;
     @Schema(defaultValue = "1257L")
     private String taxCode;
@@ -84,5 +87,11 @@ public class EmployeeDetailsDTO {
     private String nationalInsuranceNumber;
     private String NICategoryLetter;
     private OtherEmployeeDetailsDTO otherEmployeeDetailsDTO;
+    @Schema(description = "Employer ID associated with the employee", example = "12345")
+    private String employerId;
+
+    @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
+    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
+    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
 
 }

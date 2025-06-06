@@ -1,10 +1,13 @@
 package com.payroll.uk.payroll_processing.service.employee;
 
+import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
-import com.payroll.uk.payroll_processing.dto.mapper.employeedtomapper.EmployeeDetailsDTOMapper;
+import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
+import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
+import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,12 +19,14 @@ public class EmployeeDetailsService {
     private final EmployeeDetailsRepository employeeDetailsRepository;
     private  final EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
     private  final BankDetailsRepository bankDetailsRepository;
+    private final EmployerDetailsRepository employerDetailsRepository;
 
     public EmployeeDetailsService(EmployeeDetailsRepository employeeDetailsRepository,
-                                  EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository)  {
+                                  EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository, EmployerDetailsRepository employerDetailsRepository) {
         this.employeeDetailsRepository = employeeDetailsRepository;
         this.employeeDetailsDTOMapper = employeeDetailsDTOMapper;
         this.bankDetailsRepository = bankDetailsRepository;
+        this.employerDetailsRepository = employerDetailsRepository;
     }
     // Save employee details
     public EmployeeDetailsDTO saveEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO){
@@ -33,6 +38,9 @@ public class EmployeeDetailsService {
         }
         if(employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId()).isPresent()){
             throw new IllegalArgumentException("Employee with this ID already exists");
+        }
+        if (!employerDetailsRepository.existsByEmployerId( employeeDetailsDTO.getEmployerId())) {
+            throw new IllegalArgumentException("Employer with this ID does not exist");
         }
         validateEmployeeDetails(employeeDetailsDTO);
         EmployeeDetails employeeData = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
@@ -47,6 +55,7 @@ public class EmployeeDetailsService {
         if (employeeId == null || employeeId.isEmpty()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
         }
+
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employeeId));
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(employeeDetails);
@@ -73,6 +82,9 @@ public class EmployeeDetailsService {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
             throw new IllegalArgumentException("Employee ID or Id cannot be null or empty");
         }
+        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
+            throw new IllegalArgumentException("Employer with this ID does not exist");
+        }
 
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
@@ -89,6 +101,9 @@ public class EmployeeDetailsService {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
         }
+        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
+            throw new IllegalArgumentException("Employer with this ID does not exist");
+        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId())
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
@@ -96,6 +111,48 @@ public class EmployeeDetailsService {
 //        updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(updatedEmployeeDetails);
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(savedEmployeeDetails);
+    }
+
+    //Update employee Bank details by id
+    public BankDetailsDTO updateBankDetailsById(Long id,BankDetailsDTO  bankDetailsDTO){
+        if(id==null){
+            throw new IllegalArgumentException("Bank details ID cannot be null");
+        }
+        if (bankDetailsDTO.getAccountNumber() == null || bankDetailsDTO.getAccountNumber().isEmpty()) {
+            throw new IllegalArgumentException("Account Number cannot be null or empty");
+        }
+        if (bankDetailsDTO.getAccountName() == null || bankDetailsDTO.getAccountName().isEmpty()) {
+            throw new IllegalArgumentException("Account Name cannot be null or empty");
+        }
+//        if (bankDetailsDTO.getSortCode() == null || bankDetailsDTO.getSortCode().isEmpty()) {
+//            throw new IllegalArgumentException("Sort Code cannot be null or empty");
+//        }
+        BankDetails bankDetails = bankDetailsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Bank details not found with ID: " + id));
+        bankDetails.setAccountNumber(bankDetailsDTO.getAccountNumber());
+        bankDetails.setAccountName(bankDetailsDTO.getAccountName());
+        bankDetails.setSortCode(bankDetailsDTO.getSortCode());
+        bankDetails.setBankName(bankDetailsDTO.getBankName());
+        bankDetails.setBankAddress(bankDetailsDTO.getBankAddress());
+        bankDetails.setBankPostCode(bankDetailsDTO.getBankPostCode());
+        bankDetails.setTelephone(bankDetailsDTO.getTelephone());
+        bankDetails.setPaymentReference(bankDetailsDTO.getPaymentReference());
+        bankDetails.setIsRTIReturnsIncluded(bankDetailsDTO.getIsRTIReturnsIncluded());
+        bankDetails.setPaymentLeadDays(bankDetailsDTO.getPaymentLeadDays());
+        bankDetails.setId(bankDetails.getId());
+        return employeeDetailsDTOMapper.mapToBanKDetailsDTO(bankDetailsRepository.save(bankDetails));
+
+    }
+
+    public EmployeeDetailsDTO updateEmployeeOtherDetailsById(String employeeId){
+       if(employeeId.isEmpty()|| employeeId == null) {
+            throw new IllegalArgumentException("Employee ID cannot be null or empty");
+       }
+        EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employeeId));
+        return null;
+
+
     }
 
     // Delete employee details by ID

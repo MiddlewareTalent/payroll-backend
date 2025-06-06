@@ -1,4 +1,4 @@
-package com.payroll.uk.payroll_processing.dto.mapper.employeedtomapper;
+package com.payroll.uk.payroll_processing.dto.mapper;
 
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
@@ -39,14 +39,24 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setPayPeriod(employeeDetails.getPayPeriod());
         employeeDetailsDTO.setNationalInsuranceNumber(employeeDetails.getNationalInsuranceNumber());
         employeeDetailsDTO.setNICategoryLetter(employeeDetails.getNICategoryLetter());
-        employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
-        employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails));
+//        employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
+//        employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails.getOtherEmployeeDetails()));
+        employeeDetailsDTO.setEmployerId(employeeDetails.getEmployerId());
+        // Null check before mapping nested objects
+        if (employeeDetails.getBankDetails() != null) {
+            employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
+        }
+
+        if (employeeDetails.getOtherEmployeeDetails() != null) {
+            employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails.getOtherEmployeeDetails()));
+        }
+        employeeDetailsDTO.setPreviouslyUsedPersonalAllowance(employeeDetails.getPreviouslyUsedPersonalAllowance());
         return employeeDetailsDTO;
 
     }
     public BankDetailsDTO mapToBanKDetailsDTO(BankDetails bankDetails) {
         if (bankDetails == null) {
-            throw new IllegalArgumentException("Bank details cannot be null");
+            return null;
         }
         BankDetailsDTO bankDetailsDTO = new BankDetailsDTO();
 //        bankDetailsDTO.setId(employeeDetails.getBankDetails().getId());
@@ -63,23 +73,23 @@ public class EmployeeDetailsDTOMapper {
         return bankDetailsDTO;
 
     }
-    public OtherEmployeeDetailsDTO mapToOtherEmployeeDetailsDTO(EmployeeDetails employeeDetails) {
+    public OtherEmployeeDetailsDTO mapToOtherEmployeeDetailsDTO(OtherEmployeeDetails otherEmployeeDetails) {
         OtherEmployeeDetailsDTO otherEmployeeDetailsDTO = new OtherEmployeeDetailsDTO();
-        otherEmployeeDetailsDTO.setPreviouslyUsedPersonalAllowance(employeeDetails.getOtherEmployeeDetails().getPreviouslyUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setTotalPersonalAllowanceInCompany(employeeDetails.getOtherEmployeeDetails().getTotalPersonalAllowanceInCompany());
-        otherEmployeeDetailsDTO.setUsedPersonalAllowance(employeeDetails.getOtherEmployeeDetails().getUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(employeeDetails.getOtherEmployeeDetails().getTotalUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(employeeDetails.getOtherEmployeeDetails().getRemainingPersonalAllowance());
-        otherEmployeeDetailsDTO.setIncomeTaxPaid(employeeDetails.getOtherEmployeeDetails().getIncomeTaxPaid());
-        otherEmployeeDetailsDTO.setTotalIncomeTaxPaidInCompany(employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInCompany());
-        otherEmployeeDetailsDTO.setNumberOfMonthsOfIncomeTaxPaid(employeeDetails.getOtherEmployeeDetails().getNumberOfMonthsOfIncomeTaxPaid());
-        otherEmployeeDetailsDTO.setNumberOfYearsOfIncomeTaxPaid(employeeDetails.getOtherEmployeeDetails().getNumberOfYearsOfIncomeTaxPaid());
-        otherEmployeeDetailsDTO.setNumberOfWeeksOfIncomeTaxPaid(employeeDetails.getOtherEmployeeDetails().getNumberOfWeeksOfIncomeTaxPaid());
-        otherEmployeeDetailsDTO.setEmployeeNIContribution(employeeDetails.getOtherEmployeeDetails().getEmployeeNIContribution());
-        otherEmployeeDetailsDTO.setTotalEmployeeNIContributionInCompany(employeeDetails.getOtherEmployeeDetails().getTotalEmployeeNIContributionInCompany());
-        otherEmployeeDetailsDTO.setNumberOfMonthsOfNIContributions(employeeDetails.getOtherEmployeeDetails().getNumberOfMonthsOfNIContributions());
-        otherEmployeeDetailsDTO.setNumberOfWeeksOfNIContributions(employeeDetails.getOtherEmployeeDetails().getNumberOfWeeksOfNIContributions());
-        otherEmployeeDetailsDTO.setNumberOfYearsOfNIContributions(employeeDetails.getOtherEmployeeDetails().getNumberOfYearsOfNIContributions());
+//        otherEmployeeDetailsDTO.setPreviouslyUsedPersonalAllowance(otherEmployeeDetails.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetailsDTO.setTotalPersonalAllowanceInCompany(otherEmployeeDetails.getTotalPersonalAllowanceInCompany());
+        otherEmployeeDetailsDTO.setUsedPersonalAllowance(otherEmployeeDetails.getUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(otherEmployeeDetails.getTotalUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(otherEmployeeDetails.getRemainingPersonalAllowance());
+        otherEmployeeDetailsDTO.setIncomeTaxPaid(otherEmployeeDetails.getIncomeTaxPaid());
+        otherEmployeeDetailsDTO.setTotalIncomeTaxPaidInCompany(otherEmployeeDetails.getTotalIncomeTaxPaidInCompany());
+        otherEmployeeDetailsDTO.setNumberOfMonthsOfIncomeTaxPaid(otherEmployeeDetails.getNumberOfMonthsOfIncomeTaxPaid());
+        otherEmployeeDetailsDTO.setNumberOfYearsOfIncomeTaxPaid(otherEmployeeDetails.getNumberOfYearsOfIncomeTaxPaid());
+        otherEmployeeDetailsDTO.setNumberOfWeeksOfIncomeTaxPaid(otherEmployeeDetails.getNumberOfWeeksOfIncomeTaxPaid());
+        otherEmployeeDetailsDTO.setEmployeeNIContribution(otherEmployeeDetails.getEmployeeNIContribution());
+        otherEmployeeDetailsDTO.setTotalEmployeeNIContributionInCompany(otherEmployeeDetails.getTotalEmployeeNIContributionInCompany());
+        otherEmployeeDetailsDTO.setNumberOfMonthsOfNIContributions(otherEmployeeDetails.getNumberOfMonthsOfNIContributions());
+        otherEmployeeDetailsDTO.setNumberOfWeeksOfNIContributions(otherEmployeeDetails.getNumberOfWeeksOfNIContributions());
+        otherEmployeeDetailsDTO.setNumberOfYearsOfNIContributions(otherEmployeeDetails.getNumberOfYearsOfNIContributions());
         return otherEmployeeDetailsDTO;
 
     }
@@ -110,14 +120,26 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setPayPeriod(employeeDetailsDTO.getPayPeriod());
         employeeDetails.setNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber());
         employeeDetails.setNICategoryLetter(employeeDetailsDTO.getNICategoryLetter());
+        employeeDetails.setEmployerId(employeeDetailsDTO.getEmployerId());
+        employeeDetails.setPreviouslyUsedPersonalAllowance(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
+        employeeDetails.setTotalPersonalAllowanceInCompany(employeeDetailsDTO.getTotalPersonalAllowanceInCompany());
 
 
-        BankDetails bankDetails = mapToBankDetails(employeeDetailsDTO);
-        employeeDetails.setBankDetails(bankDetails);
+//        BankDetails bankDetails = mapToBankDetails(employeeDetailsDTO);
+//        employeeDetails.setBankDetails(bankDetails);
 
-        OtherEmployeeDetailsDTO otherEmployeeDetailsDTO = employeeDetailsDTO.getOtherEmployeeDetailsDTO();
-        OtherEmployeeDetails otherEmployeeDetails = getOtherEmployeeDetails(otherEmployeeDetailsDTO);
-        employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails);
+//        OtherEmployeeDetailsDTO otherEmployeeDetailsDTO = employeeDetailsDTO.getOtherEmployeeDetailsDTO();
+//        OtherEmployeeDetails otherEmployeeDetails = getOtherEmployeeDetails(otherEmployeeDetailsDTO);
+//        employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails);
+
+        // Null check before mapping nested DTOs
+        if (employeeDetailsDTO.getBankDetailsDTO() != null) {
+            employeeDetails.setBankDetails(mapToBankDetails(employeeDetailsDTO));
+        }
+
+        if (employeeDetailsDTO.getOtherEmployeeDetailsDTO() != null) {
+            employeeDetails.setOtherEmployeeDetails(getOtherEmployeeDetails(employeeDetailsDTO.getOtherEmployeeDetailsDTO()));
+        }
 
         return employeeDetails;
     }
@@ -137,8 +159,8 @@ public class EmployeeDetailsDTOMapper {
     }
     public OtherEmployeeDetails getOtherEmployeeDetails(OtherEmployeeDetailsDTO otherEmployeeDetailsDTO) {
         OtherEmployeeDetails otherEmployeeDetails = new OtherEmployeeDetails();
-        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
-        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
+//        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
         otherEmployeeDetails.setUsedPersonalAllowance(otherEmployeeDetailsDTO.getUsedPersonalAllowance());
         otherEmployeeDetails.setTotalUsedPersonalAllowance(otherEmployeeDetailsDTO.getTotalUsedPersonalAllowance());
         otherEmployeeDetails.setRemainingPersonalAllowance(otherEmployeeDetailsDTO.getRemainingPersonalAllowance());

@@ -1,8 +1,11 @@
-package com.payroll.uk.payroll_processing.dto.mapper.employerdtomapper;
+package com.payroll.uk.payroll_processing.dto.mapper;
 
+import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDto;
 import com.payroll.uk.payroll_processing.dto.employerdto.TaxOfficeDto;
 import com.payroll.uk.payroll_processing.dto.employerdto.TermsDto;
+import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employer.TaxOffice;
 import com.payroll.uk.payroll_processing.entity.employer.Terms;
@@ -14,6 +17,7 @@ public class EmployerDetailsDtoMapper {
     public EmployerDetailsDto mapToDto(EmployerDetails employerDetails){
         EmployerDetailsDto dto = new EmployerDetailsDto();
         dto.setEmployerName(employerDetails.getEmployerName());
+        dto.setEmployerId(employerDetails.getEmployerId());
         dto.setEmployerAddress(employerDetails.getEmployerAddress());
         dto.setEmployerTelephone(employerDetails.getEmployerTelephone());
         dto.setEmployerEmail(employerDetails.getEmployerEmail());
@@ -30,18 +34,33 @@ public class EmployerDetailsDtoMapper {
         dto.setWarnBelowNationalMinimumWage(employerDetails.getWarnBelowNationalMinimumWage());
         dto.setShowAgeOnHourlyTab(employerDetails.getShowAgeOnHourlyTab());
         dto.setCompanyLogo(employerDetails.getCompanyLogo());
-        dto.setTaxOfficeDto(mapToTaxOfficeDto(employerDetails.getTaxOffice()));
-        dto.setTermsDto(mapToTermsDto(employerDetails.getTerms()));
         dto.setCompanyName(employerDetails.getCompanyName());
         dto.setPayPeriod(employerDetails.getPayPeriod());
         dto.setRegion(employerDetails.getRegion());
         dto.setTaxYear(employerDetails.getTaxYear());
+//        dto.setTermsDto(mapToTermsDto(employerDetails.getTerms()));
+//        dto.setTaxOfficeDto(mapToTaxOfficeDto(employerDetails.getTaxOffice()));
+//        dto.setBankDetailsDTO(mapToBanKDetailsDTO(employerDetails.getBankDetails()));
+        if (employerDetails.getTaxOffice() != null) {
+            dto.setTaxOfficeDto(mapToTaxOfficeDto(employerDetails.getTaxOffice()));
+        }
+
+        if (employerDetails.getTerms() != null) {
+            dto.setTermsDto(mapToTermsDto(employerDetails.getTerms()));
+        }
+
+        if (employerDetails.getBankDetails() != null) {
+            dto.setBankDetailsDTO(mapToBankDetailsDTO(employerDetails.getBankDetails()));
+        }
+
+
 
         return dto;
     }
     public EmployerDetails changeToEmployerDetails(EmployerDetailsDto employerDto){
         EmployerDetails employerDetails = new EmployerDetails();
         employerDetails.setEmployerName(employerDto.getEmployerName());
+        employerDetails.setEmployerId(employerDto.getEmployerId());
         employerDetails.setEmployerAddress(employerDto.getEmployerAddress());
         employerDetails.setEmployerTelephone(employerDto.getEmployerTelephone());
         employerDetails.setEmployerEmail(employerDto.getEmployerEmail());
@@ -58,16 +77,30 @@ public class EmployerDetailsDtoMapper {
         employerDetails.setWarnBelowNationalMinimumWage(employerDto.getWarnBelowNationalMinimumWage());
         employerDetails.setShowAgeOnHourlyTab(employerDto.getShowAgeOnHourlyTab());
         employerDetails.setCompanyLogo(employerDto.getCompanyLogo());
-        employerDetails.setTaxOffice(changeToTaxOffice(employerDto.getTaxOfficeDto()));
-        employerDetails.setTerms(changeToTerms(employerDto.getTermsDto()));
+//        employerDetails.setTaxOffice(changeToTaxOffice(employerDto.getTaxOfficeDto()));
+//        employerDetails.setTerms(changeToTerms(employerDto.getTermsDto()));
         employerDetails.setCompanyName(employerDto.getCompanyName());
         employerDetails.setPayPeriod(employerDto.getPayPeriod());
         employerDetails.setRegion(employerDto.getRegion());
         employerDetails.setTaxYear(employerDto.getTaxYear());
+//        BankDetails bankDetails = mapToBankDetails(employerDto);
+//        employerDetails.setBankDetails(bankDetails);
+        if (employerDto.getTaxOfficeDto() != null) {
+            employerDetails.setTaxOffice(changeToTaxOffice(employerDto.getTaxOfficeDto()));
+        }
+
+        if (employerDto.getTermsDto() != null) {
+            employerDetails.setTerms(changeToTerms(employerDto.getTermsDto()));
+        }
+
+        if (employerDto.getBankDetailsDTO() != null) {
+            employerDetails.setBankDetails(mapToBankDetails(employerDto));
+        }
         return employerDetails;
     }
 
     public TaxOfficeDto mapToTaxOfficeDto(TaxOffice taxOffice) {
+
         TaxOfficeDto dto = new TaxOfficeDto();
         dto.setPayeReference(taxOffice.getPayeReference());
         dto.setAccountsOfficeReference(taxOffice.getAccountsOfficeReference());
@@ -131,6 +164,40 @@ public class EmployerDetailsDtoMapper {
         terms.setMaxDaysToCarryOver(termsDto.getMaxDaysToCarryOver());
 
         return terms;
+    }
+
+    public BankDetails mapToBankDetails(EmployerDetailsDto employerDetailsDto) {
+        BankDetails bankDetails = new BankDetails();
+        bankDetails.setAccountName(employerDetailsDto.getBankDetailsDTO().getAccountName());
+        bankDetails.setAccountNumber(employerDetailsDto.getBankDetailsDTO().getAccountNumber());
+        bankDetails.setPaymentReference(employerDetailsDto.getBankDetailsDTO().getPaymentReference());
+        bankDetails.setBankName(employerDetailsDto.getBankDetailsDTO().getBankName());
+        bankDetails.setSortCode(employerDetailsDto.getBankDetailsDTO().getSortCode());
+        bankDetails.setBankAddress(employerDetailsDto.getBankDetailsDTO().getBankAddress());
+        bankDetails.setBankPostCode(employerDetailsDto.getBankDetailsDTO().getBankPostCode());
+        bankDetails.setTelephone(employerDetailsDto.getBankDetailsDTO().getTelephone());
+        bankDetails.setPaymentLeadDays(employerDetailsDto.getBankDetailsDTO().getPaymentLeadDays());
+        bankDetails.setIsRTIReturnsIncluded(employerDetailsDto.getBankDetailsDTO().getIsRTIReturnsIncluded());
+        return bankDetails;
+    }
+    public BankDetailsDTO mapToBankDetailsDTO(BankDetails bankDetails) {
+        if (bankDetails == null) {
+            throw new IllegalArgumentException("Bank details cannot be null");
+        }
+        BankDetailsDTO bankDetailsDTO = new BankDetailsDTO();
+//        bankDetailsDTO.setId(employeeDetails.getBankDetails().getId());
+        bankDetailsDTO.setAccountName(bankDetails.getAccountName());
+        bankDetailsDTO.setAccountNumber(bankDetails.getAccountNumber());
+        bankDetailsDTO.setPaymentReference(bankDetails.getPaymentReference());
+        bankDetailsDTO.setBankName(bankDetails.getBankName());
+        bankDetailsDTO.setSortCode(bankDetails.getSortCode());
+        bankDetailsDTO.setBankAddress(bankDetails.getBankAddress());
+        bankDetailsDTO.setBankPostCode(bankDetails.getBankPostCode());
+        bankDetailsDTO.setTelephone(bankDetails.getTelephone());
+        bankDetailsDTO.setPaymentLeadDays(bankDetails.getPaymentLeadDays());
+        bankDetailsDTO.setIsRTIReturnsIncluded(bankDetails.getIsRTIReturnsIncluded());
+        return bankDetailsDTO;
+
     }
 }
 
