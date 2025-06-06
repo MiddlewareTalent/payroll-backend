@@ -19,6 +19,7 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setFirstName(employeeDetails.getFirstName());
         employeeDetailsDTO.setLastName(employeeDetails.getLastName());
         employeeDetailsDTO.setEmail(employeeDetails.getEmail());
+        employeeDetailsDTO.setRegion(employeeDetails.getRegion());
         employeeDetailsDTO.setDateOfBirth(employeeDetails.getDateOfBirth());
         employeeDetailsDTO.setEmployeeId(employeeDetails.getEmployeeId());
         employeeDetailsDTO.setAddress(employeeDetails.getAddress());
@@ -26,6 +27,7 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setEmploymentType(employeeDetails.getEmploymentType());
         employeeDetailsDTO.setIsDirector(employeeDetails.getIsDirector());
         employeeDetailsDTO.setGender(employeeDetails.getGender());
+        employeeDetailsDTO.setWorkingCompanyName(employeeDetails.getWorkingCompanyName());
         employeeDetailsDTO.setEmployeeDepartment(employeeDetails.getEmployeeDepartment());
         employeeDetailsDTO.setEmploymentStartedDate(employeeDetails.getEmploymentStartedDate());
         employeeDetailsDTO.setEmploymentEndDate(employeeDetails.getEmploymentEndDate());
@@ -37,27 +39,27 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setPayPeriod(employeeDetails.getPayPeriod());
         employeeDetailsDTO.setNationalInsuranceNumber(employeeDetails.getNationalInsuranceNumber());
         employeeDetailsDTO.setNICategoryLetter(employeeDetails.getNICategoryLetter());
-        employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails));
+        employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
         employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails));
         return employeeDetailsDTO;
 
     }
-    public BankDetailsDTO mapToBanKDetailsDTO(EmployeeDetails employeeDetails) {
-        if (employeeDetails.getBankDetails() == null) {
+    public BankDetailsDTO mapToBanKDetailsDTO(BankDetails bankDetails) {
+        if (bankDetails == null) {
             throw new IllegalArgumentException("Bank details cannot be null");
         }
         BankDetailsDTO bankDetailsDTO = new BankDetailsDTO();
 //        bankDetailsDTO.setId(employeeDetails.getBankDetails().getId());
-        bankDetailsDTO.setAccountName(employeeDetails.getBankDetails().getAccountName());
-        bankDetailsDTO.setAccountNumber(employeeDetails.getBankDetails().getAccountNumber());
-        bankDetailsDTO.setPaymentReference(employeeDetails.getBankDetails().getPaymentReference());
-        bankDetailsDTO.setBankName(employeeDetails.getBankDetails().getBankName());
-        bankDetailsDTO.setSortCode(employeeDetails.getBankDetails().getSortCode());
-        bankDetailsDTO.setBankAddress(employeeDetails.getBankDetails().getBankAddress());
-        bankDetailsDTO.setBankPostCode(employeeDetails.getBankDetails().getBankPostCode());
-        bankDetailsDTO.setTelephone(employeeDetails.getBankDetails().getTelephone());
-        bankDetailsDTO.setPaymentLeadDays(employeeDetails.getBankDetails().getPaymentLeadDays());
-        bankDetailsDTO.setIsRTIReturnsIncluded(employeeDetails.getBankDetails().getIsRTIReturnsIncluded());
+        bankDetailsDTO.setAccountName(bankDetails.getAccountName());
+        bankDetailsDTO.setAccountNumber(bankDetails.getAccountNumber());
+        bankDetailsDTO.setPaymentReference(bankDetails.getPaymentReference());
+        bankDetailsDTO.setBankName(bankDetails.getBankName());
+        bankDetailsDTO.setSortCode(bankDetails.getSortCode());
+        bankDetailsDTO.setBankAddress(bankDetails.getBankAddress());
+        bankDetailsDTO.setBankPostCode(bankDetails.getBankPostCode());
+        bankDetailsDTO.setTelephone(bankDetails.getTelephone());
+        bankDetailsDTO.setPaymentLeadDays(bankDetails.getPaymentLeadDays());
+        bankDetailsDTO.setIsRTIReturnsIncluded(bankDetails.getIsRTIReturnsIncluded());
         return bankDetailsDTO;
 
     }
@@ -88,10 +90,12 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setFirstName(employeeDetailsDTO.getFirstName());
         employeeDetails.setLastName(employeeDetailsDTO.getLastName());
         employeeDetails.setEmail(employeeDetailsDTO.getEmail());
+        employeeDetails.setRegion(employeeDetailsDTO.getRegion());
         employeeDetails.setDateOfBirth(employeeDetailsDTO.getDateOfBirth());
         employeeDetails.setEmployeeId(employeeDetailsDTO.getEmployeeId());
         employeeDetails.setAddress(employeeDetailsDTO.getAddress());
         employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
+        employeeDetails.setWorkingCompanyName(employeeDetailsDTO.getWorkingCompanyName());
         employeeDetails.setEmploymentType(employeeDetailsDTO.getEmploymentType());
         employeeDetails.setIsDirector(employeeDetailsDTO.getIsDirector());
         employeeDetails.setGender(employeeDetailsDTO.getGender());
