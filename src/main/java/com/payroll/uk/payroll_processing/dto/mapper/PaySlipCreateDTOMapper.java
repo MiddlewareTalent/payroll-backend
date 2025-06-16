@@ -5,7 +5,7 @@ import com.payroll.uk.payroll_processing.entity.PaySlip;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PaySlipCreateDtoMapper {
+public class PaySlipCreateDTOMapper {
     public PaySlipCreateDto mapToDto(PaySlip paySlip) {
         PaySlipCreateDto dto = new PaySlipCreateDto();
         dto.setFirstName(paySlip.getFirstName());
@@ -13,6 +13,8 @@ public class PaySlipCreateDtoMapper {
         dto.setAddress(paySlip.getAddress());
         dto.setPostCode(paySlip.getPostCode());
         dto.setEmployeeId(paySlip.getEmployeeId());
+        dto.setNiCategoryLetter(paySlip.getNiLetter());
+        dto.setWorkingCompanyName(paySlip.getWorkingCompanyName());
         dto.setRegion(paySlip.getRegion());
         dto.setTaxYear(paySlip.getTaxYear());
         dto.setTaxCode(paySlip.getTaxCode());
@@ -24,8 +26,14 @@ public class PaySlipCreateDtoMapper {
         dto.setTaxableIncome(paySlip.getTaxableIncome());
         dto.setPersonalAllowance(paySlip.getPersonalAllowance());
         dto.setIncomeTaxTotal(paySlip.getIncomeTaxTotal());
-        dto.setNationalInsurance(paySlip.getNationalInsurance());
+        dto.setEmployeeNationalInsurance(paySlip.getEmployeeNationalInsurance());
         dto.setEmployersNationalInsurance(paySlip.getEmployersNationalInsurance());
+        dto.setHasStudentLoanStart(paySlip.getHasStudentLoanStart());
+        dto.setHasPostGraduateLoanStart(paySlip.getHasPostGraduateLoanStart());
+        dto.setStudentLoanPlanType(paySlip.getStudentLoanPlanType());
+        dto.setPostgraduateLoanPlanType(paySlip.getPostgraduateLoanPlanType());
+        dto.setStudentLoanDeductionAmount(paySlip.getStudentLoanDeductionAmount());
+        dto.setPostgraduateDeductionAmount(paySlip.getPostgraduateDeductionAmount());
         dto.setDeductionsTotal(paySlip.getDeductionsTotal());
         dto.setTakeHomePayTotal(paySlip.getTakeHomePayTotal());
         dto.setPaySlipReference(paySlip.getPaySlipReference());

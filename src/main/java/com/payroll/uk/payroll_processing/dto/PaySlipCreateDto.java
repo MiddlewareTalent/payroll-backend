@@ -1,9 +1,10 @@
 package com.payroll.uk.payroll_processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.payroll.uk.payroll_processing.entity.PayPeriod;
+import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
+import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,9 @@ public class PaySlipCreateDto {
     private String address;
     private String postCode;
     private String employeeId;
+    private String workingCompanyName;
+    @Enumerated(EnumType.STRING)
+    private NICategoryLetters niCategoryLetter;
     @Enumerated(EnumType.STRING)
     private TaxThreshold.TaxRegion region;
     private String taxYear;
@@ -32,14 +36,22 @@ public class PaySlipCreateDto {
     private String payPeriod;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate payDate;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate periodEnd;
+
+    private String periodEnd;
     private BigDecimal grossPayTotal;
     private BigDecimal taxableIncome;
     private BigDecimal personalAllowance;
     private BigDecimal incomeTaxTotal;
-    private BigDecimal nationalInsurance;
+    private BigDecimal employeeNationalInsurance;
     private BigDecimal employersNationalInsurance;
+    private Boolean hasStudentLoanStart;
+    private  Boolean hasPostGraduateLoanStart;
+    @Enumerated(EnumType.STRING)
+    private StudentLoan.StudentLoanPlan studentLoanPlanType;
+    @Enumerated(EnumType.STRING)
+   private PostGraduateLoan.PostgraduateLoanPlanType postgraduateLoanPlanType;
+    private BigDecimal studentLoanDeductionAmount;
+    private BigDecimal postgraduateDeductionAmount;
     private BigDecimal deductionsTotal;
     private BigDecimal takeHomePayTotal;
     private String paySlipReference;

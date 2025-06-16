@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.employerdto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
@@ -20,10 +21,10 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployerDetailsDto {
+public class EmployerDetailsDTO {
 
 //    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-//    private Long id;
+    private Long id;
     @NotBlank(message = "Employer name cannot be blank")
     @Schema(description = "Employer name", example = "ABC Ltd")
     private String employerName;
@@ -87,13 +88,18 @@ public class EmployerDetailsDto {
 //    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES')", nullable = false)
     private TaxThreshold.TaxRegion region;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate payDate;
+
 //    private String companyRegistrationNumber;
 
 
 
-    private TaxOfficeDto taxOfficeDto;
+    private TaxOfficeDTO taxOfficeDto;
     private BankDetailsDTO bankDetailsDTO;
 
     @Schema(nullable = true)
-    private TermsDto termsDto;
+    private TermsDTO termsDto;
+
+    private OtherEmployerDetailsDTO otherEmployerDetailsDto;
 }

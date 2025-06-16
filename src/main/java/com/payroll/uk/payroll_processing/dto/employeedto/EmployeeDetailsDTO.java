@@ -1,7 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.employeedto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.*;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
@@ -10,7 +9,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +24,7 @@ public class EmployeeDetailsDTO {
 
 //    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
 //    @Schema(defaultValue = "0")
-//    private Long id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;
@@ -66,16 +64,13 @@ public class EmployeeDetailsDTO {
     private TaxThreshold.TaxRegion region=TaxThreshold.TaxRegion.ENGLAND;
 
     private String workingCompanyName;
-    private BigDecimal grossIncome;
+
+    private BigDecimal AnnualIncomeOfEmployee;
     @Schema(defaultValue = "1257L")
     private String taxCode;
     @Schema(defaultValue = "false")
     private Boolean isEmergencyCode=false;
-    @Schema(defaultValue = "false")
-    private Boolean isPostgraduateLoan=false;
-    @Enumerated(EnumType.STRING)
-    @Schema(description = "Student loan type", example = "NONE")
-    private StudentLoan studentLoan=StudentLoan.NONE;
+
     @Enumerated(EnumType.STRING)
     @Schema(description = "Pay period type", example = "MONTHLY")
     private PayPeriod payPeriod=PayPeriod.MONTHLY;
@@ -85,13 +80,20 @@ public class EmployeeDetailsDTO {
     @Column(unique = true)
     @Schema(description = "National Insurance number in the format AB123456C", example = "AB123456C")
     private String nationalInsuranceNumber;
-    private String NICategoryLetter;
+    @Enumerated(EnumType.STRING)
+    private NICategoryLetters niLetter;
     private OtherEmployeeDetailsDTO otherEmployeeDetailsDTO;
     @Schema(description = "Employer ID associated with the employee", example = "12345")
     private String employerId;
 
+    private StudentLoanDTO studentLoanDto;
+    private PostGraduateLoanDTO postGraduateLoanDto;
+
     @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
     private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+    private BigDecimal totalPersonalAllowance=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+
+
+
 
 }

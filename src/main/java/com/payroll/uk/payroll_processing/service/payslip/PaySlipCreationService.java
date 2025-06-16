@@ -1,9 +1,11 @@
-package com.payroll.uk.payroll_processing.service;
+package com.payroll.uk.payroll_processing.service.payslip;
 
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
-import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDtoMapper;
+import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
+import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
+import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class PaySlipCreationService {
@@ -25,7 +29,7 @@ public class PaySlipCreationService {
     @Autowired
     private NationalInsuranceCalculation nationalInsuranceCalculation;
     @Autowired
-    private  PaySlipCreateDtoMapper paySlipCreateDtoMapper;
+    private PaySlipCreateDTOMapper paySlipCreateDtoMapper;
 //    @Autowired
 //    private EmployeeDetailsDTO employeeDetailsDTO;
 //    @Autowired
@@ -49,10 +53,10 @@ public class PaySlipCreationService {
         paySlip.setNI_Number(paySlipCreateDto.getNI_Number());
         paySlip.setPayPeriod(paySlipCreateDto.getPayPeriod());
         paySlip.setPayDate(LocalDate.now());
-        paySlip.setPeriodEnd(getPreviousMonthEndDate());
+        paySlip.setPeriodEnd(getPeriodEndMonthYear(paySlip.getPayDate()));
         paySlip.setGrossPayTotal(paySlipCreateDto.getGrossPayTotal());
         BigDecimal personal = personalAllowanceCalculation.calculatePersonalAllowance(
-                paySlipCreateDto.getGrossPayTotal(), paySlipCreateDto.getTaxCode()
+                paySlipCreateDto.getGrossPayTotal(), paySlipCreateDto.getTaxCode(),paySlipCreateDto.getPayPeriod()
         );
         BigDecimal personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreateDto.getPayPeriod());
 
@@ -76,7 +80,7 @@ public class PaySlipCreationService {
         );
 
 
-        paySlip.setNationalInsurance(NI);
+        paySlip.setEmployeeNationalInsurance(NI);
         paySlip.setEmployersNationalInsurance(
                 nationalInsuranceCalculation.calculateEmploymentAllowance(
                         paySlipCreateDto.getGrossPayTotal(), paySlipCreateDto.getTaxYear(),
@@ -110,12 +114,17 @@ public class PaySlipCreationService {
         String random = new BigInteger(48, new SecureRandom()).toString(36).toUpperCase();
         return String.format("%s-%s", random.substring(0, 6), employeeId);
     }
-    public LocalDate getPreviousMonthEndDate() {
-        // Get current system date as Pay Date
-        LocalDate payDate = LocalDate.now();
+    public String getPeriodEndMonthYear(LocalDate payDate) {
+        if (payDate == null) {
+            throw new IllegalArgumentException("Pay date cannot be null");
+        }
 
-        // Get end of previous month
-        return payDate.withDayOfMonth(1).minusDays(1);
+        YearMonth yearMonth = YearMonth.from(payDate);
+
+        // Choose your format: "MMMM yyyy" => "June 2025", or "MM-yyyy" => "06-2025"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy"); // or "MM-yyyy"
+
+        return yearMonth.format(formatter);
     }
     //Example: "7HJK9P-100"
 // Example: "P-7HJK9P-100" (11 chars)

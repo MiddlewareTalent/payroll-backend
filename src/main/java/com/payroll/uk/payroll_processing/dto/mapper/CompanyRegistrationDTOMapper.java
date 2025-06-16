@@ -6,7 +6,7 @@ import com.payroll.uk.payroll_processing.entity.CompanyRegistration;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CompanyRegistrationDtoMapper {
+public class CompanyRegistrationDTOMapper {
 
     public CompanyRegistrationDto mapToDto(CompanyRegistration companyRegistration) {
         CompanyRegistrationDto dto = new CompanyRegistrationDto();

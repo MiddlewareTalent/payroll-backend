@@ -1,6 +1,7 @@
-package com.payroll.uk.payroll_processing.service;
+package com.payroll.uk.payroll_processing.service.ni;
 
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,18 +18,20 @@ public class NationalInsuranceCalculation {
     public  BigDecimal calculateNationalInsurance(BigDecimal income, String taxYear,
                                                   TaxThreshold.TaxRegion region,String payPeriod) {
         // Get tax thresholds and rates
-        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds(taxYear, region, TaxThreshold.TaxBandType.NATIONAL_INSURANCE);
-        BigDecimal[] taxRates = taxThresholdService.getTaxRates(taxYear, region, TaxThreshold.TaxBandType.NATIONAL_INSURANCE);
+//        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds(taxYear, region, TaxThreshold.TaxBandType.NATIONAL_INSURANCE);
+//        BigDecimal[] taxRates = taxThresholdService.getTaxRates(taxYear, region, TaxThreshold.TaxBandType.NATIONAL_INSURANCE);
 
-//        BigDecimal threshold1 = BigDecimal.valueOf(12570);
-//        BigDecimal threshold2 = BigDecimal.valueOf(50270);
-//        BigDecimal rate1 = BigDecimal.valueOf(0.08);
-//        BigDecimal rate2 = BigDecimal.valueOf(0.02);
+        BigDecimal threshold1 = BigDecimal.valueOf(12570);
+        BigDecimal threshold2 = BigDecimal.valueOf(50270);
+        BigDecimal rate1 = BigDecimal.valueOf(0.08);
+        BigDecimal rate2 = BigDecimal.valueOf(0.02);
         BigDecimal NI = BigDecimal.ZERO;
-        BigDecimal threshold1 = taxSlabs[0][0];
-        BigDecimal threshold2 = taxSlabs[1][0];
-        BigDecimal rate1 = taxRates[0];
-        BigDecimal rate2 = taxRates[1];
+
+//        BigDecimal threshold1 = taxSlabs[0][0];
+//        BigDecimal threshold2 = taxSlabs[1][0];
+//        BigDecimal rate1 = taxRates[0];
+//        BigDecimal rate2 = taxRates[1];
+
         if (income == null || payPeriod == null) {
             throw new IllegalArgumentException("Income and pay period cannot be null");
         }
@@ -78,7 +81,7 @@ public class NationalInsuranceCalculation {
         return calculateIncomeTaxBasedOnPayPeriod(employerNI,payPeriod);
     }
 
-    public BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
+    private BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> grossIncome.multiply(BigDecimal.valueOf(52));
             case "MONTHLY" -> grossIncome.multiply(BigDecimal.valueOf(12));
@@ -89,10 +92,10 @@ public class NationalInsuranceCalculation {
 
     }
 
-    public BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
+    private BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
         return switch (payPeriod.toUpperCase()) {
-            case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 2, RoundingMode.HALF_UP);
-            case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+            case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
+            case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
             default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };

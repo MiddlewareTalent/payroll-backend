@@ -177,6 +177,7 @@ public class EmployeeDetailsService {
         return true;
     }
     private void validateEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
+
         // Name validations
         if (employeeDetailsDTO.getFirstName() == null || employeeDetailsDTO.getFirstName().trim().isEmpty()) {
             throw new IllegalArgumentException("First name is required");
@@ -221,11 +222,15 @@ public class EmployeeDetailsService {
             throw new IllegalArgumentException("National Insurance number must be in format AB123456C");
         }
 
+        if (employeeDetailsDTO.getNiLetter() ==null){
+            throw new IllegalArgumentException("NI Category Letter is required");
+        }
+
         // Financial validations
-        if (employeeDetailsDTO.getGrossIncome() == null) {
+        if (employeeDetailsDTO.getAnnualIncomeOfEmployee() == null) {
             throw new IllegalArgumentException("Gross income is required");
         }
-        if (employeeDetailsDTO.getGrossIncome().compareTo(BigDecimal.ZERO) < 0) {
+        if (employeeDetailsDTO.getAnnualIncomeOfEmployee().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Gross income cannot be negative");
         }
 

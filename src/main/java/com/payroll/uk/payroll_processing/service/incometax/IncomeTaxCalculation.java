@@ -3,12 +3,14 @@ package com.payroll.uk.payroll_processing.service.incometax;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@Slf4j
 @Service
 public class IncomeTaxCalculation {
     @Autowired
@@ -40,7 +42,7 @@ public class IncomeTaxCalculation {
         BigDecimal taxHigherRate=taxRates[2];  //0.40
         BigDecimal taxAdditionalRate=taxRates[3];    // 0.45
 
-
+       log.info("Income tax calculation in calculateIncomeTax - Wales,England,Northern island");
         grossIncome= calculateGrossSalary(grossIncome,payPeriod);
         System.out.println("Annual Gross Income: " + grossIncome);
 
@@ -103,7 +105,7 @@ public class IncomeTaxCalculation {
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Income cannot be negative");
         }
-        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome, normalizedTaxCode);
+        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome, normalizedTaxCode,payPeriod);
 
         if (normalizedTaxCode.startsWith("SK") || normalizedTaxCode.startsWith("CK")) {
             // Remove the first character ('S' or 'C') from the code
@@ -173,8 +175,8 @@ public class IncomeTaxCalculation {
         }
 
         // Get tax thresholds and rates
-        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.TaxBandType.INCOME_TAX);
-        BigDecimal[] taxRates = taxThresholdService.getTaxRates("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.TaxBandType.INCOME_TAX);
+        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.BandNameType.INCOME_TAX);
+        BigDecimal[] taxRates = taxThresholdService.getTaxRates("2025-2026", TaxThreshold.TaxRegion.ENGLAND, TaxThreshold.BandNameType.INCOME_TAX);
 
 
         //England, Wales and Northern Ireland Tax Slabs and Rates

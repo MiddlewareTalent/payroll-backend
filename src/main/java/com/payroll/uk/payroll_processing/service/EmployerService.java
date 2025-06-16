@@ -1,7 +1,7 @@
 package com.payroll.uk.payroll_processing.service;
 
-import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDto;
-import com.payroll.uk.payroll_processing.dto.mapper.EmployerDetailsDtoMapper;
+import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.mapper.EmployerDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import org.springframework.stereotype.Service;
@@ -11,14 +11,14 @@ import java.util.List;
 @Service
 public class EmployerService {
     private final EmployerDetailsRepository employerDetailsRepository;
-    private final EmployerDetailsDtoMapper employerDetailsDtoMapper;
+    private final EmployerDetailsDTOMapper employerDetailsDtoMapper;
 
     public EmployerService(EmployerDetailsRepository employerDetailsRepository,
-                           EmployerDetailsDtoMapper employerDetailsDtoMapper) {
+                           EmployerDetailsDTOMapper employerDetailsDtoMapper) {
         this.employerDetailsRepository = employerDetailsRepository;
         this.employerDetailsDtoMapper = employerDetailsDtoMapper;
     }
-    public String registerEmployer(EmployerDetailsDto employerDetailsDto) {
+    public String registerEmployer(EmployerDetailsDTO employerDetailsDto) {
         // Check for existing email
 //        if (employerRegistrationRepository.existsByEmail(employerDetailsDto.getEmail())) {
 //            throw new EmployerRegistrationException("Email already registered");
@@ -30,17 +30,17 @@ public class EmployerService {
         return "Employer registered successfully. ID: " + savedEmployer.getId();
     }
 
-    public EmployerDetailsDto getEmployerDetails(Long id) {
+    public EmployerDetailsDTO getEmployerDetails(Long id) {
 
         if (employerDetailsRepository.findById(id).isPresent()) {
             EmployerDetails employerDetails = employerDetailsRepository.findById(id).get();
-            return employerDetailsDtoMapper.mapToDto(employerDetails);
+            return employerDetailsDtoMapper.mapToEmployerDetailsDTO(employerDetails);
         } else {
             throw new RuntimeException("Employer not found with ID: " + id);
         }
     }
 
-    public String updateEmployer(Long id,EmployerDetailsDto employerDetailsDto) {
+    public String updateEmployer(Long id, EmployerDetailsDTO employerDetailsDto) {
         EmployerDetails existingEmployer = employerDetailsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + id));
 
@@ -69,6 +69,7 @@ public class EmployerService {
         existingEmployer.setTaxYear(employerDetailsDto.getTaxYear());
         existingEmployer.setPayPeriod(employerDetailsDto.getPayPeriod());
         existingEmployer.setCompanyName(employerDetailsDto.getCompanyName());
+        existingEmployer.setOtherEmployerDetails(employerDetailsDtoMapper.changeToOtherEmployerDetails(employerDetailsDto.getOtherEmployerDetailsDto()));
 
 
         // Save the updated employer details
@@ -77,28 +78,28 @@ public class EmployerService {
         return "Updated successfully";
     }
 
-    public EmployerDetailsDto updateEmployerDetailsById(Long id, EmployerDetailsDto employerDetailsDto){
+    public EmployerDetailsDTO updateEmployerDetailsById(Long id, EmployerDetailsDTO employerDetailsDto){
         if (employerDetailsDto.getEmployerId() == null || employerDetailsDto.getEmployerId().isEmpty()) {
             throw new IllegalArgumentException("Employee ID or Id cannot be null or empty");
         }
 
-        EmployerDetails existingEmployeeDetails = employerDetailsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employerDetailsDto.getEmployerId()));
+        EmployerDetails existingEmployerDetails = employerDetailsRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employer not found with ID: " + employerDetailsDto.getEmployerId()));
 
-        EmployerDetails updatedEmployeeDetails = employerDetailsDtoMapper.changeToEmployerDetails(employerDetailsDto);
-        updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
-        updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
-        EmployerDetails savedEmployeeDetails = employerDetailsRepository.save(updatedEmployeeDetails);
-        return employerDetailsDtoMapper.mapToDto(savedEmployeeDetails);
+        EmployerDetails updatedEmployerDetails = employerDetailsDtoMapper.changeToEmployerDetails(employerDetailsDto);
+        updatedEmployerDetails.getBankDetails().setId(existingEmployerDetails.getBankDetails().getId());
+        updatedEmployerDetails.setId(existingEmployerDetails.getId()); // Preserve the existing ID
+        EmployerDetails savedEmployerDetails = employerDetailsRepository.save(updatedEmployerDetails);
+        return employerDetailsDtoMapper.mapToEmployerDetailsDTO(savedEmployerDetails);
     }
 
-    public List<EmployerDetailsDto> getAllEmployeeDetails() {
-        List<EmployerDetails> employeeDetailsList = employerDetailsRepository.findAll();
-        List<EmployerDetailsDto> employeeDetailsListedData = employeeDetailsList.stream().map(employerDetailsDtoMapper::mapToDto).toList();
-        if(employeeDetailsListedData.isEmpty()) {
+    public List<EmployerDetailsDTO> getAllEmployeeDetails() {
+        List<EmployerDetails> employerDetailsList = employerDetailsRepository.findAll();
+        List<EmployerDetailsDTO> employerDetailsListedData = employerDetailsList.stream().map(employerDetailsDtoMapper::mapToEmployerDetailsDTO).toList();
+        if(employerDetailsListedData.isEmpty()) {
             throw new IllegalArgumentException("No employee details found");
         }
-        return employeeDetailsListedData;
+        return employerDetailsListedData;
     }
 
     public String deleteEmployer(Long id) {

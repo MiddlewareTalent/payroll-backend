@@ -3,11 +3,13 @@ package com.payroll.uk.payroll_processing.service.incometax;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@Slf4j
 @Service
 public class TaxCodeService {
     private final TaxThresholdService taxThresholdService;
@@ -34,29 +36,37 @@ public class TaxCodeService {
             throw new IllegalArgumentException("Invalid tax code '" + taxCode + "' for the specified region: " + region);
         }
 
-
+        log.info("Income tax calculation");
 
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Income cannot be negative");
         }
 
         // Get tax thresholds and rates
-        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds(taxYear, region, TaxThreshold.TaxBandType.INCOME_TAX);
-        BigDecimal[] taxRates = taxThresholdService.getTaxRates(taxYear, region, TaxThreshold.TaxBandType.INCOME_TAX);
+        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds(taxYear, region, TaxThreshold.BandNameType.INCOME_TAX);
+        BigDecimal[] taxRates = taxThresholdService.getTaxRates(taxYear, region, TaxThreshold.BandNameType.INCOME_TAX);
 
         System.out.println(payPeriod+" Gross Income: " + grossIncome);
 
         // Calculate personal allowance
-        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome,taxCode);
+        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome,taxCode,payPeriod);
         System.out.println("Personal Allowance: " + personalAllowance);
         // Convert to uppercase for case-insensitive comparison
         String normalizedTaxCode = taxCode.toUpperCase();
+        System.out.println("normalizedTaxCode: "+normalizedTaxCode);
 
         // Handle numeric tax codes ending with L (like 1257L)
         if (normalizedTaxCode.matches("^\\d+L$")||normalizedTaxCode.matches("^C\\d+L$") ) {
+            System.out.println("Inside this 1257L");
             BigDecimal AnnualIncomeTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxSlabs, taxRates,payPeriod);
             return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax,payPeriod);
         }
+        if (normalizedTaxCode.matches("1257L M1") || normalizedTaxCode.matches("1257L W1")|| normalizedTaxCode.matches("1257L X")) {
+            System.out.println("Inside the emergency tax code: "+normalizedTaxCode);
+            BigDecimal AnnualIncomeTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxSlabs, taxRates, payPeriod);
+            return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax, payPeriod);
+        }
+
 
         // Handle K codes (negative allowances)
         if (normalizedTaxCode.matches("^K\\d+$")|| normalizedTaxCode.matches("^SK\\d+$")||normalizedTaxCode.matches("^CK\\d+$")) {

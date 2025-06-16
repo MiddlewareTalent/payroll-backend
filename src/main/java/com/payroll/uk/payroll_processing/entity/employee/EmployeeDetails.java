@@ -54,16 +54,17 @@ public class EmployeeDetails {
     private LocalDate employmentEndDate;
     @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
     private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+    private BigDecimal totalPersonalAllowance=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+    private BigDecimal remainingPersonalAllowanceInYear=totalPersonalAllowance.subtract(previouslyUsedPersonalAllowance);
 
     private String employerId;
 
-    private BigDecimal grossIncome;
+    private BigDecimal AnnualIncomeOfEmployee;
+    private BigDecimal payPeriodOfIncomeOfEmployee;
     private String taxCode;
     private Boolean isEmergencyCode=false;
-    private Boolean isPostgraduateLoan=false;
-    @Enumerated(EnumType.STRING)
-    private StudentLoan studentLoan;
+
+
     @Enumerated(EnumType.STRING)
     private PayPeriod payPeriod;
     @Enumerated(EnumType.STRING)
@@ -81,17 +82,18 @@ public class EmployeeDetails {
             message = "National Insurance number must be in the format AB123456C")
     @Column(unique = true)
     private String nationalInsuranceNumber;
-    private String NICategoryLetter;
+
+    @Enumerated(EnumType.STRING)
+    private NICategoryLetters niLetter;
 
     @Embedded
     private OtherEmployeeDetails otherEmployeeDetails;
 
+    @Embedded
+    private StudentLoan studentLoan;
 
-
-
-//    @OneToOne
-//    @JoinColumn(name = "other_employee_details_id")
-//    private OtherEmployeeDetails otherEmployeeDetails;
+    @Embedded
+    private PostGraduateLoan postGraduateLoan;
 
 
 
@@ -113,14 +115,16 @@ public class EmployeeDetails {
         }
     }
 
+    private boolean checkIfEmergencyTaxCode(String code) {
+        if (code == null) return false;
 
+        // Remove spaces and convert to uppercase
+        String cleaned = code.replaceAll("\\s+", "").toUpperCase();
 
-
-
+        // Match: e.g. 1257LM1, 1257LW1, 1257LX
+        return cleaned.matches("1257L M1")||cleaned.matches("1257L W1")||cleaned.matches("1257L X");
+    }
 
 }
 
-//        private BigDecimal TotalPersonalAllowance=new BigDecimal("12570");
-//        private BigDecimal usedPersonalAllowance=BigDecimal.ZERO;
-//        private BigDecimal remainingPersonalAllowance=BigDecimal.ZERO;
-//private BigDecimal totalTaxDeducted;
+

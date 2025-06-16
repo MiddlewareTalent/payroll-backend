@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaxOfficeDto {
+public class TaxOfficeDTO {
     @Schema(description = "HMRC PAYE reference", example = "123/45678")
     private String payeReference;
     @Schema(description = "Accounts office reference", example = "123A456")

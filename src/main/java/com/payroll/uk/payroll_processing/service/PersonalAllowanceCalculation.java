@@ -12,12 +12,13 @@ public class PersonalAllowanceCalculation {
 //    public BigDecimal remainingAllowance= BigDecimal.valueOf(0.0);
 //    public BigDecimal totalAllowance= BigDecimal.valueOf(12570);
 //    public BigDecimal deductedAllowance= BigDecimal.valueOf(0.0);
+
     private static final BigDecimal STANDARD_ALLOWANCE = new BigDecimal("12570");
     private static final BigDecimal MARRIAGE_ALLOWANCE_TRANSFER = new BigDecimal("1257"); // 10% of £12,570
     private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 
 
-    public BigDecimal calculatePersonalAllowance(BigDecimal grossIncome,String taxCode) {
+    public BigDecimal calculatePersonalAllowance(BigDecimal grossIncome,String taxCode,String payPeriod) {
         if (taxCode == null || taxCode.isEmpty()) {
             throw new IllegalArgumentException("Tax code cannot be null or empty");
         }
@@ -51,9 +52,15 @@ public class PersonalAllowanceCalculation {
         if (grossIncome.compareTo(new BigDecimal("125140")) >= 0) {
             return BigDecimal.ZERO;
         }
-        if(taxCode.equals("1257L")|| taxCode.equals("C1257L") ||taxCode.equals("S1257L")) {
+        if(taxCode.equals("1257L")||taxCode.equals("1257L M1")||
+                taxCode.equals("C1257L") ||taxCode.equals("S1257L")||
+                taxCode.equals("1257L W1")||taxCode.equals("1257L X")) {
             return STANDARD_ALLOWANCE;
         }
+//        if(isEmergencyCode(taxCode)){
+//           return  getPersonalAllowanceFromEmergencyTaxCode(taxCode,payPeriod);
+//        }
+
 
 
         // Strip regional prefixes (S, C, NIL)
@@ -95,6 +102,10 @@ public class PersonalAllowanceCalculation {
         }
         return taxCode;
     }
+    public boolean isEmergencyCode(String code) {
+        return code.matches("^\\d+L\\s?(M1|W1|X)$") || code.matches("^C\\d+L\\s?(M1|W1|X)$")||code.matches("^S\\d+L\\s?(M1|W1|X)$");
+    }
+
 
     public BigDecimal calculateMarriageAllowance(String taxCode) {
         if (taxCode == null || taxCode.isEmpty()) {
@@ -117,8 +128,35 @@ public class PersonalAllowanceCalculation {
         return BigDecimal.ZERO;
     }
 
+    public BigDecimal getPersonalAllowanceFromEmergencyTaxCode(String taxCode, String payFrequency) {
+        String normalizedTaxCode = taxCode.replaceAll("\\s+", "").toUpperCase(); // Remove all spaces and normalize case
+        BigDecimal annualAllowance = new BigDecimal("12570"); // Example: UK Personal Allowance 2025–26
+        BigDecimal allowance;
+
+        if (normalizedTaxCode.matches("^C?\\d+LM1$")) {
+            allowance = annualAllowance.divide(new BigDecimal("12"), 2, RoundingMode.HALF_UP); // Monthly
+        } else if (normalizedTaxCode.matches("^C?\\d+LW1$")) {
+            allowance = annualAllowance.divide(new BigDecimal("52"), 2, RoundingMode.HALF_UP); // Weekly
+        } else if (normalizedTaxCode.matches("^C?\\d+LX$")) {
+            // 'X' is usually non-cumulative, treat as per pay frequency
+            if (payFrequency.equalsIgnoreCase("monthly")) {
+                allowance = annualAllowance.divide(new BigDecimal("12"), 2, RoundingMode.HALF_UP);
+            } else if (payFrequency.equalsIgnoreCase("weekly")) {
+                allowance = annualAllowance.divide(new BigDecimal("52"), 2, RoundingMode.HALF_UP);
+            } else {
+                throw new IllegalArgumentException("Unsupported pay frequency for X suffix: " + payFrequency);
+            }
+        } else {
+            // Regular cumulative tax code
+            allowance = annualAllowance;
+        }
+
+        return allowance;
+    }
+
+
     public BigDecimal calculatePersonalAllowanceByPayPeriod(BigDecimal grossIncome,String taxCode,String payPeriod){
-        BigDecimal baseAllowance = calculatePersonalAllowance(grossIncome, taxCode);
+        BigDecimal baseAllowance = calculatePersonalAllowance(grossIncome, taxCode,payPeriod);
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> baseAllowance.divide(BigDecimal.valueOf(52), 2, ROUNDING_MODE);
             case "MONTHLY" -> baseAllowance.divide(BigDecimal.valueOf(12), 2, ROUNDING_MODE);
@@ -129,15 +167,7 @@ public class PersonalAllowanceCalculation {
 
     }
 
-//    public LinkedHashMap<String,BigDecimal> calculateTotalPersonalAllowance(){
-//         BigDecimal previouslyUsedPersonalAllowance;
-//         BigDecimal totalPersonalAllowanceInCompany;
-//         BigDecimal usedPersonalAllowance;
-//         BigDecimal remainingPersonalAllowance;
-//        LinkedHashMap<String, BigDecimal> personalAllowanceMap = new LinkedHashMap<>();
-//        personalAllowanceMap.put(usedPersonalAllowance,)
-//        return personalAllowanceMap;
-//    }
+
 
 
 }

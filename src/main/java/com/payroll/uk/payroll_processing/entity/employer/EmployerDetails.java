@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.entity.employer;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
@@ -24,7 +25,6 @@ public class EmployerDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     private String employerId;
@@ -114,6 +114,9 @@ public class EmployerDetails {
 //    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES')", nullable = false)
     private TaxThreshold.TaxRegion region;
 
+    @FutureOrPresent
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate payDate;
 
     // Company Logo
     @Lob
@@ -124,6 +127,9 @@ public class EmployerDetails {
 
     @Embedded
     private Terms terms;
+
+    @Embedded
+    private OtherEmployerDetails otherEmployerDetails;
 
 //    @OneToOne
 //    @JoinColumn(name = "bank_details_id")

@@ -28,7 +28,7 @@ public class OtherEmployeeDetails {
     @PositiveOrZero(message = "total Used Personal Allowance must be zero or positive")
     private BigDecimal totalUsedPersonalAllowance= BigDecimal.ZERO;
     @PositiveOrZero(message = "remaining Personal Allowance must be zero or positive")
-    private BigDecimal remainingPersonalAllowance = calculateRemainingPersonalAllowance();
+    private BigDecimal remainingPersonalAllowance = BigDecimal.ZERO;
 
     // Income Tax related fields
     @PositiveOrZero(message = "Income tax paid must be zero or positive")
@@ -60,12 +60,12 @@ public class OtherEmployeeDetails {
 
 
 
-    private BigDecimal calculateRemainingPersonalAllowance() {
-        BigDecimal total = Optional.ofNullable(new EmployeeDetails().getTotalPersonalAllowanceInCompany()).orElse(BigDecimal.ZERO);
-        BigDecimal used = Optional.ofNullable(new EmployeeDetails().getPreviouslyUsedPersonalAllowance()).orElse(BigDecimal.ZERO);
-        BigDecimal remaining = total.subtract(used);
-        return remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining;
-    }
+//    private BigDecimal calculateRemainingPersonalAllowance() {
+//        BigDecimal total = Optional.ofNullable(new EmployeeDetails().getTotalPersonalAllowanceInCompany()).orElse(BigDecimal.ZERO);
+//        BigDecimal used = Optional.ofNullable(new EmployeeDetails().getPreviouslyUsedPersonalAllowance()).orElse(BigDecimal.ZERO);
+//        BigDecimal remaining = total.subtract(used);
+//        return remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining;
+//    }
 
 
 

@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface TaxThresholdRepository extends JpaRepository<TaxThreshold, Long> {
-    List<TaxThreshold> findByTaxYearAndRegionAndBandNameType(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.TaxBandType bandNameType);
+    List<TaxThreshold> findByTaxYearAndRegionAndBandNameType(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType);
 
 
     @Query("SELECT DISTINCT t.taxYear FROM TaxThreshold t")
@@ -24,4 +24,5 @@ public interface TaxThresholdRepository extends JpaRepository<TaxThreshold, Long
     List<String> findAllTaxYearsOrdered();
 
 
+    List<TaxThreshold> findByTaxYearAndRegionAndBandNameTypeAndBandName(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName);
 }

@@ -1,21 +1,13 @@
 package com.payroll.uk.payroll_processing.controller;
 
-import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
-import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDto;
+import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
 import com.payroll.uk.payroll_processing.exception.EmployerRegistrationException;
 import com.payroll.uk.payroll_processing.service.EmployerService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.List;
 
 @RestController
@@ -30,7 +22,7 @@ public class EmployerController {
     // Add methods to handle HTTP requests here
     // For example, to register an employer:
     @PostMapping("/register/employers")
-    public ResponseEntity<String> registerEmployer(@RequestBody EmployerDetailsDto employerDetailsDto) {
+    public ResponseEntity<String> registerEmployer(@RequestBody EmployerDetailsDTO employerDetailsDto) {
 
         try {
             String result = employerService.registerEmployer(employerDetailsDto);
@@ -46,7 +38,7 @@ public class EmployerController {
     @GetMapping("/employers/{id}")
     public ResponseEntity<?> getEmployerDetails(@RequestParam Long id) {
         try {
-            EmployerDetailsDto employerDetails = employerService.getEmployerDetails(id);
+            EmployerDetailsDTO employerDetails = employerService.getEmployerDetails(id);
             return ResponseEntity.ok(employerDetails);
         } catch (EmployerRegistrationException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -58,7 +50,7 @@ public class EmployerController {
     @GetMapping("/allEmployers")
     public ResponseEntity<?> getAllEmployeeDetails() {
         try {
-            List<EmployerDetailsDto> employees = employerService.getAllEmployeeDetails();
+            List<EmployerDetailsDTO> employees = employerService.getAllEmployeeDetails();
             return ResponseEntity.ok(employees); // 200 OK
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,9 +59,9 @@ public class EmployerController {
         }
     }
     @PutMapping("/update/employers/{id}")
-    public ResponseEntity<EmployerDetailsDto> updateEmployer( @PathVariable Long id,@Valid @RequestBody EmployerDetailsDto employerDetailsDto) {
+    public ResponseEntity<EmployerDetailsDTO> updateEmployer(@PathVariable Long id, @Valid @RequestBody EmployerDetailsDTO employerDetailsDto) {
         try {
-            EmployerDetailsDto result = employerService.updateEmployerDetailsById(id,employerDetailsDto);
+            EmployerDetailsDTO result = employerService.updateEmployerDetailsById(id,employerDetailsDto);
             return ResponseEntity.ok(result);
         }
         catch (EmployerRegistrationException e) {

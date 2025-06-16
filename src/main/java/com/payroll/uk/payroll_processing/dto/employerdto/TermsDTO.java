@@ -2,7 +2,6 @@ package com.payroll.uk.payroll_processing.dto.employerdto;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class TermsDto {
+public class TermsDTO {
     @Schema(description = "Hours worked per week", example = "40",defaultValue = "40")
     private int hoursWorkedPerWeek;
     @Schema(description = "Is paid overtime", example = "false",defaultValue = "false")

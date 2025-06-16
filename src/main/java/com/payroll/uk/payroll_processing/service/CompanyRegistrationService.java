@@ -2,7 +2,7 @@ package com.payroll.uk.payroll_processing.service;
 
 
 import com.payroll.uk.payroll_processing.dto.companydto.CompanyRegistrationDto;
-import com.payroll.uk.payroll_processing.dto.mapper.CompanyRegistrationDtoMapper;
+import com.payroll.uk.payroll_processing.dto.mapper.CompanyRegistrationDTOMapper;
 import com.payroll.uk.payroll_processing.entity.CompanyRegistration;
 //import com.payroll.uk.payroll_processing.exception.RegistrationNotFoundException;
 import com.payroll.uk.payroll_processing.repository.CompanyRegistrationRepository;
@@ -14,9 +14,9 @@ import java.util.Optional;
 @Service
 public class CompanyRegistrationService {
     private final CompanyRegistrationRepository companyRegistrationRepository;
-    private final CompanyRegistrationDtoMapper dtoMapper;
+    private final CompanyRegistrationDTOMapper dtoMapper;
 
-    public CompanyRegistrationService(CompanyRegistrationRepository companyRegistrationRepository, CompanyRegistrationDtoMapper dtoMapper) {
+    public CompanyRegistrationService(CompanyRegistrationRepository companyRegistrationRepository, CompanyRegistrationDTOMapper dtoMapper) {
         this.companyRegistrationRepository = companyRegistrationRepository;
         this.dtoMapper = dtoMapper;
     }

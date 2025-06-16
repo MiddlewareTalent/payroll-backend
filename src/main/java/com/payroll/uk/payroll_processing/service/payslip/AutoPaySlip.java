@@ -1,27 +1,34 @@
 package com.payroll.uk.payroll_processing.service.payslip;
 
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
-import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDtoMapper;
+import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
-import com.payroll.uk.payroll_processing.entity.employee.OtherEmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
-import com.payroll.uk.payroll_processing.service.NationalInsuranceCalculation;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
+import com.payroll.uk.payroll_processing.service.StudentLoanCalculation;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
+import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
+import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
+@Slf4j
 public class AutoPaySlip {
     @Autowired
     private PaySlipRepository paySlipRepository;
@@ -36,10 +43,18 @@ public class AutoPaySlip {
     @Autowired
     private NationalInsuranceCalculation nationalInsuranceCalculation;
     @Autowired
-    private PaySlipCreateDtoMapper paySlipCreateDtoMapper;
+    private PaySlipCreateDTOMapper paySlipCreateDtoMapper;
+    @Autowired
+    private NationalInsuranceCalculator nationalInsuranceCalculator;
+    @Autowired
+    private StudentLoanCalculation studentLoanCalculation;
+
+    @Autowired
+    private UpdatingDetails updatingDetails;
 
 
 
+    @Transactional
     public PaySlipCreateDto fillPaySlip(String employeeId){
         if (employeeId.isBlank()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
@@ -60,14 +75,25 @@ public class AutoPaySlip {
         paySlipCreate.setTaxYear(employerDetails.getTaxYear());
         paySlipCreate.setTaxCode(employeeDetails.getTaxCode());
         paySlipCreate.setNI_Number(employeeDetails.getNationalInsuranceNumber());
-        paySlipCreate.setPayPeriod(String.valueOf(employerDetails.getPayPeriod()));
-        paySlipCreate.setPayDate(LocalDate.now());
-        paySlipCreate.setPeriodEnd(getPreviousMonthEndDate());
-        paySlipCreate.setGrossPayTotal(employeeDetails.getGrossIncome());
-        BigDecimal personal = personalAllowanceCalculation.calculatePersonalAllowance(
-                paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxCode()
-        );
-        BigDecimal personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreate.getPayPeriod());
+        paySlipCreate.setNiLetter(employeeDetails.getNiLetter());
+        paySlipCreate.setWorkingCompanyName(employeeDetails.getWorkingCompanyName());
+        paySlipCreate.setPayPeriod(String.valueOf(employeeDetails.getPayPeriod()));
+        paySlipCreate.setPayDate(employerDetails.getPayDate());
+        paySlipCreate.setPeriodEnd(getPeriodEndMonthYear(paySlipCreate.getPayDate()));
+        log.info("successfully completed  up to basic details");
+        paySlipCreate.setGrossPayTotal(employeeDetails.getPayPeriodOfIncomeOfEmployee());
+        BigDecimal personalAllowance=BigDecimal.ZERO;
+        if(!employeeDetails.getIsEmergencyCode()){
+            BigDecimal personal = personalAllowanceCalculation.calculatePersonalAllowance(
+                    paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod()
+            );
+            personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreate.getPayPeriod());
+        }
+        else if (employeeDetails.getIsEmergencyCode()){
+            personalAllowance=personalAllowanceCalculation.getPersonalAllowanceFromEmergencyTaxCode(paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod());
+
+        }
+
 
         paySlipCreate.setPersonalAllowance(personalAllowance);
         paySlipCreate.setTaxableIncome(
@@ -80,85 +106,86 @@ public class AutoPaySlip {
         );
 
         paySlipCreate.setIncomeTaxTotal(incomeTax);
+        log.info("successfully completed the income tax calculation");
 
 
         // Calculate National Insurance contributions
-        BigDecimal NI=nationalInsuranceCalculation.calculateNationalInsurance(
-                paySlipCreate.getGrossPayTotal(),paySlipCreate.getTaxYear(),
-                paySlipCreate.getRegion(),paySlipCreate.getPayPeriod()
-        );
+//        BigDecimal NI=nationalInsuranceCalculation.calculateNationalInsurance(
+//                paySlipCreate.getGrossPayTotal(),paySlipCreate.getTaxYear(),
+//                paySlipCreate.getRegion(),paySlipCreate.getPayPeriod()
+//        );
 
 
-        paySlipCreate.setNationalInsurance(NI);
+        BigDecimal NI= nationalInsuranceCalculator.calculateEmployeeNIContribution( paySlipCreate.getGrossPayTotal(),paySlipCreate.getTaxYear(),
+                paySlipCreate.getPayPeriod(),paySlipCreate.getNiLetter());
+
+
+
+        paySlipCreate.setEmployeeNationalInsurance(NI);
+//        paySlipCreate.setEmployersNationalInsurance(
+//                nationalInsuranceCalculation.calculateEmploymentAllowance(
+//                        paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxYear(),
+//                        paySlipCreate.getRegion(), paySlipCreate.getPayPeriod()
+//                ));
+        log.info("successfully completed the Employee NI calculation ");
+
         paySlipCreate.setEmployersNationalInsurance(
-                nationalInsuranceCalculation.calculateEmploymentAllowance(
+                nationalInsuranceCalculator.calculateEmployerNIContribution(
                         paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxYear(),
-                        paySlipCreate.getRegion(), paySlipCreate.getPayPeriod()
+                        paySlipCreate.getPayPeriod(),paySlipCreate.getNiLetter()
                 ));
-        BigDecimal deduction=incomeTax.add(NI);
+        log.info("successfully completed the Employers NI Calculation");
+       paySlipCreate.setHasStudentLoanStart(employeeDetails.getStudentLoan().getHasStudentLoan());
+       paySlipCreate.setStudentLoanPlanType(employeeDetails.getStudentLoan().getStudentLoanPlanType());
+       if(paySlipCreate.getHasStudentLoanStart()){
+           paySlipCreate.setStudentLoanDeductionAmount
+                   (studentLoanCalculation.calculateStudentLoan(paySlipCreate.getGrossPayTotal(), paySlipCreate.getHasStudentLoanStart(),paySlipCreate.getStudentLoanPlanType(),paySlipCreate.getTaxYear(),paySlipCreate.getPayPeriod()));
+       }
+       else {
+           paySlipCreate.setStudentLoanDeductionAmount(BigDecimal.ZERO);
+       }
+       paySlipCreate.setHasPostGraduateLoanStart(employeeDetails.getPostGraduateLoan().getHasPostgraduateLoan());
+       paySlipCreate.setPostgraduateLoanPlanType(employeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType());
+       if(paySlipCreate.getHasPostGraduateLoanStart() ){
+           paySlipCreate.setPostgraduateDeductionAmount(
+                   studentLoanCalculation.calculatePostGraduateLoan(paySlipCreate.getGrossPayTotal(), paySlipCreate.getHasPostGraduateLoanStart(),paySlipCreate.getPostgraduateLoanPlanType(),paySlipCreate.getTaxYear(),paySlipCreate.getPayPeriod())
+           );
+       }
+       else {
+           paySlipCreate.setPostgraduateDeductionAmount(BigDecimal.ZERO);
+       }
+
+
+
+        BigDecimal deduction=incomeTax.add(NI).add(paySlipCreate.getStudentLoanDeductionAmount()).add(paySlipCreate.getPostgraduateDeductionAmount());
         paySlipCreate.setDeductionsTotal(deduction);
         BigDecimal netPay=paySlipCreate.getGrossPayTotal().subtract(deduction);
         paySlipCreate.setTakeHomePayTotal(netPay);
         paySlipCreate.setPaySlipReference(generatePayslipReference(paySlipCreate.getEmployeeId()));
 
         PaySlip savedPaySlip=paySlipRepository.save(paySlipCreate);
-        System.out.println("Successfully saved PaySlip: " + savedPaySlip);
 
-        BigDecimal totalUsedPersonalAllowance = employeeDetailsRepository.findByTotalUsedPersonalAllowance(employeeDetails.getEmployeeId());
-        BigDecimal remainingPersonalAllowance = employeeDetailsRepository.findByRemainingPersonalAllowance(employeeDetails.getEmployeeId());
-        if (remainingPersonalAllowance.compareTo(BigDecimal.ZERO)==0){
-            remainingPersonalAllowance=employeeDetails.getTotalPersonalAllowanceInCompany().subtract(employeeDetails.getPreviouslyUsedPersonalAllowance());
+        System.out.println("created PaySlip: " + savedPaySlip);
+
+        updatingDetails.updatingOtherEmployeeDetails(savedPaySlip);
+        log.info("Successful updated the other employee Details");
+
+
+        if(savedPaySlip.getHasStudentLoanStart()){
+            updatingDetails.updatingStudentLoanInEmployeeDetails(savedPaySlip);
+            log.info("successfully updated the student loan details in employee Details");
         }
-        OtherEmployeeDetails otherEmployeeDetails = employeeDetails.getOtherEmployeeDetails();
-        otherEmployeeDetails.setUsedPersonalAllowance(personalAllowance);
-        otherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(personalAllowance));
-        otherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance.subtract(personalAllowance));
+        if (savedPaySlip.getHasPostGraduateLoanStart()){
+            updatingDetails.updatingPostGraduateLoanInEmployeeDetails(savedPaySlip);
+            log.info("successfully updated the post graduate loan details in employee Details");
+        }
+
+        updatingDetails.updatingOtherEmployerDetails(savedPaySlip);
+        log.info("successfully updated the employer details of the total PAYE,NI");
 
 
 
-        // Update OtherEmployeeDetails with income tax information
-        otherEmployeeDetails.setIncomeTaxPaid(incomeTax);
-    BigDecimal totalIncomeTaxPaidInCompany = employeeDetailsRepository.findByTotalIncomeTaxPaidInCompany(employeeDetails.getEmployeeId());
 
-        otherEmployeeDetails.setTotalIncomeTaxPaidInCompany(totalIncomeTaxPaidInCompany.add(incomeTax));
-        if("Yearly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))){
-        BigDecimal yearCount=employeeDetailsRepository.findByNumberOfYearsOfIncomeTaxPaid(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfYearsOfIncomeTaxPaid(yearCount.add(BigDecimal.ONE));
-    } else if ("Monthly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-        BigDecimal monthCount=employeeDetailsRepository.findByNumberOfMonthsOfIncomeTaxPaid(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfMonthsOfIncomeTaxPaid(monthCount.add(BigDecimal.ONE));
-    }
-        else if ("Weekly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-        BigDecimal weekCount=employeeDetailsRepository.findByNumberOfWeeksOfIncomeTaxPaid(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfWeeksOfIncomeTaxPaid(weekCount.add(BigDecimal.ONE));
-    }
-        // Update OtherEmployeeDetails with National Insurance contributions
-        otherEmployeeDetails.setEmployeeNIContribution(NI);
-    BigDecimal totalEmployeeNIContributionInCompany=employeeDetailsRepository.findByTotalEmployeeNIContributionInCompany(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setTotalEmployeeNIContributionInCompany(
-                totalEmployeeNIContributionInCompany.add(NI)
-            );
-
-//        int numberOfNIPaidYearsInCompany=employeeDetailsRepository.findByNumberOfNIPaidYearsInCompany(employeeDetails.getEmployeeId());
-//        otherEmployeeDetails.setNumberOfNIPaidYearsInCompany(numberOfNIPaidYearsInCompany+1);
-
-
-        if("YEARLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))){
-        BigDecimal yearCount=employeeDetailsRepository.findByNumberOfYearsOfNIContributions(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfYearsOfNIContributions(yearCount.add(BigDecimal.ONE));
-    } else if ("MONTHLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-        BigDecimal monthCount=employeeDetailsRepository.findByNumberOfMonthsOfNIContributions(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfMonthsOfNIContributions(monthCount.add(BigDecimal.ONE));
-    }
-        else if ("WEEKLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-        BigDecimal weekCount=employeeDetailsRepository.findByNumberOfWeeksOfNIContributions(employeeDetails.getEmployeeId());
-        otherEmployeeDetails.setNumberOfWeeksOfNIContributions(weekCount.add(BigDecimal.ONE));
-    }
-
-        employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails);
-
-        EmployeeDetails employeeData = employeeDetailsRepository.save(employeeDetails);
-        System.out.println("Successfully Updated EmployerDetails: " + employeeData);
 
 
         return  paySlipCreateDtoMapper.mapToDto(savedPaySlip);
@@ -176,38 +203,50 @@ public class AutoPaySlip {
         String random = new BigInteger(48, new SecureRandom()).toString(36).toUpperCase();
         return String.format("%s-%s", random.substring(0, 6), employeeId);
     }
-    public LocalDate getPreviousMonthEndDate() {
-        // Get current system date as Pay Date
-        LocalDate payDate = LocalDate.now();
 
-        // Get end of previous month
-        return payDate.withDayOfMonth(1).minusDays(1);
+
+    public String getPeriodEndMonthYear(LocalDate payDate) {
+        if (payDate == null) {
+            throw new IllegalArgumentException("Pay date cannot be null");
+        }
+
+        YearMonth yearMonth = YearMonth.from(payDate);
+
+        // Choose your format: "MMMM yyyy" => "June 2025", or "MM-yyyy" => "06-2025"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy"); // or "MM-yyyy"
+
+        return yearMonth.format(formatter);
     }
+
+    public List<PaySlipCreateDto> getAllEmployeeId(String employeeId){
+        if(employeeId==null){
+            throw new IllegalArgumentException("Employee Cannot be null or empty");
+        }
+        if(!paySlipRepository.existsByEmployeeId(employeeId)){
+            throw new IllegalArgumentException("Employee Id is not found");
+        }
+
+        List<PaySlip> listOfPayslips = paySlipRepository.findByEmployeeId(employeeId);
+        List<PaySlipCreateDto> listOfPayslipsData = listOfPayslips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
+
+        if (listOfPayslipsData.isEmpty()){
+            throw new IllegalArgumentException("Payslip data is not found");
+        }
+        return listOfPayslipsData;
+    }
+    public PaySlipCreateDto getPaySlipByReferences(String paySlipReference){
+        if(paySlipReference ==null){
+            throw new IllegalArgumentException("paySlipReference Number cannot be Null");
+        }
+        if(!paySlipRepository.existsByPaySlipReference(paySlipReference)){
+            throw  new IllegalArgumentException("paySlipReference number is not found");
+        }
+        PaySlip paySlipData = paySlipRepository.findByPaySlipReference(paySlipReference);
+        if(paySlipData==null){
+            throw new IllegalArgumentException("payslip data is null");
+        }
+        return paySlipCreateDtoMapper.mapToDto(paySlipData);
+    }
+
 }
 
-/*
-private String firstName;
-private String lastName;
-private String address;
-private String postCode;
-private String employeeId;
-@Enumerated(EnumType.STRING)
-private TaxThreshold.TaxRegion region;
-private String taxYear;
-private String taxCode;
-private String NI_Number;
-private String payPeriod;
-@JsonFormat(pattern = "yyyy-MM-dd")
-private LocalDate payDate;
-@JsonFormat(pattern = "yyyy-MM-dd")
-private LocalDate periodEnd;
-private BigDecimal grossPayTotal;
-private BigDecimal taxableIncome;
-private BigDecimal personalAllowance;
-private BigDecimal incomeTaxTotal;
-private BigDecimal nationalInsurance;
-private BigDecimal employersNationalInsurance;
-private BigDecimal deductionsTotal;
-private BigDecimal takeHomePayTotal;
-private String paySlipReference;
-*/

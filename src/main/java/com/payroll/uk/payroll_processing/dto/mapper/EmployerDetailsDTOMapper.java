@@ -1,21 +1,23 @@
 package com.payroll.uk.payroll_processing.dto.mapper;
 
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
-import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
-import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDto;
-import com.payroll.uk.payroll_processing.dto.employerdto.TaxOfficeDto;
-import com.payroll.uk.payroll_processing.dto.employerdto.TermsDto;
+import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.employerdto.OtherEmployerDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.employerdto.TaxOfficeDTO;
+import com.payroll.uk.payroll_processing.dto.employerdto.TermsDTO;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.entity.employer.OtherEmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employer.TaxOffice;
 import com.payroll.uk.payroll_processing.entity.employer.Terms;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmployerDetailsDtoMapper {
+public class EmployerDetailsDTOMapper {
 
-    public EmployerDetailsDto mapToDto(EmployerDetails employerDetails){
-        EmployerDetailsDto dto = new EmployerDetailsDto();
+    public EmployerDetailsDTO mapToEmployerDetailsDTO(EmployerDetails employerDetails){
+        EmployerDetailsDTO dto = new EmployerDetailsDTO();
+        dto.setId(employerDetails.getId());
         dto.setEmployerName(employerDetails.getEmployerName());
         dto.setEmployerId(employerDetails.getEmployerId());
         dto.setEmployerAddress(employerDetails.getEmployerAddress());
@@ -38,6 +40,7 @@ public class EmployerDetailsDtoMapper {
         dto.setPayPeriod(employerDetails.getPayPeriod());
         dto.setRegion(employerDetails.getRegion());
         dto.setTaxYear(employerDetails.getTaxYear());
+        dto.setPayDate(employerDetails.getPayDate());
 //        dto.setTermsDto(mapToTermsDto(employerDetails.getTerms()));
 //        dto.setTaxOfficeDto(mapToTaxOfficeDto(employerDetails.getTaxOffice()));
 //        dto.setBankDetailsDTO(mapToBanKDetailsDTO(employerDetails.getBankDetails()));
@@ -52,13 +55,17 @@ public class EmployerDetailsDtoMapper {
         if (employerDetails.getBankDetails() != null) {
             dto.setBankDetailsDTO(mapToBankDetailsDTO(employerDetails.getBankDetails()));
         }
+        if (employerDetails.getOtherEmployerDetails() !=null){
+            dto.setOtherEmployerDetailsDto(mapToOtherEmployerDetailsDTO(employerDetails.getOtherEmployerDetails()));
+        }
 
 
 
         return dto;
     }
-    public EmployerDetails changeToEmployerDetails(EmployerDetailsDto employerDto){
+    public EmployerDetails changeToEmployerDetails(EmployerDetailsDTO employerDto){
         EmployerDetails employerDetails = new EmployerDetails();
+//        employerDetails.setId(employerDto.getId());
         employerDetails.setEmployerName(employerDto.getEmployerName());
         employerDetails.setEmployerId(employerDto.getEmployerId());
         employerDetails.setEmployerAddress(employerDto.getEmployerAddress());
@@ -77,6 +84,7 @@ public class EmployerDetailsDtoMapper {
         employerDetails.setWarnBelowNationalMinimumWage(employerDto.getWarnBelowNationalMinimumWage());
         employerDetails.setShowAgeOnHourlyTab(employerDto.getShowAgeOnHourlyTab());
         employerDetails.setCompanyLogo(employerDto.getCompanyLogo());
+        employerDetails.setPayDate(employerDto.getPayDate());
 //        employerDetails.setTaxOffice(changeToTaxOffice(employerDto.getTaxOfficeDto()));
 //        employerDetails.setTerms(changeToTerms(employerDto.getTermsDto()));
         employerDetails.setCompanyName(employerDto.getCompanyName());
@@ -94,14 +102,17 @@ public class EmployerDetailsDtoMapper {
         }
 
         if (employerDto.getBankDetailsDTO() != null) {
-            employerDetails.setBankDetails(mapToBankDetails(employerDto));
+            employerDetails.setBankDetails(changeToBankDetails(employerDto));
+        }
+        if(employerDto.getOtherEmployerDetailsDto() !=null){
+            employerDetails.setOtherEmployerDetails(changeToOtherEmployerDetails(employerDto.getOtherEmployerDetailsDto()));
         }
         return employerDetails;
     }
 
-    public TaxOfficeDto mapToTaxOfficeDto(TaxOffice taxOffice) {
+    public TaxOfficeDTO mapToTaxOfficeDto(TaxOffice taxOffice) {
 
-        TaxOfficeDto dto = new TaxOfficeDto();
+        TaxOfficeDTO dto = new TaxOfficeDTO();
         dto.setPayeReference(taxOffice.getPayeReference());
         dto.setAccountsOfficeReference(taxOffice.getAccountsOfficeReference());
         dto.setPaymentMethod(taxOffice.getPaymentMethod());
@@ -118,7 +129,7 @@ public class EmployerDetailsDtoMapper {
         return dto;
 
     }
-    public TaxOffice changeToTaxOffice(TaxOfficeDto taxOfficeDto) {
+    public TaxOffice changeToTaxOffice(TaxOfficeDTO taxOfficeDto) {
         TaxOffice taxOffice = new TaxOffice();
         taxOffice.setPayeReference(taxOfficeDto.getPayeReference());
         taxOffice.setAccountsOfficeReference(taxOfficeDto.getAccountsOfficeReference());
@@ -137,8 +148,8 @@ public class EmployerDetailsDtoMapper {
 
 
     }
-    public TermsDto mapToTermsDto(Terms terms) {
-        TermsDto dto = new TermsDto();
+    public TermsDTO mapToTermsDto(Terms terms) {
+        TermsDTO dto = new TermsDTO();
         dto.setHoursWorkedPerWeek(terms.getHoursWorkedPerWeek());
         dto.setIsPaidOvertime(terms.getIsPaidOvertime());
         dto.setWeeksNoticeRequired(terms.getWeeksNoticeRequired());
@@ -151,7 +162,7 @@ public class EmployerDetailsDtoMapper {
 
         return dto;
     }
-    public Terms changeToTerms(TermsDto termsDto) {
+    public Terms changeToTerms(TermsDTO termsDto) {
         Terms terms = new Terms();
         terms.setHoursWorkedPerWeek(termsDto.getHoursWorkedPerWeek());
         terms.setIsPaidOvertime(termsDto.getIsPaidOvertime());
@@ -166,7 +177,7 @@ public class EmployerDetailsDtoMapper {
         return terms;
     }
 
-    public BankDetails mapToBankDetails(EmployerDetailsDto employerDetailsDto) {
+    public BankDetails changeToBankDetails(EmployerDetailsDTO employerDetailsDto) {
         BankDetails bankDetails = new BankDetails();
         bankDetails.setAccountName(employerDetailsDto.getBankDetailsDTO().getAccountName());
         bankDetails.setAccountNumber(employerDetailsDto.getBankDetailsDTO().getAccountNumber());
@@ -198,6 +209,39 @@ public class EmployerDetailsDtoMapper {
         bankDetailsDTO.setIsRTIReturnsIncluded(bankDetails.getIsRTIReturnsIncluded());
         return bankDetailsDTO;
 
+    }
+
+    public OtherEmployerDetails changeToOtherEmployerDetails(OtherEmployerDetailsDTO otherEmployerDetailsDTO){
+        OtherEmployerDetails otherDetails=new OtherEmployerDetails();
+        otherDetails.setMonthlyPAYE(otherEmployerDetailsDTO.getMonthlyPAYE());
+        otherDetails.setWeeklyPAYE(otherEmployerDetailsDTO.getWeeklyPAYE());
+        otherDetails.setYearlyPAYE(otherEmployerDetailsDTO.getYearlyPAYE());
+        otherDetails.setTotalPAYEYTD(otherEmployerDetailsDTO.getTotalPAYEYTD());
+        otherDetails.setMonthlyEmployeesNI(otherEmployerDetailsDTO.getMonthlyEmployeesNI());
+        otherDetails.setWeeklyEmployeesNI(otherEmployerDetailsDTO.getWeeklyEmployeesNI());
+        otherDetails.setYearlyEmployeesNI(otherEmployerDetailsDTO.getYearlyEmployeesNI());
+        otherDetails.setTotalEmployeesNIYTD(otherEmployerDetailsDTO.getTotalEmployeesNIYTD());
+        otherDetails.setMonthlyEmployersNI(otherEmployerDetailsDTO.getMonthlyEmployersNI());
+        otherDetails.setWeeklyEmployersNI(otherEmployerDetailsDTO.getWeeklyEmployersNI());
+        otherDetails.setYearlyEmployersNI(otherEmployerDetailsDTO.getYearlyEmployersNI());
+        otherDetails.setTotalEmployersNIYTD(otherEmployerDetailsDTO.getTotalEmployersNIYTD());
+        return otherDetails;
+    }
+    public OtherEmployerDetailsDTO mapToOtherEmployerDetailsDTO(OtherEmployerDetails otherEmployerDetails){
+        OtherEmployerDetailsDTO otherDetailsDTO=new OtherEmployerDetailsDTO();
+        otherDetailsDTO.setMonthlyPAYE(otherEmployerDetails.getMonthlyPAYE());
+        otherDetailsDTO.setWeeklyPAYE(otherEmployerDetails.getWeeklyPAYE());
+        otherDetailsDTO.setYearlyPAYE(otherEmployerDetails.getYearlyPAYE());
+        otherDetailsDTO.setTotalPAYEYTD(otherEmployerDetails.getTotalPAYEYTD());
+        otherDetailsDTO.setMonthlyEmployeesNI(otherEmployerDetails.getMonthlyEmployeesNI());
+        otherDetailsDTO.setWeeklyEmployeesNI(otherEmployerDetails.getWeeklyEmployeesNI());
+        otherDetailsDTO.setYearlyEmployeesNI(otherEmployerDetails.getYearlyEmployeesNI());
+        otherDetailsDTO.setTotalEmployeesNIYTD(otherEmployerDetails.getTotalEmployeesNIYTD());
+        otherDetailsDTO.setMonthlyEmployersNI(otherEmployerDetails.getMonthlyEmployersNI());
+        otherDetailsDTO.setWeeklyEmployersNI(otherEmployerDetails.getWeeklyEmployersNI());
+        otherDetailsDTO.setYearlyEmployersNI(otherEmployerDetails.getYearlyEmployersNI());
+        otherDetailsDTO.setTotalEmployersNIYTD(otherEmployerDetails.getTotalEmployersNIYTD());
+        return otherDetailsDTO;
     }
 }
 

@@ -49,4 +49,33 @@ public interface EmployeeDetailsRepository extends JpaRepository<EmployeeDetails
 
     @Query("SELECT e.otherEmployeeDetails.numberOfWeeksOfNIContributions FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
     BigDecimal findByNumberOfWeeksOfNIContributions(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.remainingPersonalAllowanceInYear FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByRemainingPersonalAllowanceInYear(@Param("employeeId") String employeeId);
+
+    //StudentLoan
+    @Query("SELECT e.studentLoan.yearlyDeductionAmountInStudentLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByYearlyDeductionAmountInStudentLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.studentLoan.monthlyDeductionAmountInStudentLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByMonthlyDeductionAmountInStudentLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.studentLoan.weeklyDeductionAmountInStudentLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByWeeklyDeductionAmountInStudentLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.studentLoan.totalDeductionAmountInStudentLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByTotalDeductionAmountInStudentLoan(@Param("employeeId") String employeeId);
+
+    //PostgraduateLoan
+    @Query("SELECT e.postGraduateLoan.yearlyDeductionAmountInPostgraduateLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByYearlyDeductionAmountInPostgraduateLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.postGraduateLoan.monthlyDeductionAmountInPostgraduateLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByMonthlyDeductionAmountInPostgraduateLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.postGraduateLoan.weeklyDeductionAmountInPostgraduateLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByWeeklyDeductionAmountInPostgraduateLoan(@Param("employeeId") String employeeId);
+
+    @Query("SELECT e.postGraduateLoan.totalDeductionAmountInPostgraduateLoan FROM EmployeeDetails e WHERE e.employeeId = :employeeId")
+    BigDecimal findByTotalDeductionAmountInPostgraduateLoan(@Param("employeeId") String employeeId);
 }

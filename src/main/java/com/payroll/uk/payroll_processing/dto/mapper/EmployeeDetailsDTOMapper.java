@@ -3,10 +3,18 @@ package com.payroll.uk.payroll_processing.dto.mapper;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.OtherEmployeeDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.employeedto.PostGraduateLoanDTO;
+import com.payroll.uk.payroll_processing.dto.employeedto.StudentLoanDTO;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.OtherEmployeeDetails;
+import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
+import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Component
 public class EmployeeDetailsDTOMapper {
@@ -15,7 +23,7 @@ public class EmployeeDetailsDTOMapper {
 
     public EmployeeDetailsDTO mapToEmployeeDetailsDTO(EmployeeDetails employeeDetails){
         EmployeeDetailsDTO employeeDetailsDTO = new EmployeeDetailsDTO();
-//        employeeDetailsDTO.setId(employeeDetails.getId());
+        employeeDetailsDTO.setId(employeeDetails.getId());
         employeeDetailsDTO.setFirstName(employeeDetails.getFirstName());
         employeeDetailsDTO.setLastName(employeeDetails.getLastName());
         employeeDetailsDTO.setEmail(employeeDetails.getEmail());
@@ -31,14 +39,15 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setEmployeeDepartment(employeeDetails.getEmployeeDepartment());
         employeeDetailsDTO.setEmploymentStartedDate(employeeDetails.getEmploymentStartedDate());
         employeeDetailsDTO.setEmploymentEndDate(employeeDetails.getEmploymentEndDate());
-        employeeDetailsDTO.setGrossIncome(employeeDetails.getGrossIncome());
+        employeeDetailsDTO.setAnnualIncomeOfEmployee(employeeDetails.getAnnualIncomeOfEmployee());
         employeeDetailsDTO.setTaxCode(employeeDetails.getTaxCode());
         employeeDetailsDTO.setIsEmergencyCode(employeeDetails.getIsEmergencyCode());
-        employeeDetailsDTO.setIsPostgraduateLoan(employeeDetails.getIsPostgraduateLoan());
-        employeeDetailsDTO.setStudentLoan(employeeDetails.getStudentLoan());
+//        employeeDetailsDTO.setIsPostgraduateLoan(employeeDetails.getIsPostgraduateLoan());
+//        employeeDetailsDTO.setStudentLoan(employeeDetails.getStudentLoan());
         employeeDetailsDTO.setPayPeriod(employeeDetails.getPayPeriod());
         employeeDetailsDTO.setNationalInsuranceNumber(employeeDetails.getNationalInsuranceNumber());
-        employeeDetailsDTO.setNICategoryLetter(employeeDetails.getNICategoryLetter());
+        employeeDetailsDTO.setNiLetter(employeeDetails.getNiLetter());
+
 //        employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
 //        employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails.getOtherEmployeeDetails()));
         employeeDetailsDTO.setEmployerId(employeeDetails.getEmployerId());
@@ -49,6 +58,12 @@ public class EmployeeDetailsDTOMapper {
 
         if (employeeDetails.getOtherEmployeeDetails() != null) {
             employeeDetailsDTO.setOtherEmployeeDetailsDTO(mapToOtherEmployeeDetailsDTO(employeeDetails.getOtherEmployeeDetails()));
+        }
+        if (employeeDetails.getStudentLoan()!=null){
+            employeeDetailsDTO.setStudentLoanDto(mapToStudentLoanDto(employeeDetails.getStudentLoan()));
+        }
+        if (employeeDetails.getPostGraduateLoan()!=null){
+            employeeDetailsDTO.setPostGraduateLoanDto(mapToPostGraduateLoanDto(employeeDetails.getPostGraduateLoan()));
         }
         employeeDetailsDTO.setPreviouslyUsedPersonalAllowance(employeeDetails.getPreviouslyUsedPersonalAllowance());
         return employeeDetailsDTO;
@@ -97,6 +112,7 @@ public class EmployeeDetailsDTOMapper {
     public EmployeeDetails mapToEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
         EmployeeDetails employeeDetails = new EmployeeDetails();
         // Map DTO to Entity
+//        employeeDetails.setId(employeeDetailsDTO.getId());
         employeeDetails.setFirstName(employeeDetailsDTO.getFirstName());
         employeeDetails.setLastName(employeeDetailsDTO.getLastName());
         employeeDetails.setEmail(employeeDetailsDTO.getEmail());
@@ -111,18 +127,24 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setGender(employeeDetailsDTO.getGender());
         employeeDetails.setEmployeeDepartment(employeeDetailsDTO.getEmployeeDepartment());
         employeeDetails.setEmploymentStartedDate(employeeDetailsDTO.getEmploymentStartedDate());
-        employeeDetails.setEmploymentEndDate(employeeDetailsDTO.getEmploymentEndDate());
-        employeeDetails.setGrossIncome(employeeDetailsDTO.getGrossIncome());
-        employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
-        employeeDetails.setIsEmergencyCode(employeeDetailsDTO.getIsEmergencyCode());
-        employeeDetails.setIsPostgraduateLoan(employeeDetailsDTO.getIsPostgraduateLoan());
-        employeeDetails.setStudentLoan(employeeDetailsDTO.getStudentLoan());
         employeeDetails.setPayPeriod(employeeDetailsDTO.getPayPeriod());
+        employeeDetails.setEmploymentEndDate(employeeDetailsDTO.getEmploymentEndDate());
+        employeeDetails.setAnnualIncomeOfEmployee(employeeDetailsDTO.getAnnualIncomeOfEmployee());
+        employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
+        employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
+        if(!employeeDetailsDTO.getIsEmergencyCode()){
+            employeeDetails.setIsEmergencyCode(checkIfEmergencyTaxCode(employeeDetails.getTaxCode()));
+        }else {
+            employeeDetails.setIsEmergencyCode(employeeDetailsDTO.getIsEmergencyCode());
+        }
+//        employeeDetails.setIsPostgraduateLoan(employeeDetailsDTO.getIsPostgraduateLoan());
+//        employeeDetails.setStudentLoan(employeeDetailsDTO.getStudentLoan());
+
         employeeDetails.setNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber());
-        employeeDetails.setNICategoryLetter(employeeDetailsDTO.getNICategoryLetter());
+        employeeDetails.setNiLetter(employeeDetailsDTO.getNiLetter());
         employeeDetails.setEmployerId(employeeDetailsDTO.getEmployerId());
         employeeDetails.setPreviouslyUsedPersonalAllowance(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
-        employeeDetails.setTotalPersonalAllowanceInCompany(employeeDetailsDTO.getTotalPersonalAllowanceInCompany());
+        employeeDetails.setTotalPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance());
 
 
 //        BankDetails bankDetails = mapToBankDetails(employeeDetailsDTO);
@@ -138,8 +160,15 @@ public class EmployeeDetailsDTOMapper {
         }
 
         if (employeeDetailsDTO.getOtherEmployeeDetailsDTO() != null) {
-            employeeDetails.setOtherEmployeeDetails(getOtherEmployeeDetails(employeeDetailsDTO.getOtherEmployeeDetailsDTO()));
+            employeeDetails.setOtherEmployeeDetails(mapToOtherEmployeeDetails(employeeDetailsDTO.getOtherEmployeeDetailsDTO()));
         }
+        if (employeeDetailsDTO.getStudentLoanDto()!=null){
+            employeeDetails.setStudentLoan(mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto()));
+        }
+        if (employeeDetailsDTO.getPostGraduateLoanDto()!=null){
+            employeeDetails.setPostGraduateLoan(mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto()));
+        }
+
 
         return employeeDetails;
     }
@@ -157,7 +186,7 @@ public class EmployeeDetailsDTOMapper {
         bankDetails.setIsRTIReturnsIncluded(employeeDetailsDTO.getBankDetailsDTO().getIsRTIReturnsIncluded());
         return bankDetails;
     }
-    public OtherEmployeeDetails getOtherEmployeeDetails(OtherEmployeeDetailsDTO otherEmployeeDetailsDTO) {
+    public OtherEmployeeDetails mapToOtherEmployeeDetails(OtherEmployeeDetailsDTO otherEmployeeDetailsDTO) {
         OtherEmployeeDetails otherEmployeeDetails = new OtherEmployeeDetails();
 //        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
 //        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
@@ -177,8 +206,91 @@ public class EmployeeDetailsDTOMapper {
         return otherEmployeeDetails;
 
     }
+    public StudentLoanDTO mapToStudentLoanDto(StudentLoan studentLoan) {
+        if (studentLoan == null) {
+            return null;
+        }
+        StudentLoanDTO studentLoanDto = new StudentLoanDTO();
+        studentLoanDto.setHasStudentLoan(studentLoan.getHasStudentLoan());
+        studentLoanDto.setMonthlyDeductionAmountInStudentLoan(studentLoan.getMonthlyDeductionAmountInStudentLoan());
+        studentLoanDto.setWeeklyDeductionAmountInStudentLoan(studentLoanDto.getWeeklyDeductionAmountInStudentLoan());
+        studentLoanDto.setYearlyDeductionAmountInStudentLoan(studentLoanDto.getYearlyDeductionAmountInStudentLoan());
+        studentLoanDto.setTotalDeductionAmountInStudentLoan(studentLoan.getTotalDeductionAmountInStudentLoan());
+        studentLoanDto.setStudentLoanPlanType(studentLoan.getStudentLoanPlanType());
+
+        return studentLoanDto;
+    }
+    public StudentLoan mapToStudentLoan(StudentLoanDTO studentLoanDto) {
+        if (studentLoanDto == null) {
+            return null;
+        }
+        StudentLoan studentLoan = new StudentLoan();
+        studentLoan.setStudentLoanPlanType(studentLoanDto.getStudentLoanPlanType());
+        if(studentLoanDto.getStudentLoanPlanType()==StudentLoan.StudentLoanPlan.NONE ||studentLoanDto.getStudentLoanPlanType()==null){
+            studentLoan.setHasStudentLoan(false);
+        }
+        else {
+            studentLoan.setHasStudentLoan(studentLoanDto.getHasStudentLoan());
+        }
+       studentLoan.setMonthlyDeductionAmountInStudentLoan(studentLoanDto.getMonthlyDeductionAmountInStudentLoan());
+       studentLoan.setWeeklyDeductionAmountInStudentLoan(studentLoanDto.getWeeklyDeductionAmountInStudentLoan());
+       studentLoan.setYearlyDeductionAmountInStudentLoan(studentLoanDto.getYearlyDeductionAmountInStudentLoan());
+       studentLoan.setTotalDeductionAmountInStudentLoan(studentLoanDto.getTotalDeductionAmountInStudentLoan());
+       return studentLoan;
+
+
+    }
+
+    public PostGraduateLoanDTO mapToPostGraduateLoanDto(PostGraduateLoan postGraduateLoan){
+        if(postGraduateLoan==null){
+            return null;
+        }
+        PostGraduateLoanDTO postGraduateLoanDto=new PostGraduateLoanDTO();
+        postGraduateLoanDto.setHasPostgraduateLoan(postGraduateLoan.getHasPostgraduateLoan());
+        postGraduateLoanDto.setPostgraduateLoanPlanType(postGraduateLoan.getPostgraduateLoanPlanType());
+        postGraduateLoanDto.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getMonthlyDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoan.getWeeklyDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setYearlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getYearlyDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan());
+        return  postGraduateLoanDto;
+    }
+
+    public PostGraduateLoan mapToPostGraduateLoan(PostGraduateLoanDTO postGraduateLoanDto){
+        if(postGraduateLoanDto==null){
+            return null;
+        }
+        PostGraduateLoan postGraduateLoan=new PostGraduateLoan();
+        postGraduateLoan.setHasPostgraduateLoan(postGraduateLoanDto.getHasPostgraduateLoan());
+        postGraduateLoan.setPostgraduateLoanPlanType(postGraduateLoanDto.getPostgraduateLoanPlanType());
+        postGraduateLoan.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getMonthlyDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getWeeklyDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setYearlyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getYearlyDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan());
+        return  postGraduateLoan;
+    }
+
+    private boolean checkIfEmergencyTaxCode(String code) {
+        if (code == null) return false;
+        if(code.matches("1257LM1")||code.matches("1257LW1")||code.matches("1257LX")){
+            throw new IllegalArgumentException("Wrong Emergency Code : "+code);
+        }
+
+        // Match: e.g. 1257LM1, 1257LW1, 1257LX
+        return code.matches("1257L M1")||code.matches("1257L W1")||code.matches("1257L X");
+    }
+
+    private BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,PayPeriod payPeriod){
+        return switch (payPeriod) {
+            case WEEKLY -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
+            case MONTHLY -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
+            case YEARLY -> incomeTax;
+            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+        };
+    }
 
 
 }
+
+
 
 
