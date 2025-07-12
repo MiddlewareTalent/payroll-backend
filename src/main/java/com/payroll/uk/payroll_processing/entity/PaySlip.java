@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,42 +26,77 @@ public class PaySlip {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
+    @Column(name = "firstName")
     private String firstName;
+    @Column(name = "lastName")
     private String lastName;
+    @Column(name = "address")
     private String address;
+    @Column(name = "postCode")
     private String postCode;
+    @Column(name = "employeeId")
     private String employeeId;
+    @Column(name = "workingCompanyName")
     private String workingCompanyName;
     @Enumerated(EnumType.STRING)
+    @Column(name="niLetter")
     private NICategoryLetters niLetter;
     private String taxCode;
+    @Column(name = "taxYear")
     private String taxYear;
     @Enumerated(EnumType.STRING)
+    @Column(name = "region")
     private TaxThreshold.TaxRegion region;
+    @Column(name = "NI_Number")
     private String NI_Number;
+    @Column(name = "payPeriod")
     private String payPeriod;
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "payDate")
     private LocalDate payDate;
-
+    @Column(name = "periodEnd")
     private String periodEnd;
+    @Column(name = "grossPayTotal")
     private BigDecimal grossPayTotal;
+    @Column(name = "taxableIncome")
     private BigDecimal taxableIncome;
+    @Column(name = "personalAllowance")
     private BigDecimal personalAllowance;
+    @Column(name = "incomeTaxTotal")
     private BigDecimal incomeTaxTotal;
+    @Column(name = "employeeNationalInsurance")
     private BigDecimal employeeNationalInsurance;
+    @Column(name = "employersNationalInsurance")
     private BigDecimal employersNationalInsurance;
+    @Column(name = "hasStudentLoanStart")
     private Boolean hasStudentLoanStart;
+    @Column(name = "hasPostGraduateLoanStart")
     private  Boolean hasPostGraduateLoanStart;
     @Enumerated(EnumType.STRING)
+    @Column(name = "studentLoanPlanType")
     private StudentLoan.StudentLoanPlan studentLoanPlanType;
     @Enumerated(EnumType.STRING)
+    @Column(name = "postgraduateLoanPlanType")
     private PostGraduateLoan.PostgraduateLoanPlanType postgraduateLoanPlanType;
+    @Column(name = "studentLoanDeductionAmount")
     private BigDecimal studentLoanDeductionAmount;
+    @Column(name = "postgraduateDeductionAmount")
     private BigDecimal postgraduateDeductionAmount;
+    @Column(name = "deductionsTotal")
     private BigDecimal deductionsTotal;
+    @Column(name = "takeHomePayTotal")
     private BigDecimal takeHomePayTotal;
-    @Column(name = "pay_slip_reference", unique = true, nullable = false)
+    @Column(name = "paySlipReference", unique = true, nullable = false)
     private String paySlipReference;
+
+    @Column(name = "hasPensionEligible", nullable = false)
+    private boolean hasPensionEligible= false;
+    @Column(name = "employeePensionContribution")
+    @PositiveOrZero(message = "Employee pension contribution must be zero or positive")
+    private BigDecimal employeePensionContribution;
+    @Column(name = "employerPensionContribution")
+    @PositiveOrZero(message = "Employer pension contribution must be zero or positive")
+    private  BigDecimal employerPensionContribution;
 
     public String getPreviousMonthEndDate() {
         // Get current system date as Pay Date

@@ -42,7 +42,7 @@ public class EmployeeDetailsDTO {
     private EmploymentType employmentType;
 
     @Schema(defaultValue = "false")
-    private Boolean isDirector=false;
+    private boolean isDirector=false;
 
 
 
@@ -64,12 +64,13 @@ public class EmployeeDetailsDTO {
     private TaxThreshold.TaxRegion region=TaxThreshold.TaxRegion.ENGLAND;
 
     private String workingCompanyName;
-
-    private BigDecimal AnnualIncomeOfEmployee;
+    private String taxYear;
+    private BigDecimal annualIncomeOfEmployee;
+    private BigDecimal payPeriodOfIncomeOfEmployee;
     @Schema(defaultValue = "1257L")
     private String taxCode;
     @Schema(defaultValue = "false")
-    private Boolean isEmergencyCode=false;
+    private boolean hasEmergencyCode=false;
 
     @Enumerated(EnumType.STRING)
     @Schema(description = "Pay period type", example = "MONTHLY")
@@ -89,9 +90,21 @@ public class EmployeeDetailsDTO {
     private StudentLoanDTO studentLoanDto;
     private PostGraduateLoanDTO postGraduateLoanDto;
 
+    private String p45Document;
+    @Schema(defaultValue = "false")
+    private boolean hasP45DocumentSubmitted=false;
+    private String starterChecklistDocument;
+    @Schema(defaultValue = "false")
+    private boolean hasStarterChecklistDocumentSubmitted=false;
+
     @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
     private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal totalPersonalAllowance=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+    @Schema(defaultValue = "12570.00")
+    private BigDecimal totalPersonalAllowance=new BigDecimal("12570.00");
+
+    @Schema(defaultValue = "false")
+    private boolean hasPensionEligible = false;
+
 
 
 

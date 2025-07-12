@@ -1,7 +1,6 @@
 package com.payroll.uk.payroll_processing.repository;
 
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
-import jakarta.annotation.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,22 +15,31 @@ import java.util.Optional;
 @Repository
 public interface EmployerDetailsRepository extends JpaRepository<EmployerDetails,Long> {
     boolean existsByEmployerId(String employerId);
-
     Optional<EmployerDetails> findByEmployerId(String employerId);
-
-    @Query("SELECT e.otherEmployerDetails.totalPAYEYTD FROM EmployerDetails e WHERE e.employerId = :employerId ")
-    BigDecimal findByTotalPAYEYTD(@Param("employerId") String employerId);
-
-
-    @Query("SELECT e.otherEmployerDetails.totalEmployeesNIYTD FROM EmployerDetails e WHERE e.employerId = :employerId ")
-    BigDecimal findByTotalEmployeesNIYTD(@Param("employerId") String employerId);
-
-    @Query("SELECT e.otherEmployerDetails.totalEmployersNIYTD FROM EmployerDetails e WHERE e.employerId = :employerId ")
-    BigDecimal findByTotalEmployersNIYTD(@Param("employerId") String employerId);
-
     @Modifying
     @Transactional
     @Query("UPDATE EmployerDetails e SET e.payDate = :payDate")
     void updatePayDateForAll(@Param("payDate") LocalDate payDate);
+
+    Optional<EmployerDetails> findByEmployerEmail(String employerEmail);
+
+    boolean existsByEmployerEmail(String employerEmail);
+
+
+    @Query("SELECT sum(e.otherEmployerDetails.totalPaidGrossAmountYTD) FROM EmployerDetails e WHERE e.employerId = :employerId")
+    BigDecimal findByTotalPaidGrossAmountYTD(@Param("employerId") String employerId);
+
+    @Modifying
+    @Query("UPDATE EmployerDetails e SET " +
+            "e.otherEmployerDetails.currentPayPeriodEmployeePensionContribution = :zero, " +
+            "e.otherEmployerDetails.currentPayPeriodEmployerPensionContribution = :zero, " +
+            "e.otherEmployerDetails.currentPayPeriodEmployersNI = :zero, " +
+            "e.otherEmployerDetails.currentPayPeriodEmployeesNI = :zero, " +
+            "e.otherEmployerDetails.currentPayPeriodPAYE = :zero, " +
+            "e.otherEmployerDetails.currentPayPeriodPaidGrossPay = :zero")
+    void resetCurrentPayPeriodFieldsForAll(@Param("zero") BigDecimal zero);
+
+
 }
+
 

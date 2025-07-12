@@ -1,11 +1,9 @@
 package com.payroll.uk.payroll_processing.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -23,20 +21,21 @@ public class TaxThreshold {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    @Column(name = "year_range", nullable = false, length = 9)
+    @Column(name = "tax_year", nullable = false, length = 9)
     private String taxYear;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES','ALL_REGIONS')",nullable = false)
+    @Column(name = "region",nullable = false)
+//    @Column(columnDefinition = "ENUM('ENGLAND','NORTHERN_IRELAND','SCOTLAND','WALES','ALL_REGIONS')",nullable = false)
     private TaxRegion region;
 
-    @Column(precision = 12, scale = 2, nullable = false)
+    @Column(name = "lowerbound", precision = 12, scale = 2, nullable = false)
     private BigDecimal lowerBound;
 
-    @Column(precision = 12, scale = 2)
+    @Column(name = "upperbound", precision = 12, scale = 2)
     private BigDecimal upperBound;
 
-    @Column(precision = 5, scale = 5, nullable = false)
+    @Column(name = "rate", precision = 5, scale = 5, nullable = false)
     private BigDecimal rate;
 
 
@@ -45,10 +44,12 @@ public class TaxThreshold {
     private BandName bandName;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('INCOME_TAX','EMPLOYEE_NI','STUDENT_LOAN','POSTGRADUATE_LOAN','PENSION','EMPLOYER_NI','EMPLOYMENT_ALLOWANCE','PERSONAL_ALLOWANCE')", nullable = false)
+    @Column(name = "band_name_type")
+//    @Column(columnDefinition = "ENUM('INCOME_TAX','EMPLOYEE_NI','STUDENT_LOAN','POSTGRADUATE_LOAN','PENSION','EMPLOYER_NI','EMPLOYMENT_ALLOWANCE','PERSONAL_ALLOWANCE')", nullable = false)
     private BandNameType bandNameType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "nic_band")
     private NICBand nicBand;
 
 
@@ -57,7 +58,7 @@ public class TaxThreshold {
         EMPLOYEE_NI,
         STUDENT_LOAN,
         POSTGRADUATE_LOAN,
-        PENSION,
+        PENSION_CONTRIBUTION,
         EMPLOYER_NI,
         EMPLOYMENT_ALLOWANCE,
         PERSONAL_ALLOWANCE,
@@ -74,6 +75,11 @@ public class TaxThreshold {
         TOP_RATE,
         PERSONAL_ALLOWANCE,
         EMPLOYMENT_ALLOWANCE,
+
+
+        EMPLOYEE_PENSION_CONTRIBUTION,
+        EMPLOYER_PENSION_CONTRIBUTION,
+        AUTO_ENROLMENT_PENSION_CONTRIBUTION,
         STUDENT_LOAN_PLAN_1,
         STUDENT_LOAN_PLAN_2,
         STUDENT_LOAN_PLAN_4,
@@ -118,5 +124,8 @@ public class TaxThreshold {
         NORTHERN_IRELAND,
         ALL_REGIONS
     }
+
+
+
 
 }

@@ -14,7 +14,7 @@ public class ScotlandTaxCalculation {
 
     private TaxThresholdService taxThresholdService;
 
-    public BigDecimal calculateScotlandIncomeTax(BigDecimal income, BigDecimal personalAllowance, BigDecimal[][] taxSlabs, BigDecimal[] taxRates, String payPeriod) {
+    public BigDecimal calculateScotlandIncomeTax(BigDecimal income, BigDecimal personalAllowance,BigDecimal taxableIncomeAnnual, BigDecimal[][] taxSlabs, BigDecimal[] taxRates, String payPeriod) {
 
 //        BigDecimal[][] taxSlabs = taxThresholdService.getTaxBounds("2025-2026", TaxThreshold.TaxRegion.SCOTLAND);
 //        BigDecimal[] taxRates = taxThresholdService.getTaxRates("2025-2026", TaxThreshold.TaxRegion.SCOTLAND);
@@ -42,8 +42,10 @@ public class ScotlandTaxCalculation {
         BigDecimal grossIncome= calculateGrossSalary(income,payPeriod);
         System.out.println("Annual Gross Income: " + grossIncome);
         BigDecimal totalIncomeTax = BigDecimal.ZERO;
-        BigDecimal taxableIncome = grossIncome.subtract(personalAllowance);
-        taxableIncome = taxableIncome.compareTo(BigDecimal.ZERO) > 0 ? taxableIncome : BigDecimal.ZERO;
+
+        BigDecimal taxableIncome=taxableIncomeAnnual;
+//        BigDecimal taxableIncome = grossIncome.subtract(personalAllowance);
+//        taxableIncome = taxableIncome.compareTo(BigDecimal.ZERO) > 0 ? taxableIncome : BigDecimal.ZERO;
         System.out.println("Taxable Income: " + taxableIncome);
         if (taxableIncome.compareTo(BigDecimal.ZERO) <= 0) {
             return totalIncomeTax;

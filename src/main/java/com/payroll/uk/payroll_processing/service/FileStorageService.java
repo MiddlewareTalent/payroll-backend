@@ -1,0 +1,82 @@
+package com.payroll.uk.payroll_processing.service;
+
+import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
+public class FileStorageService {
+
+    private static final List<String> allowedTypes = List.of(
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+    private static final long MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+    private static final String UPLOAD_DIR = "C:/Users/Public/Documents/";
+
+    @Autowired
+    private EmployeeDetailsRepository employeeRepository;
+
+    public Map<String,String> storeEmployeeDocuments( MultipartFile p45File, MultipartFile checklistFile) throws IOException {
+//        EmployeeDetails employee = employeeRepository.findByEmployeeId(employeeId)
+//                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+
+
+        Map<String,String> fileData=new ConcurrentHashMap<>();
+        if (p45File != null && !p45File.isEmpty()) {
+            validateFile(p45File);
+            String filePath = saveFile(p45File, "P45");
+            fileData.put("P45",filePath);
+//            employee.setP45Document(filePath);  // path stored in DB
+//            employee.setHasP45DocumentSubmitted(true);
+        }
+
+        if (checklistFile != null && !checklistFile.isEmpty()) {
+            validateFile(checklistFile);
+            String filePath = saveFile(checklistFile, "Checklist");
+            fileData.put("Checklist",filePath);
+//            employee.setStarterChecklistDocument(filePath);  // path stored in DB
+//            employee.setHasStarterChecklistDocumentSubmitted(true);
+        }
+        return fileData;
+
+//        employeeRepository.save(employee);
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (!allowedTypes.contains(file.getContentType())) {
+            throw new IllegalArgumentException("Unsupported file type: " + file.getContentType());
+        }
+        if (file.getSize() > MAX_SIZE) {
+            throw new IllegalArgumentException("File too large. Max allowed is 5MB");
+        }
+    }
+
+    private String saveFile(MultipartFile file, String fileType) throws IOException {
+        String uniqueFileName = UUID.randomUUID() + "_" + fileType + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(UPLOAD_DIR + uniqueFileName);
+        Files.createDirectories(filePath.getParent()); // Ensure directories exist
+        Files.write(filePath, file.getBytes());
+        return filePath.toString(); // stored in DB as path
+    }
+}
+
+
+

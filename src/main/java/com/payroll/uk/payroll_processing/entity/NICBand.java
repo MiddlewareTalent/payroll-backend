@@ -52,6 +52,7 @@ public enum NICBand {
      * Meaning: No employer NIC is due below this level.
      */
     EMPLOYER_BELOW_ST,
+    EMPLOYER_BELOW_LEL_2024_2025,
 
     /**
      * EMPLOYER_ST_TO_LEL:
@@ -84,4 +85,8 @@ public enum NICBand {
      * Meaning: 15% employer NIC applies universally above this threshold.
      */
     EMPLOYER_ABOVE_UEL;
+
+
+
+
 }

@@ -41,6 +41,7 @@ public class EmployerDetailsDTOMapper {
         dto.setRegion(employerDetails.getRegion());
         dto.setTaxYear(employerDetails.getTaxYear());
         dto.setPayDate(employerDetails.getPayDate());
+
 //        dto.setTermsDto(mapToTermsDto(employerDetails.getTerms()));
 //        dto.setTaxOfficeDto(mapToTaxOfficeDto(employerDetails.getTaxOffice()));
 //        dto.setBankDetailsDTO(mapToBanKDetailsDTO(employerDetails.getBankDetails()));
@@ -104,9 +105,20 @@ public class EmployerDetailsDTOMapper {
         if (employerDto.getBankDetailsDTO() != null) {
             employerDetails.setBankDetails(changeToBankDetails(employerDto));
         }
-        if(employerDto.getOtherEmployerDetailsDto() !=null){
+        /*if(employerDto.getOtherEmployerDetailsDto() !=null){
             employerDetails.setOtherEmployerDetails(changeToOtherEmployerDetails(employerDto.getOtherEmployerDetailsDto()));
+        }*/
+        OtherEmployerDetails otherEmployerDetails;
+
+        if (employerDto.getOtherEmployerDetailsDto() != null) {
+            otherEmployerDetails = changeToOtherEmployerDetails(employerDto.getOtherEmployerDetailsDto());
+        } else {
+            otherEmployerDetails = new OtherEmployerDetails();
+            otherEmployerDetails.setDefaults(); // assuming you have this method in entity
         }
+
+        employerDetails.setOtherEmployerDetails(otherEmployerDetails);
+
         return employerDetails;
     }
 
@@ -213,34 +225,44 @@ public class EmployerDetailsDTOMapper {
 
     public OtherEmployerDetails changeToOtherEmployerDetails(OtherEmployerDetailsDTO otherEmployerDetailsDTO){
         OtherEmployerDetails otherDetails=new OtherEmployerDetails();
-        otherDetails.setMonthlyPAYE(otherEmployerDetailsDTO.getMonthlyPAYE());
-        otherDetails.setWeeklyPAYE(otherEmployerDetailsDTO.getWeeklyPAYE());
-        otherDetails.setYearlyPAYE(otherEmployerDetailsDTO.getYearlyPAYE());
+        otherDetails.setTotalPaidGrossAmountYTD(otherEmployerDetailsDTO.getTotalPaidGrossAmountYTD());
+        otherDetails.setCurrentPayPeriodPaidGrossPay(otherEmployerDetailsDTO.getCurrentPayPeriodPaidGrossPay());
+
         otherDetails.setTotalPAYEYTD(otherEmployerDetailsDTO.getTotalPAYEYTD());
-        otherDetails.setMonthlyEmployeesNI(otherEmployerDetailsDTO.getMonthlyEmployeesNI());
-        otherDetails.setWeeklyEmployeesNI(otherEmployerDetailsDTO.getWeeklyEmployeesNI());
-        otherDetails.setYearlyEmployeesNI(otherEmployerDetailsDTO.getYearlyEmployeesNI());
+        otherDetails.setCurrentPayPeriodPAYE(otherEmployerDetailsDTO.getCurrentPayPeriodPAYE());
+
         otherDetails.setTotalEmployeesNIYTD(otherEmployerDetailsDTO.getTotalEmployeesNIYTD());
-        otherDetails.setMonthlyEmployersNI(otherEmployerDetailsDTO.getMonthlyEmployersNI());
-        otherDetails.setWeeklyEmployersNI(otherEmployerDetailsDTO.getWeeklyEmployersNI());
-        otherDetails.setYearlyEmployersNI(otherEmployerDetailsDTO.getYearlyEmployersNI());
+        otherDetails.setCurrentPayPeriodEmployeesNI(otherEmployerDetailsDTO.getCurrentPayPeriodEmployeesNI());
+
         otherDetails.setTotalEmployersNIYTD(otherEmployerDetailsDTO.getTotalEmployersNIYTD());
+        otherDetails.setCurrentPayPeriodEmployersNI(otherEmployerDetailsDTO.getCurrentPayPeriodEmployersNI());
+
+        otherDetails.setTotalEmployerPensionContribution(otherEmployerDetailsDTO.getTotalEmployerPensionContribution());
+        otherDetails.setCurrentPayPeriodEmployerPensionContribution(otherEmployerDetailsDTO.getCurrentPayPeriodEmployerPensionContribution());
+
+        otherDetails.setCurrentPayPeriodEmployeePensionContribution(otherEmployerDetailsDTO.getCurrentPayPeriodEmployeePensionContribution());
+        otherDetails.setTotalEmployeePensionContribution(otherEmployerDetailsDTO.getTotalEmployeePensionContribution());
         return otherDetails;
     }
     public OtherEmployerDetailsDTO mapToOtherEmployerDetailsDTO(OtherEmployerDetails otherEmployerDetails){
         OtherEmployerDetailsDTO otherDetailsDTO=new OtherEmployerDetailsDTO();
-        otherDetailsDTO.setMonthlyPAYE(otherEmployerDetails.getMonthlyPAYE());
-        otherDetailsDTO.setWeeklyPAYE(otherEmployerDetails.getWeeklyPAYE());
-        otherDetailsDTO.setYearlyPAYE(otherEmployerDetails.getYearlyPAYE());
+        otherDetailsDTO.setTotalPaidGrossAmountYTD(otherEmployerDetails.getTotalPaidGrossAmountYTD());
+        otherDetailsDTO.setCurrentPayPeriodPaidGrossPay(otherEmployerDetails.getCurrentPayPeriodPaidGrossPay());
+
         otherDetailsDTO.setTotalPAYEYTD(otherEmployerDetails.getTotalPAYEYTD());
-        otherDetailsDTO.setMonthlyEmployeesNI(otherEmployerDetails.getMonthlyEmployeesNI());
-        otherDetailsDTO.setWeeklyEmployeesNI(otherEmployerDetails.getWeeklyEmployeesNI());
-        otherDetailsDTO.setYearlyEmployeesNI(otherEmployerDetails.getYearlyEmployeesNI());
+        otherDetailsDTO.setCurrentPayPeriodPAYE(otherEmployerDetails.getCurrentPayPeriodPAYE());
+
         otherDetailsDTO.setTotalEmployeesNIYTD(otherEmployerDetails.getTotalEmployeesNIYTD());
-        otherDetailsDTO.setMonthlyEmployersNI(otherEmployerDetails.getMonthlyEmployersNI());
-        otherDetailsDTO.setWeeklyEmployersNI(otherEmployerDetails.getWeeklyEmployersNI());
-        otherDetailsDTO.setYearlyEmployersNI(otherEmployerDetails.getYearlyEmployersNI());
+        otherDetailsDTO.setCurrentPayPeriodEmployeesNI(otherEmployerDetails.getCurrentPayPeriodEmployeesNI());
+
         otherDetailsDTO.setTotalEmployersNIYTD(otherEmployerDetails.getTotalEmployersNIYTD());
+        otherDetailsDTO.setCurrentPayPeriodEmployersNI(otherEmployerDetails.getCurrentPayPeriodEmployersNI());
+
+        otherDetailsDTO.setTotalEmployerPensionContribution(otherEmployerDetails.getTotalEmployerPensionContribution());
+        otherDetailsDTO.setCurrentPayPeriodEmployerPensionContribution(otherEmployerDetails.getCurrentPayPeriodEmployerPensionContribution());
+
+        otherDetailsDTO.setCurrentPayPeriodEmployeePensionContribution(otherEmployerDetails.getCurrentPayPeriodEmployeePensionContribution());
+        otherDetailsDTO.setTotalEmployeePensionContribution(otherEmployerDetails.getTotalEmployeePensionContribution());
         return otherDetailsDTO;
     }
 }

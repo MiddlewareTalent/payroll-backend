@@ -129,15 +129,15 @@ public class PersonalAllowanceCalculation {
     }
 
     public BigDecimal getPersonalAllowanceFromEmergencyTaxCode(String taxCode, String payFrequency) {
-        String normalizedTaxCode = taxCode.replaceAll("\\s+", "").toUpperCase(); // Remove all spaces and normalize case
-        BigDecimal annualAllowance = new BigDecimal("12570"); // Example: UK Personal Allowance 2025–26
-        BigDecimal allowance;
+        String normalizedTaxCode = taxCode.toUpperCase();
+        BigDecimal annualAllowance = new BigDecimal("12570");
+        BigDecimal allowance=BigDecimal.ZERO;
 
-        if (normalizedTaxCode.matches("^C?\\d+LM1$")) {
+        if (normalizedTaxCode.matches("1257L M1")) {
             allowance = annualAllowance.divide(new BigDecimal("12"), 2, RoundingMode.HALF_UP); // Monthly
-        } else if (normalizedTaxCode.matches("^C?\\d+LW1$")) {
+        } else if (normalizedTaxCode.matches("1257L W1")) {
             allowance = annualAllowance.divide(new BigDecimal("52"), 2, RoundingMode.HALF_UP); // Weekly
-        } else if (normalizedTaxCode.matches("^C?\\d+LX$")) {
+        } else if (normalizedTaxCode.matches("1257L X")) {
             // 'X' is usually non-cumulative, treat as per pay frequency
             if (payFrequency.equalsIgnoreCase("monthly")) {
                 allowance = annualAllowance.divide(new BigDecimal("12"), 2, RoundingMode.HALF_UP);
@@ -146,10 +146,13 @@ public class PersonalAllowanceCalculation {
             } else {
                 throw new IllegalArgumentException("Unsupported pay frequency for X suffix: " + payFrequency);
             }
-        } else {
+        }
+
+
+        /*else {
             // Regular cumulative tax code
             allowance = annualAllowance;
-        }
+        }*/
 
         return allowance;
     }
@@ -165,6 +168,22 @@ public class PersonalAllowanceCalculation {
             default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
 
+    }
+
+    public  BigDecimal getRemainingAllowance(BigDecimal remainingPersonalAllowance, BigDecimal getPersonalAllowance) {
+        BigDecimal personalAllowance;
+
+        if (remainingPersonalAllowance.compareTo(BigDecimal.ZERO) <= 0) {
+            // If no personal allowance left
+            personalAllowance = BigDecimal.ZERO;
+        } else if (getPersonalAllowance.compareTo(remainingPersonalAllowance) >= 0) {
+            // If this month's allowance is more than what's remaining
+            personalAllowance = remainingPersonalAllowance;
+        } else {
+            // Apply the full amount scheduled for this pay period
+            personalAllowance = getPersonalAllowance;
+        }
+        return personalAllowance;
     }
 
 

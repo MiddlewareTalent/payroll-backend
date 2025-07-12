@@ -30,10 +30,7 @@ public class PaySlipCreationService {
     private NationalInsuranceCalculation nationalInsuranceCalculation;
     @Autowired
     private PaySlipCreateDTOMapper paySlipCreateDtoMapper;
-//    @Autowired
-//    private EmployeeDetailsDTO employeeDetailsDTO;
-//    @Autowired
-//    private EmployeeDetailsRepository employeeDetailsRepository;
+
 
 
 
@@ -66,7 +63,7 @@ public class PaySlipCreationService {
                         paySlipCreateDto.getGrossPayTotal(), personalAllowance
                 ));
         BigDecimal incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
-                paySlipCreateDto.getGrossPayTotal(), paySlipCreateDto.getTaxYear(),
+                paySlipCreateDto.getGrossPayTotal(), paySlipCreateDto.getPersonalAllowance(),paySlipCreateDto.getTaxableIncome(),paySlipCreateDto.getTaxYear(),
                 paySlipCreateDto.getRegion(), paySlipCreateDto.getTaxCode(), paySlipCreateDto.getPayPeriod()
         );
 

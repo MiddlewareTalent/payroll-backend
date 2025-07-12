@@ -56,6 +56,10 @@ public class PaySlipCreateDto {
     private BigDecimal takeHomePayTotal;
     private String paySlipReference;
 
+    private boolean hasPensionEligible= false;
+    private BigDecimal employeePensionContribution;
+    private  BigDecimal employerPensionContribution;
+
     /*public LocalDate getPreviousMonthEndDate() {
         // Get current system date as Pay Date
         LocalDate payDate = LocalDate.now();
