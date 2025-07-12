@@ -5,6 +5,9 @@ import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +16,9 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @Service
+//@Slf4j
 public class StudentLoanCalculation {
+    private static final Logger logger = LoggerFactory.getLogger(StudentLoanCalculation.class);
     @Autowired
     private TaxThresholdService taxThresholdService;
     @Autowired
@@ -77,16 +82,18 @@ public class StudentLoanCalculation {
         if (income == null || taxYear == null || payPeriod == null) {
             throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
         }
+        logger.info("income: {}",income,"hasStudentLoan: {}",hasStudentLoan,"studentLoanPlan: {}",studentLoanPlan,"taxYear: {}",taxYear,"payPeriod: {}",payPeriod);
         String studentLoanType=String.valueOf(studentLoanPlan);
         BigDecimal[][] studentThresholds=taxThresholdService.getStudentLoanThresholdsByPlanType(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.valueOf(studentLoanType));
         BigDecimal studentLoan_PlanThreshold=studentThresholds[0][0];
         BigDecimal[] rate =taxThresholdService.getStudentLoanBandByPlanTypeRate(taxYear,TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.STUDENT_LOAN_PLAN_2);
         BigDecimal deductionRate=rate[0];
         BigDecimal grossIncomePerYear=calculateGrossSalary(income,payPeriod);
-        System.out.println("GrossIncomePerYear: "+grossIncomePerYear);
+        logger.info("GrossIncomePerYear:{}",grossIncomePerYear);
         if (grossIncomePerYear.compareTo(studentLoan_PlanThreshold)>0){
             BigDecimal studentLoanDeductionAmount= grossIncomePerYear.subtract(studentLoan_PlanThreshold);
             BigDecimal amount= studentLoanDeductionAmount.multiply(deductionRate);
+            logger.info("Student Loan Deduction Amount: {}", amount);
             return calculateIncomeTaxBasedOnPayPeriod(amount,payPeriod);
         }
           return BigDecimal.ZERO;
@@ -98,20 +105,21 @@ public class StudentLoanCalculation {
         if (income == null || taxYear == null || payPeriod == null) {
             throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
         }
+        logger.info("income: {}",income,"hasPostGraduateLoan: {}",hasPostGraduateLoan,"postgraduateLoanPlanType: {}",postgraduateLoanPlanType,"taxYear: {}",taxYear,"payPeriod: {}",payPeriod);
         String postGraduateLoanType=String.valueOf(postgraduateLoanPlanType);
         List<TaxThreshold> postGraduateData = taxThresholdService.getPostGraduateLoan(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.POSTGRADUATE_LOAN, TaxThreshold.BandName.valueOf(postGraduateLoanType));
 
         BigDecimal postGraduateLoanPlan=postGraduateData.getFirst().getLowerBound();
-        System.out.println(postGraduateLoanPlan);
+
 
         BigDecimal postGraduateLoanDeductionRate=postGraduateData.getFirst().getRate();
-        System.out.println(postGraduateLoanDeductionRate);
         BigDecimal grossIncomePerYear=calculateGrossSalary(income,payPeriod);
-        System.out.println("GrossIncomePerYear: "+grossIncomePerYear);
+        logger.info("GrossIncomePerYear: {}",grossIncomePerYear);
         if (grossIncomePerYear.compareTo(postGraduateLoanPlan)>0){
             BigDecimal postGraduateDeductedAmount = grossIncomePerYear.subtract(postGraduateLoanPlan);
             BigDecimal amount = postGraduateDeductedAmount.multiply(postGraduateLoanDeductionRate);
 
+            logger.info("Post Graduate Loan Deduction Amount: {}", amount);
             return calculateIncomeTaxBasedOnPayPeriod(amount,payPeriod);
         }
 

@@ -10,12 +10,17 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OtherEmployeeDetailsDTO {
+
+    private BigDecimal numberOfPayPeriodsEmergencyTaxCodeUsed=BigDecimal.ZERO;
+    private BigDecimal totalAllowanceUsedDuringEmergencyCode=BigDecimal.ZERO;
     // Personal Allowance related fields
-    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+//    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
+//    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
     private BigDecimal usedPersonalAllowance= BigDecimal.ZERO;
     private BigDecimal totalUsedPersonalAllowance= BigDecimal.ZERO;
-    private BigDecimal remainingPersonalAllowance= totalPersonalAllowanceInCompany;
+    private BigDecimal remainingPersonalAllowance= BigDecimal.ZERO;
+    //gross salary related fields
+    private BigDecimal totalEarningsAmountYTD = BigDecimal.ZERO;
 
     // Income Tax related fields
     private BigDecimal incomeTaxPaid;
@@ -32,4 +37,9 @@ public class OtherEmployeeDetailsDTO {
     private BigDecimal numberOfMonthsOfNIContributions= BigDecimal.ZERO;
     private BigDecimal numberOfWeeksOfNIContributions= BigDecimal.ZERO;
     private BigDecimal numberOfYearsOfNIContributions= BigDecimal.ZERO;
+
+    //Pension related fields
+    private BigDecimal totalAmountPensionContribution = BigDecimal.ZERO;
+    private BigDecimal numberOfPayPeriodsPensionContribution = BigDecimal.ZERO;
+    private BigDecimal pensionContributeAmount= BigDecimal.ZERO;
 }

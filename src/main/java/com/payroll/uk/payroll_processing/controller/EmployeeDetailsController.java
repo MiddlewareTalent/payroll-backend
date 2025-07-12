@@ -2,20 +2,33 @@ package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
+import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
+import com.payroll.uk.payroll_processing.service.FileStorageService;
 import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employee-details")
 public class EmployeeDetailsController {
+    @Autowired
+    private EmployeeDetailsRepository employeeDetailsRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
     private final EmployeeDetailsService employeeDetailsService;
     public EmployeeDetailsController(EmployeeDetailsService employeeDetailsService) {
         this.employeeDetailsService = employeeDetailsService;
@@ -24,6 +37,8 @@ public class EmployeeDetailsController {
     public ResponseEntity<?> createEmployeeDetails(
             @Valid @RequestBody EmployeeDetailsDTO employeeDetailsDTO,
             BindingResult bindingResult) {
+        System.out.println("employeeDetailsDTO : "+employeeDetailsDTO);
+        System.out.println("getOtherEmployeeDetailsDTO : "+employeeDetailsDTO.getOtherEmployeeDetailsDTO());
 
         // Handle validation errors (400 Bad Request)
         if (bindingResult.hasErrors()) {
@@ -45,6 +60,18 @@ public class EmployeeDetailsController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal server error: " + e.getMessage()); // 500
+        }
+    }
+
+    @PostMapping("/upload-documents")
+    public Map<String,String> uploadDocuments(
+                                             @RequestParam(value = "p45Document", required = false) MultipartFile p45File,
+                                             @RequestParam(value = "starterChecklist", required = false) MultipartFile starterChecklistFile) {
+        try {
+            return fileStorageService.storeEmployeeDocuments(p45File, starterChecklistFile);
+//            return ResponseEntity.ok("Documents uploaded successfully");
+        } catch (Exception e) {
+            throw  new RuntimeException("File is not exist");
         }
     }
     @GetMapping("/allEmployees")
@@ -156,6 +183,11 @@ public class EmployeeDetailsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Internal server error: " + e.getMessage()); // 500 Internal Server Error
         }
+    }
+    @GetMapping("/test/email/{email}")
+    public Boolean checkEmailExist(@PathVariable("email") String email){
+        Optional<EmployeeDetails> email_Id = employeeDetailsRepository.findByEmail(email);
+        return email_Id.isPresent();
     }
 
 

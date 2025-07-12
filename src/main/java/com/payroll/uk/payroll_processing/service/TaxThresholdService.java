@@ -27,6 +27,18 @@ public class TaxThresholdService {
 //        System.out.println("Fetching NI thresholds for year: " + taxYear + ", region: " + region + ", tax band type: " + bandNameType+ ", band name: " + bandName);
         return taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName);
     }
+
+
+    //Get Pension thresholds by tax year, region, band name type, and band name
+    public BigDecimal[][] getPensionThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        return  getThresholdsBands( taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
+    }
+
+    // Get pension contribution rates by tax year, region, band name type, and band name
+    public BigDecimal[] getPensionContributionRate(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+
+        return getThresholdRates(taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
+    }
     // Get student loan thresholds by tax year, region, band name type, and band name
     public BigDecimal[][] getStudentLoanThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType) {
       return  getThresholdsBands( taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(taxYear, region, bandNameType));
@@ -179,6 +191,8 @@ public class TaxThresholdService {
         if (niThresholds.isEmpty()) {
             throw new IllegalStateException("No NI thresholds found");
         }
+        System.out.println("Error occurred while calculating National Insurance: Index 3 out of bounds for length 3");
+        System.out.println("Data");
 
         BigDecimal[][] bounds = new BigDecimal[niThresholds.size()][2];
         for (int i = 0; i < niThresholds.size(); i++) {
@@ -279,6 +293,7 @@ public class TaxThresholdService {
         return new BigDecimal[0];
 
     }
+
 
 
 

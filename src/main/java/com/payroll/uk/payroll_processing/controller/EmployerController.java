@@ -1,19 +1,25 @@
 package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
+import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.EmployerRegistrationException;
+import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.service.EmployerService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/employer") // Base URL for the API
 public class EmployerController {
 
+    @Autowired
+    private EmployerDetailsRepository employerDetailsRepository;  // DTO for employer details
     private  final EmployerService employerService;
 
     public EmployerController(EmployerService employerService){
@@ -36,7 +42,7 @@ public class EmployerController {
     }
 
     @GetMapping("/employers/{id}")
-    public ResponseEntity<?> getEmployerDetails(@RequestParam Long id) {
+    public ResponseEntity<?> getEmployerDetails(@PathVariable Long id) {
         try {
             EmployerDetailsDTO employerDetails = employerService.getEmployerDetails(id);
             return ResponseEntity.ok(employerDetails);
@@ -77,8 +83,8 @@ public class EmployerController {
 //                    .body("Update failed. Please try again.");
 //        }
     }
-    @DeleteMapping("/delete/employers")
-    public ResponseEntity<String> deleteEmployer(@RequestParam Long id) {
+    @DeleteMapping("/delete/employers/{id}")
+    public ResponseEntity<String> deleteEmployer(@PathVariable Long id) {
         try {
             String result = employerService.deleteEmployer(id);
             return ResponseEntity.ok(result);
@@ -89,6 +95,17 @@ public class EmployerController {
                     .body("Deletion failed. Please try again.");
         }
     }
+
+    @GetMapping("/test/email/{employerEmail}")
+    public Boolean checkEmailExist(@PathVariable String employerEmail) {
+        System.out.println("EMployer : " + employerEmail);
+        Optional<EmployerDetails> email_Id = employerDetailsRepository.findByEmployerEmail(employerEmail);
+        if (email_Id.isPresent()) {
+            return true;
+        }
+        return false;
+    }
+
 
 
 

@@ -1,15 +1,18 @@
 package com.payroll.uk.payroll_processing.controller;
 
 
+import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
-import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
-import com.payroll.uk.payroll_processing.service.payslip.PaySlipCreationService;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import com.payroll.uk.payroll_processing.service.payslip.AutoPaySlip;
+import com.payroll.uk.payroll_processing.service.payslip.PaySlipCreationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -19,6 +22,8 @@ public class PaySlipController {
     private PaySlipCreationService paySlipCreationService;
     @Autowired
     private AutoPaySlip autoPaySlip;
+    @Autowired
+    private TaxCodeService taxCodeService;
 
     @PostMapping("/create")
     public ResponseEntity<PaySlipCreateDto> createPaySlip(@RequestBody PaySlipCreateDto paySlipCreateDto){
@@ -34,7 +39,7 @@ public class PaySlipController {
 
     }
 
-    @PostMapping("/create/auto/{employeeId}")
+    @PostMapping("/auto/{employeeId}")
     public ResponseEntity<PaySlipCreateDto> autoPaySlip(@PathVariable ("employeeId") String employeeId){
         System.out.println("paySlipCreateDto: "+employeeId);
         try{
@@ -71,6 +76,35 @@ public class PaySlipController {
         catch (Exception e) {
             return ResponseEntity.status(500).body(null);
         }
+
+    }
+    @GetMapping("/all/total/payslips")
+    public ResponseEntity<List<PaySlipCreateDto>> getAllPaySlips() {
+        try {
+            List<PaySlipCreateDto> data = autoPaySlip.getAllPaySlips();
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("all/employee-data")
+    public ResponseEntity<List<EmployeesSummaryInEmployerDTO>> getAllDataFromPaySlip(){
+        try{
+            List<EmployeesSummaryInEmployerDTO> data = autoPaySlip.getAllData();
+            return ResponseEntity.ok(data);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/calculate/income/tax")
+    public BigDecimal incomeTaxCalculation(@RequestParam BigDecimal grossIncome,@RequestParam BigDecimal personalAllowanceGet,
+                                           @RequestParam BigDecimal taxableIncomeGet, @RequestParam String taxYear,
+                                           @RequestParam TaxThreshold.TaxRegion region, @RequestParam String taxCode, @RequestParam String payPeriod){
+        return taxCodeService.calculateIncomeBasedOnTaxCode( grossIncome, personalAllowanceGet, taxableIncomeGet, taxYear, region, taxCode, payPeriod);
 
     }
 

@@ -37,6 +37,9 @@ public class PaySlipCreateDTOMapper {
         dto.setDeductionsTotal(paySlip.getDeductionsTotal());
         dto.setTakeHomePayTotal(paySlip.getTakeHomePayTotal());
         dto.setPaySlipReference(paySlip.getPaySlipReference());
+        dto.setHasPensionEligible(paySlip.isHasPensionEligible());
+        dto.setEmployeePensionContribution(paySlip.getEmployeePensionContribution());
+        dto.setEmployerPensionContribution(paySlip.getEmployerPensionContribution());
         return dto;
     }
     /*public PaySlip changeToPaySlip(PaySlipCreateDto paySlipCreateDto) {
