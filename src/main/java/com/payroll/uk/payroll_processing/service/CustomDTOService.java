@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.service;
 
+import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.customdto.EmployerDashBoardDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
@@ -11,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,7 +32,7 @@ public class CustomDTOService {
             EmployerDashBoardDetailsDTO employerDashBoardDetailsDTO = new EmployerDashBoardDetailsDTO();
             employerDashBoardDetailsDTO.setTotalEmployees(employeeDetailsRepository.count());
             employerDashBoardDetailsDTO.setTotalPaySlips(paySlipRepository.count());
-            employerDashBoardDetailsDTO.setCurrentMonthGrossPay(employerDetails.getOtherEmployerDetails().getCurrentPayPeriodPaidGrossPay());
+            employerDashBoardDetailsDTO.setTotalPaidGrossAmountYTD(employerDetails.getOtherEmployerDetails().getTotalPaidGrossAmountYTD());
             employerDashBoardDetailsDTO.setPayPeriod(employerDetails.getPayPeriod());
             employerDashBoardDetailsDTO.setCurrentYear(employerDetails.getTaxYear());
             employerDashBoardDetailsDTO.setCurrentPayMonth(TaxMonthUtils.getUkTaxMonth(LocalDate.now()));
@@ -46,5 +48,13 @@ public class CustomDTOService {
         }
 
 
+    }
+
+    public List<EmployeesSummaryInEmployerDTO> getAllData(){
+        List<EmployeesSummaryInEmployerDTO> data = paySlipRepository.findByAllData();
+        if (data.isEmpty()){
+            throw new IllegalArgumentException("No data found");
+        }
+        return data;
     }
 }

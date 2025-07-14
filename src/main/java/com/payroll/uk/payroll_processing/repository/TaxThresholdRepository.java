@@ -27,4 +27,15 @@ public interface TaxThresholdRepository extends JpaRepository<TaxThreshold, Long
 
 
     List<TaxThreshold> findByTaxYearAndRegionAndBandNameTypeAndBandName(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName);
+
+    @Query("SELECT t FROM TaxThreshold t WHERE t.taxYear = :taxYear AND " +
+            "(t.region = :region OR t.region = 'ALL_REGIONS')")
+    List<TaxThreshold> findByTaxYearAndRegionIncludingAll(@Param("taxYear") String taxYear,
+                                                          @Param("region") String region);
+
+//    List<TaxThreshold> findByTaxYearAndRegionAndBandNameType(String taxYear,
+//                                                             TaxThreshold.TaxRegion region,
+//                                                             TaxThreshold.BandNameType bandNameType);
+
+    List<TaxThreshold> findByTaxYearAndRegion(String taxYear, TaxThreshold.TaxRegion region);
 }

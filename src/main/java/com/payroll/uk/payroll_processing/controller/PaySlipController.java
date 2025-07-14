@@ -88,17 +88,7 @@ public class PaySlipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    @GetMapping("all/employee-data")
-    public ResponseEntity<List<EmployeesSummaryInEmployerDTO>> getAllDataFromPaySlip(){
-        try{
-            List<EmployeesSummaryInEmployerDTO> data = autoPaySlip.getAllData();
-            return ResponseEntity.ok(data);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+
 
     @PostMapping("/calculate/income/tax")
     public BigDecimal incomeTaxCalculation(@RequestParam BigDecimal grossIncome,@RequestParam BigDecimal personalAllowanceGet,
