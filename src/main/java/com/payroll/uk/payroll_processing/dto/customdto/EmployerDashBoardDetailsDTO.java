@@ -13,12 +13,13 @@ import java.math.BigDecimal;
 public class EmployerDashBoardDetailsDTO {
     private Long TotalEmployees;
     private Long TotalPaySlips;
-    private BigDecimal currentMonthGrossPay;
+
     private PayPeriod payPeriod;
     private  int currentPayMonth;
     private String currentYear;
     private Long currentYearCompletedDays;
 
+    private BigDecimal totalPaidGrossAmountYTD;
     private BigDecimal totalIncomeTax;
     private BigDecimal totalEmployeeNI;
     private BigDecimal totalEmployerNI;

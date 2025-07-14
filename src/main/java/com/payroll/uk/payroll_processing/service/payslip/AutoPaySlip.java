@@ -424,12 +424,6 @@ public class AutoPaySlip {
         }
         return paySlips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
     }
-    public List<EmployeesSummaryInEmployerDTO> getAllData(){
-        List<EmployeesSummaryInEmployerDTO> data = paySlipRepository.findByAllData();
-        if (data.isEmpty()){
-            throw new IllegalArgumentException("No data found");
-        }
-        return data;
-    }
+
 }
 

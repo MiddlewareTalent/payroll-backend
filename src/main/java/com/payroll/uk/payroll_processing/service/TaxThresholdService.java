@@ -7,7 +7,9 @@ import jdk.jfr.Threshold;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TaxThresholdService {
@@ -294,8 +296,17 @@ public class TaxThresholdService {
 
     }
 
+    public List<TaxThreshold> getCombinedThresholds(String taxYear, TaxThreshold.TaxRegion region) {
+        List<TaxThreshold> incomeTaxThresholds = taxThresholdRepository
+                .findByTaxYearAndRegionAndBandNameType(taxYear, region, TaxThreshold.BandNameType.INCOME_TAX);
 
+        List<TaxThreshold> otherThresholds = taxThresholdRepository
+                .findByTaxYearAndRegion(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS);
 
+        List<TaxThreshold> all = new ArrayList<>();
+        all.addAll(incomeTaxThresholds);
+        all.addAll(otherThresholds);
 
-
+        return all;
+    }
 }
