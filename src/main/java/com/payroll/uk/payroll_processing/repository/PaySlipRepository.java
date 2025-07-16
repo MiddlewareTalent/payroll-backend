@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.repository;
 
 import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -30,6 +31,5 @@ public interface PaySlipRepository extends JpaRepository<PaySlip,Long> {
     GROUP BY p.employeeId, p.firstName, p.lastName,p.taxYear
 """)
     List<EmployeesSummaryInEmployerDTO> findByAllData();
-
 
 }

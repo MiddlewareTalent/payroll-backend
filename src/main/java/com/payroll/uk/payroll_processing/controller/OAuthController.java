@@ -3,6 +3,8 @@ package com.payroll.uk.payroll_processing.controller;
 import com.payroll.uk.payroll_processing.hmrc_config.ApplicationRestrictedAccess;
 import com.payroll.uk.payroll_processing.hmrc_config.OAuthTokenAccess;
 import com.payroll.uk.payroll_processing.hmrc_config.UserRestrictedAccess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.net.URI;
 @RestController
 @RequestMapping("/oauth2.0")
 public class OAuthController {
+    private static final Logger logging= LoggerFactory.getLogger(OAuthController.class);
 
     private final UserRestrictedAccess userRestrictedAccess;
     private final ApplicationRestrictedAccess applicationRestrictedAccess;
@@ -29,13 +32,13 @@ public class OAuthController {
 
     @GetMapping("/login/{scope}")
     public ResponseEntity<Void> login(@PathVariable String scope) {
-        System.out.println("Request started: " + System.currentTimeMillis());
-        System.out.println("Received scope: " + scope);
+        logging.info("Request started: {} " , System.currentTimeMillis());
+        logging.info("Received scope: {}" , scope);
 
         URI redirectUri = userRestrictedAccess.buildAuthorizationUri(scope);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(redirectUri);
-        System.out.println("successfully completed login method");
+        logging.info("successfully completed login method");
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 

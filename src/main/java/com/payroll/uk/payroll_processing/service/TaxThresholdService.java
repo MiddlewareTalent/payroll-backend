@@ -4,6 +4,8 @@ import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.repository.TaxThresholdRepository;
 import jdk.jfr.Threshold;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,6 +15,7 @@ import java.util.Map;
 
 @Service
 public class TaxThresholdService {
+    private static  final Logger logging= LoggerFactory.getLogger(TaxThresholdService.class);
     private final TaxThresholdRepository taxThresholdRepository;
 
     public TaxThresholdService(TaxThresholdRepository taxThresholdRepository) {
@@ -91,6 +94,7 @@ public class TaxThresholdService {
     }
     public BigDecimal[][] getTaxBounds(String taxYear, TaxThreshold.TaxRegion region,
                                        TaxThreshold.BandNameType BandNameType) {
+        logging.info("Tax Thresholds Service in Fetching tax bounds for year: {}, region: {}, band name type: {}", taxYear, region, BandNameType);
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new IllegalStateException("Year range not found: " + taxYear);
@@ -193,9 +197,6 @@ public class TaxThresholdService {
         if (niThresholds.isEmpty()) {
             throw new IllegalStateException("No NI thresholds found");
         }
-        System.out.println("Error occurred while calculating National Insurance: Index 3 out of bounds for length 3");
-        System.out.println("Data");
-
         BigDecimal[][] bounds = new BigDecimal[niThresholds.size()][2];
         for (int i = 0; i < niThresholds.size(); i++) {
             bounds[i][0] = niThresholds.get(i).getLowerBound();

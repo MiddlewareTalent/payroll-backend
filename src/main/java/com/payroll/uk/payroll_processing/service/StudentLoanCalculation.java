@@ -4,8 +4,6 @@ package com.payroll.uk.payroll_processing.service;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
-import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +19,7 @@ public class StudentLoanCalculation {
     private static final Logger logger = LoggerFactory.getLogger(StudentLoanCalculation.class);
     @Autowired
     private TaxThresholdService taxThresholdService;
-    @Autowired
-    private EmployeeDetailsRepository employeeDetailsRepository;
+
 
     public BigDecimal calculateStudentLoanDeduction(BigDecimal income, Boolean hasStudentLoan,  String taxYear, String payPeriod) {
         if(!hasStudentLoan){
@@ -82,7 +79,7 @@ public class StudentLoanCalculation {
         if (income == null || taxYear == null || payPeriod == null) {
             throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
         }
-        logger.info("income: {}",income,"hasStudentLoan: {}",hasStudentLoan,"studentLoanPlan: {}",studentLoanPlan,"taxYear: {}",taxYear,"payPeriod: {}",payPeriod);
+        logger.info("income: {}, hasStudentLoan: {}, studentLoanPlan: {}, taxYear: {}, payPeriod: {}", income, hasStudentLoan, studentLoanPlan, taxYear, payPeriod);
         String studentLoanType=String.valueOf(studentLoanPlan);
         BigDecimal[][] studentThresholds=taxThresholdService.getStudentLoanThresholdsByPlanType(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.valueOf(studentLoanType));
         BigDecimal studentLoan_PlanThreshold=studentThresholds[0][0];
@@ -105,7 +102,7 @@ public class StudentLoanCalculation {
         if (income == null || taxYear == null || payPeriod == null) {
             throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
         }
-        logger.info("income: {}",income,"hasPostGraduateLoan: {}",hasPostGraduateLoan,"postgraduateLoanPlanType: {}",postgraduateLoanPlanType,"taxYear: {}",taxYear,"payPeriod: {}",payPeriod);
+        logger.info("income: {}, hasPostGraduateLoan: {}, postgraduateLoanPlanType: {}, taxYear: {}, payPeriod: {}", income, hasPostGraduateLoan, postgraduateLoanPlanType, taxYear, payPeriod);
         String postGraduateLoanType=String.valueOf(postgraduateLoanPlanType);
         List<TaxThreshold> postGraduateData = taxThresholdService.getPostGraduateLoan(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.POSTGRADUATE_LOAN, TaxThreshold.BandName.valueOf(postGraduateLoanType));
 

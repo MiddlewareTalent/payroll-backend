@@ -3,19 +3,15 @@ package com.payroll.uk.payroll_processing.service.incometax;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.exception.InvalidPayPeriodException;
 import com.payroll.uk.payroll_processing.exception.InvalidTaxCodeException;
-import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
-import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-//@Slf4j
+
 @Service
 public class TaxCodeService {
 
@@ -39,7 +35,8 @@ public class TaxCodeService {
         }
 
 
-
+       logger.info("Gross Income: {} , Personal Allowance: {}, Taxable Income: {}, Tax Year: {}, Region: {}, Tax Code: {}, Pay Period: {}",
+                grossIncome, personalAllowanceGet, taxableIncomeGet, taxYear, region, taxCode, payPeriod);
 
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Income cannot be negative");
@@ -68,6 +65,12 @@ public class TaxCodeService {
                 BigDecimal AnnualIncomeTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
                 return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax, payPeriod);
             }
+            // Handle Scottish codes (starting with S followed by numbers and ending with L)
+            else if (normalizedTaxCode.matches("^S\\d+L$")) {
+                return scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
+//            return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax,payPeriod);
+            }
+
             if (normalizedTaxCode.matches("1257L M1") && (region == TaxThreshold.TaxRegion.ENGLAND || region == TaxThreshold.TaxRegion.WALES || region == TaxThreshold.TaxRegion.NORTHERN_IRELAND) ||
                     normalizedTaxCode.matches("1257L W1") && (region == TaxThreshold.TaxRegion.ENGLAND || region == TaxThreshold.TaxRegion.WALES || region == TaxThreshold.TaxRegion.NORTHERN_IRELAND)
                     || normalizedTaxCode.matches("1257L X") && (region == TaxThreshold.TaxRegion.ENGLAND || region == TaxThreshold.TaxRegion.WALES || region == TaxThreshold.TaxRegion.NORTHERN_IRELAND)) {
@@ -83,70 +86,64 @@ public class TaxCodeService {
 
 
             // Handle K codes (negative allowances)
-            if (normalizedTaxCode.matches("^K\\d+$") || normalizedTaxCode.matches("^SK\\d+$") || normalizedTaxCode.matches("^CK\\d+$")) {
+           /* if (normalizedTaxCode.matches("^K\\d+$") || normalizedTaxCode.matches("^SK\\d+$") || normalizedTaxCode.matches("^CK\\d+$")) {
                 BigDecimal AnnualKCodeIncomeTax = incomeTaxCalculation.calculateTaxWithKCode(grossIncome, normalizedTaxCode, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
                 return calculateIncomeTaxBasedOnPayPeriod(AnnualKCodeIncomeTax, payPeriod);
+            }*/
+            if (normalizedTaxCode.matches("^K\\d+$")|| normalizedTaxCode.matches("^CK\\d+$")){
+                logger.info("Inside standard tax code: {} ", normalizedTaxCode);
+                BigDecimal AnnualIncomeTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
+                return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax, payPeriod);
+
+            }
+            else if(normalizedTaxCode.matches("^SK\\d+$")){
+                return scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
             }
 
-            // Handle Scottish codes (starting with S followed by numbers and ending with L)
-            if (normalizedTaxCode.matches("^S\\d+L$")) {
-                return scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
-//            return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax,payPeriod);
-            }
 
             // Handle special tax codes
             if (TaxThreshold.TaxRegion.ENGLAND == region || TaxThreshold.TaxRegion.NORTHERN_IRELAND == region) {
-                switch (normalizedTaxCode) {
-                    case "NT":
-                        return BigDecimal.ZERO;
-                    case "BR":
-                        return grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
+                return switch (normalizedTaxCode) {
+                    case "NT" -> BigDecimal.ZERO;
+                    case "BR" -> grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
 
-                    case "D0":
-                        return grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
+                    case "D0" -> grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
 
-                    case "D1":
-                        return grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
+                    case "D1" -> grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
 
-                    case "0T":
+                    case "0T" -> {
                         BigDecimal Annual0TTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
-                        return calculateIncomeTaxBasedOnPayPeriod(Annual0TTax, payPeriod);
-                }
-                throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                        yield calculateIncomeTaxBasedOnPayPeriod(Annual0TTax, payPeriod);
+                    }
+                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                };
 
             } else if (TaxThreshold.TaxRegion.WALES == region) {
-                switch (normalizedTaxCode) {
-                    case "CNT":
-                        return BigDecimal.ZERO;
-                    case "CBR":
-                        return grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
-                    case "CD0":
-                        return grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
-                    case "CD1":
-                        return grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
-                    case "C0T":
+                return switch (normalizedTaxCode) {
+                    case "CNT" -> BigDecimal.ZERO;
+                    case "CBR" -> grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
+                    case "CD0" -> grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
+                    case "CD1" -> grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
+                    case "C0T" -> {
                         BigDecimal AnnualC0TTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
-                        return calculateIncomeTaxBasedOnPayPeriod(AnnualC0TTax, payPeriod);
-                }
-                throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                        yield calculateIncomeTaxBasedOnPayPeriod(AnnualC0TTax, payPeriod);
+                    }
+                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                };
             } else if (TaxThreshold.TaxRegion.SCOTLAND == region) {
-                switch (normalizedTaxCode) {
-                    case "SNT":
-                        return BigDecimal.ZERO;
-                    case "SBR":
-                        return grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
+                return switch (normalizedTaxCode) {
+                    case "SNT" -> BigDecimal.ZERO;
+                    case "SBR" -> grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
 
-                    case "SD0":
-                        return grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
+                    case "SD0" -> grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
 
-                    case "SD1":
-                        return grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
+                    case "SD1" -> grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
 
-                    case "S0T":
-                        return scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
+                    case "S0T" ->
+                            scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
 //                    return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax,payPeriod);
-                }
-                throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                };
 
             } else {
                 throw new IllegalArgumentException("Invalid region: " + region);
@@ -165,7 +162,7 @@ public class TaxCodeService {
 
     public BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
         return switch (payPeriod.toUpperCase()) {
-            case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
+            case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52),4, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 4, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
@@ -187,8 +184,9 @@ public class TaxCodeService {
             case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> annualGross=grossIncome;
             default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
-        };
-        return annualGross.setScale(2, RoundingMode.HALF_UP);
+        }
+        return annualGross;
+//        return annualGross.setScale(2, RoundingMode.HALF_UP);
 
 
     }

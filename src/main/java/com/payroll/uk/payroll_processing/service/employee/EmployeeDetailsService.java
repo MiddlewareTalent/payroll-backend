@@ -4,6 +4,7 @@ import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;

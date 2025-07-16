@@ -5,7 +5,7 @@ import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.repository.TaxThresholdRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import org.springframework.context.annotation.Lazy;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -13,9 +13,12 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+
 
 @Component
 public class TaxDataInitializer {
+    private static final Logger logging= LoggerFactory.getLogger(TaxDataInitializer.class);
     private final TaxThresholdRepository taxThresholdRepository;
 
     public TaxDataInitializer(TaxThresholdRepository taxThresholdRepository) {
@@ -28,22 +31,22 @@ public class TaxDataInitializer {
         try{
             if (!taxThresholdRepository.existsByTaxYear("2025-2026")) {
                 initialize2025_2026TaxYear();
-                System.out.println("successfully initialized tax data for 2025-2026");
+                logging.info("successfully initialized tax data for 2025-2026");
 
             }
         }
         catch (Exception e) {
-            System.err.println("Error initializing tax data for 2025-2026: " + e.getMessage());
+            logging.error("Error initializing tax data for 2025-2026: {}" , e.getMessage());
         }
         try{
             if (!taxThresholdRepository.existsByTaxYear("2024-2025")) {
                 initialize2024_2025TaxYear();
-                System.out.println("successfully initialized tax data for 2024-2025");
+                logging.info("successfully initialized tax data for 2024-2025");
 
             }
         }
         catch (Exception e) {
-            System.err.println("Error initializing tax data for 2024-2025: " + e.getMessage());
+            logging.error("Error initializing tax data for 2024-2025: {} " ,e.getMessage());
         }
 
 

@@ -3,7 +3,6 @@ package com.payroll.uk.payroll_processing.service.payslip;
 import com.payroll.uk.payroll_processing.dto.LoanCalculationPaySlipDTO;
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
 import com.payroll.uk.payroll_processing.dto.PensionCalculationPaySlipDTO;
-import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
@@ -99,8 +98,10 @@ public class AutoPaySlip {
             logger.error("Error occurred while setting basic details: {}", e.getMessage());
             throw new RuntimeException("Failed to set basic details for payslip", e);
         }
-
         paySlipCreate.setGrossPayTotal(employeeDetails.getPayPeriodOfIncomeOfEmployee());
+
+
+
         try{
             BigDecimal personalAllowance=BigDecimal.ZERO;
             if(!employeeDetails.isHasEmergencyCode()){
@@ -108,6 +109,7 @@ public class AutoPaySlip {
                         paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod()
                 );
                 personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreate.getPayPeriod());
+
             }
 
             else if (employeeDetails.isHasEmergencyCode()){
@@ -137,14 +139,36 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating personal allowance: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate personal allowance for payslip", e);
         }
-
-        paySlipCreate.setTaxableIncome(
-                taxCodeService.calculateTaxableIncome(
-                        paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance()
-                ));
+        //taxable income calculation
         try {
+            BigDecimal currentPayPeriodIncome=paySlipCreate.getGrossPayTotal();
+            if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
+                BigDecimal currentKCodeAmount = updatingDetails.applyKCodeAdjustment(employeeDetails, paySlipCreate.getPayPeriod());
+
+                logger.info("Current K Code Amount: {}", currentKCodeAmount);
+                currentPayPeriodIncome = currentPayPeriodIncome.add(currentKCodeAmount);
+            }
+            paySlipCreate.setTaxableIncome(
+                    taxCodeService.calculateTaxableIncome(
+                            currentPayPeriodIncome, paySlipCreate.getPersonalAllowance()
+                    ));
+        }
+        catch (Exception e){
+            logger.error("Error occurred while calculating taxable income: {}", e.getMessage());
+            throw new RuntimeException("Failed to calculate taxable income for payslip", e);
+        }
+        // income tax calculation
+        try {
+            BigDecimal currentPayPeriodIncome=paySlipCreate.getGrossPayTotal();
+            if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
+                BigDecimal currentKCodeAmount = updatingDetails.applyKCodeAdjustment(employeeDetails, paySlipCreate.getPayPeriod());
+
+                logger.info("Current K Code Amount: {}", currentKCodeAmount);
+                currentPayPeriodIncome = currentPayPeriodIncome.add(currentKCodeAmount);
+            }
+
             BigDecimal incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
-                    paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
+                    currentPayPeriodIncome, paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
                     paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
             );
             logger.info("incomeTax {} ", incomeTax);
@@ -155,6 +179,7 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating income tax: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate income tax for payslip", e);
         }
+        // National Insurance calculation
         try {
 
 
@@ -174,6 +199,7 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating National Insurance: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate National Insurance for payslip", e);
         }
+        // Student Loan and Postgraduate Loan calculation
         try {
             paySlipCreate.setHasStudentLoanStart(employeeDetails.getStudentLoan().getHasStudentLoan());
             paySlipCreate.setStudentLoanPlanType(employeeDetails.getStudentLoan().getStudentLoanPlanType());
@@ -197,6 +223,7 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating student loan or postgraduate loan: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate student or postgraduate loan for payslip", e);
         }
+        // Pension contributions calculation
         try {
             paySlipCreate.setHasPensionEligible(employeeDetails.isHasPensionEligible());
             if (paySlipCreate.isHasPensionEligible()) {
@@ -219,6 +246,7 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating pension contributions: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate pension contributions for payslip", e);
         }
+        // Deductions and Net Pay calculation
         try {
             BigDecimal deduction = paySlipCreate.getIncomeTaxTotal().add(paySlipCreate.getEmployeeNationalInsurance()).add(paySlipCreate.getStudentLoanDeductionAmount()).add(paySlipCreate.getPostgraduateDeductionAmount()).add(paySlipCreate.getEmployeePensionContribution());
             paySlipCreate.setDeductionsTotal(deduction);
@@ -234,6 +262,7 @@ public class AutoPaySlip {
         logger.info("successful payslip is created: ");
         System.out.println("created PaySlip: " + savedPaySlip);
 
+        // Update employee details
         try {
             updatingDetails.updatingOtherEmployeeDetails(savedPaySlip);
             logger.info("Successful updated the other employee Details");
@@ -267,6 +296,7 @@ public class AutoPaySlip {
             log.info("successfully updated the post graduate loan details in employee Details");
         }*/
 
+        // Update employer details
         try {
             updatingDetails.updatingOtherEmployerDetails(savedPaySlip);
             logger.info("successfully updated the employer details of the total PAYE,NI");
@@ -426,4 +456,3 @@ public class AutoPaySlip {
     }
 
 }
-

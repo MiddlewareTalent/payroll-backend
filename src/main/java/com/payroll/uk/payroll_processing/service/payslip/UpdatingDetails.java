@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 
 @Data
@@ -67,7 +68,6 @@ public class UpdatingDetails {
                 updateOtherEmployeeDetails.setUsedPersonalAllowance(paySlip.getPersonalAllowance());
                 updateOtherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(paySlip.getPersonalAllowance()));
                 updateOtherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance);
-                System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
                 logger.error("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
             } else  {
 
@@ -86,7 +86,6 @@ public class UpdatingDetails {
                 updateOtherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(paySlip.getPersonalAllowance()));
 //            BigDecimal remainingPersonalAllowancesAmount = employeeDetailsRepository.findByRemainingPersonalAllowance(employeeDetails.getEmployeeId());
                 updateOtherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance.subtract(paySlip.getPersonalAllowance()));
-                System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
                 logger.error("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
 
             }
@@ -192,7 +191,7 @@ public class UpdatingDetails {
         OtherEmployerDetails otherEmployerDetails=employerDetails.getOtherEmployerDetails();
         OtherEmployerDetails updateOtherEmployerDetails = new OtherEmployerDetails();
         updateOtherEmployerDetails=otherEmployerDetails;
-        logger.info("otherEmployerDetails "+otherEmployerDetails);
+        logger.info("otherEmployerDetails: {}",otherEmployerDetails);
         try {
             logger.info("updating the total paid amount in OtherEmployerDetails");
             BigDecimal currentPaidAmount = otherEmployerDetails.getCurrentPayPeriodPaidGrossPay();
@@ -278,6 +277,41 @@ public class UpdatingDetails {
         logger.info("Successfully Updated Other Employer Details in EmployerDetails: \n " + employerData);
     }
 
+    public boolean isKTaxCode(String normalizedTaxCode){
+        if (normalizedTaxCode == null || normalizedTaxCode.isEmpty()) {
+            return false;
+        }
+        normalizedTaxCode = normalizedTaxCode.trim().toUpperCase();
+     // Check if the tax code starts with 'K', 'SK', or 'CK'
+        return normalizedTaxCode.matches("^K\\d+$") || normalizedTaxCode.matches("^SK\\d+$") || normalizedTaxCode.matches("^CK\\d+$"); // Valid K code format
+    }
+
+    public BigDecimal applyKCodeAdjustment(EmployeeDetails employeeDetails, String payPeriod) {
+        BigDecimal totalKCodeAmount = employeeDetails.getKCodeTaxableAdjustmentAnnual();
+
+        if (totalKCodeAmount == null || totalKCodeAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            totalKCodeAmount = BigDecimal.ZERO;
+        }
+        BigDecimal currentKCodeAmount = calculateIncomeTaxBasedOnPayPeriod(
+                totalKCodeAmount, payPeriod
+        );
+        BigDecimal remainingKCodeAmount = totalKCodeAmount.subtract(currentKCodeAmount);
+        if (remainingKCodeAmount.compareTo(BigDecimal.ZERO) < 0) {
+            remainingKCodeAmount = BigDecimal.ZERO;
+        }
+        employeeDetails.setKCodeTaxableAdjustmentAnnual(remainingKCodeAmount);
+        return currentKCodeAmount;
+    }
+
+    public BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
+        return switch (payPeriod.toUpperCase()) {
+            case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 2, RoundingMode.HALF_UP);
+            case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+            case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
+            case "YEARLY" -> incomeTax;
+            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+        };
+    }
 
 
 }

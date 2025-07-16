@@ -12,6 +12,8 @@ import com.payroll.uk.payroll_processing.entity.employee.OtherEmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import java.math.RoundingMode;
 
 @Component
 public class EmployeeDetailsDTOMapper {
+
+    private static final Logger logger= LoggerFactory.getLogger(EmployeeDetailsDTOMapper.class);
     @Autowired
     private EmployeeDetailsRepository employeeDetailsRepository;
 
@@ -52,6 +56,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setNiLetter(employeeDetails.getNiLetter());
         employeeDetailsDTO.setEmployerId(employeeDetails.getEmployerId());
         employeeDetailsDTO.setPayPeriodOfIncomeOfEmployee(employeeDetails.getPayPeriodOfIncomeOfEmployee());
+        //KCode Taxable Adjustment
+        employeeDetailsDTO.setKCodeTaxableAdjustmentAnnual(employeeDetails.getKCodeTaxableAdjustmentAnnual());
         //pension eligibility
          employeeDetailsDTO.setHasPensionEligible(employeeDetails.isHasPensionEligible());
         //Documents upload
@@ -147,6 +153,7 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setPayPeriod(employeeDetailsDTO.getPayPeriod());
         employeeDetails.setEmploymentEndDate(employeeDetailsDTO.getEmploymentEndDate());
         employeeDetails.setAnnualIncomeOfEmployee(employeeDetailsDTO.getAnnualIncomeOfEmployee());
+
         employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
         employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
         if(!employeeDetailsDTO.isHasEmergencyCode()){
@@ -172,6 +179,15 @@ public class EmployeeDetailsDTOMapper {
         }
 
         employeeDetails.setHasPensionEligible(employeeDetailsDTO.isHasPensionEligible());
+
+        //K Code Taxable Adjustment
+        if(isKTaxCode(employeeDetails.getTaxCode())) {
+            BigDecimal kCodeAmount = calculateTaxWithKCode(employeeDetails.getTaxCode());
+            employeeDetails.setKCodeTaxableAdjustmentAnnual(kCodeAmount);
+        }
+        else {
+            employeeDetails.setKCodeTaxableAdjustmentAnnual(BigDecimal.ZERO);
+        }
 
 //        employeeDetails.setRemainingPersonalAllowanceInYear(employeeDetails.getTotalPersonalAllowance().subtract(employeeDetails.getPreviouslyUsedPersonalAllowance()));
         //Document Upload
@@ -372,6 +388,60 @@ public class EmployeeDetailsDTOMapper {
 
     public boolean autoEnrollmentEligibilityForPension(int age, BigDecimal income) {
         return age >= 22 && age <= 65 && income.compareTo(BigDecimal.valueOf(10000)) > 0;
+    }
+
+    public boolean isKTaxCode(String normalizedTaxCode){
+        if (normalizedTaxCode == null || normalizedTaxCode.isEmpty()) {
+            return false;
+        }
+        normalizedTaxCode = normalizedTaxCode.trim().toUpperCase();
+        // Check if the tax code starts with 'K', 'SK', or 'CK'
+        return normalizedTaxCode.matches("^K\\d+$") || normalizedTaxCode.matches("^SK\\d+$") || normalizedTaxCode.matches("^CK\\d+$"); // Valid K code format
+    }
+
+    public BigDecimal calculateTaxWithKCode( String normalizedTaxCode) {
+        // Validate inputs
+        if ( normalizedTaxCode == null ) {
+            throw new IllegalArgumentException("Parameters cannot be null");
+        }
+
+
+        if (normalizedTaxCode.startsWith("SK") || normalizedTaxCode.startsWith("CK")) {
+            // Remove the first character ('S' or 'C') from the code
+            String processedCode = normalizedTaxCode.substring(2);
+            // Convert the processed code to a numeric value
+            String numericPart = processedCode.replaceAll("[^0-9]", "");
+            if (numericPart.isEmpty()) {
+                return BigDecimal.ZERO; // No numeric allowance
+            }
+            // Calculate base allowance (numeric part × 10)
+            BigDecimal baseAllowance = new BigDecimal(numericPart)
+                    .multiply(new BigDecimal("10"))
+                    .setScale(0, RoundingMode.HALF_UP);
+            logger.info("Base Allowance for K code: {}", baseAllowance);
+            return baseAllowance;
+
+
+        }
+        else if (normalizedTaxCode.startsWith("K")) {
+            String processedCode = normalizedTaxCode.substring(1);
+            // Convert the processed code to a numeric value
+            String numericPart = processedCode.replaceAll("[^0-9]", "");
+            if (numericPart.isEmpty()) {
+                return BigDecimal.ZERO; // No numeric allowance
+            }
+            // Calculate base allowance (numeric part × 10)
+            BigDecimal baseAllowance = new BigDecimal(numericPart)
+                    .multiply(new BigDecimal("10"))
+                    .setScale(0, RoundingMode.HALF_UP);
+            logger.info("Base Allowance for K code: {}", baseAllowance);
+            return baseAllowance;
+
+        } else {
+            throw new IllegalArgumentException("Invalid K code: " + normalizedTaxCode);
+
+        }
+
     }
 
 

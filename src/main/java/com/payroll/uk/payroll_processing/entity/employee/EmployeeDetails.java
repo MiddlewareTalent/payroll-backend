@@ -138,6 +138,11 @@ public class EmployeeDetails {
     @Column(name = "has_pension_eligible", nullable = false)
     private boolean hasPensionEligible = false;
 
+    @Column(name = "k_code_taxable_adjustment_annual")
+    @PositiveOrZero(message = "K code taxable adjustment must be zero or positive")
+    private BigDecimal kCodeTaxableAdjustmentAnnual;
+
+
 
 
 

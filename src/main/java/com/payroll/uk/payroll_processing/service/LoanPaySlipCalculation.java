@@ -10,7 +10,6 @@ import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.exception.NoEmployeeDataFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.LoanCalculationPaySlipRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
