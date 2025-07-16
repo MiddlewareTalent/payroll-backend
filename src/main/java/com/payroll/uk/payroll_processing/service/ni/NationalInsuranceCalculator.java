@@ -3,14 +3,12 @@ package com.payroll.uk.payroll_processing.service.ni;
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -58,30 +56,30 @@ public class NationalInsuranceCalculator {
         if (grossIncome.compareTo(upperEarningsLimit) > 0) {
             BigDecimal aboveThreshold2 = grossIncome.subtract(upperEarningsLimit);
             niContribution = niContribution.add(aboveThreshold2.multiply(ABOVE_UEL_Rate));
-            System.out.println("Above Threshold 2: " + aboveThreshold2);
-            logger.info("NI Contribution after Threshold 2: " + niContribution);
+
+            logger.info("NI Contribution after Threshold 2: {}",  niContribution);
             grossIncome = upperEarningsLimit;
         }
         if (grossIncome.compareTo(primaryThreshold) > 0) {
             BigDecimal aboveThreshold1 = grossIncome.subtract(primaryThreshold);
             niContribution = niContribution.add(aboveThreshold1.multiply(UEL_Rate));
-            System.out.println("Above Threshold 1: " + aboveThreshold1);
-            logger.info("NI Contribution after Threshold 1: " + niContribution);
+
+            logger.info("NI Contribution after Threshold 1: {}" , niContribution);
             grossIncome= primaryThreshold;
         }
         if (grossIncome.compareTo(belowLowerEarningsLimit) > 0) {
             BigDecimal aboveThreshold0 = grossIncome.subtract(belowLowerEarningsLimit);
             niContribution = niContribution.add(aboveThreshold0.multiply(PT_Rate));
-            System.out.println("Above Threshold 0: " + aboveThreshold0);
-            logger.info("NI Contribution after Threshold 0: " + niContribution);
+
+            logger.info("NI Contribution after Threshold 0: {}",  niContribution);
             grossIncome = belowLowerEarningsLimit;
 //           niContribution =niContribution.add(grossIncome.multiply(thresholdRate1));
         }
         if (grossIncome.compareTo(belowLowerEarningsLimit) <0) {
             niContribution =niContribution.add(grossIncome.multiply(BLEL_Rate));
-            System.out.println("NI Contribution for income below Threshold 0: " + niContribution);
+            logger.info("NI Contribution for income below Threshold 0:  {}" , niContribution);
         }
-        logger.info("NI Contribution: " + niContribution);
+        logger.info("NI Contribution: {} " , niContribution);
         return calculateIncomeTaxBasedOnPayPeriod(niContribution,payPeriod);
     }
 
@@ -125,7 +123,7 @@ public class NationalInsuranceCalculator {
                 niCategoryLetter);
 
         BigDecimal grossIncome = calculateGrossSalary(income, payPeriod);
-        logger.info("Gross Income in Employer: " + grossIncome);
+        logger.info("Gross Income in Employer: {}" ,grossIncome);
 
         // Handle categories with flat 15% over secondary threshold (A, B, C, J, etc.)
         if (List.of(NICategoryLetters.A, NICategoryLetters.B, NICategoryLetters.C, NICategoryLetters.J).contains(niCategoryLetter)) {
@@ -141,10 +139,10 @@ public class NationalInsuranceCalculator {
         if (List.of(NICategoryLetters.H, NICategoryLetters.M, NICategoryLetters.V, NICategoryLetters.Z).contains(niCategoryLetter)) {
 //            BigDecimal upperSecondaryThreshold = niSlabs[3][1]; // e.g., £50,270 annually
 //            upperSecondaryThreshold=upperSecondaryThreshold!=null?upperSecondaryThreshold:niSlabs[3][0];
-            System.out.println("M Category Block");
+            logger.info("M Category Block");
             BigDecimal upperSecondaryThreshold;
             if (taxYear.equalsIgnoreCase("2025-2026")) {
-                upperSecondaryThreshold = niSlabs[3][1];; // £50270
+                upperSecondaryThreshold = niSlabs[3][1]; // £50270
 
             }
             else if (taxYear.equalsIgnoreCase("2024-2025")){
@@ -191,7 +189,7 @@ public class NationalInsuranceCalculator {
             throw new IllegalArgumentException("Income, pay period, and NI category letter cannot be null");
         }
 
-        BigDecimal employerNIContributions = BigDecimal.ZERO;
+        BigDecimal employerNIContributions ;
         BigDecimal[][] niSlabs=taxThresholdService.getEmployerThreshold(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYER_NI,niCategoryLetter);
         BigDecimal[] niRates=taxThresholdService.getEmployerRates(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYER_NI,niCategoryLetter);
         BigDecimal secondaryThreshold1 = niSlabs[0][1]; //5000
@@ -226,7 +224,7 @@ public class NationalInsuranceCalculator {
 //        System.out.println("secondaryRate5: "+secondaryRate5);
 
         BigDecimal grossIncome = calculateGrossSalary(income, payPeriod);
-        System.out.println("Gross Income in Employer: "+grossIncome);
+        logger.info("Gross Income in Employer: {}",grossIncome);
         if(grossIncome.compareTo(secondaryThreshold1)<=0){
             employerNIContributions= grossIncome.multiply(secondaryRate1);
             return calculateIncomeTaxBasedOnPayPeriod(employerNIContributions,payPeriod);

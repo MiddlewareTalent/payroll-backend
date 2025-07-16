@@ -1,9 +1,5 @@
 package com.payroll.uk.payroll_processing.service;
 
-import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
-import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,12 +26,9 @@ public class FileStorageService {
 
     private static final String UPLOAD_DIR = "C:/Users/Public/Documents/";
 
-    @Autowired
-    private EmployeeDetailsRepository employeeRepository;
+
 
     public Map<String,String> storeEmployeeDocuments( MultipartFile p45File, MultipartFile checklistFile) throws IOException {
-//        EmployeeDetails employee = employeeRepository.findByEmployeeId(employeeId)
-//                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
 
         Map<String,String> fileData=new ConcurrentHashMap<>();
@@ -44,20 +36,17 @@ public class FileStorageService {
             validateFile(p45File);
             String filePath = saveFile(p45File, "P45");
             fileData.put("P45",filePath);
-//            employee.setP45Document(filePath);  // path stored in DB
-//            employee.setHasP45DocumentSubmitted(true);
+
         }
 
         if (checklistFile != null && !checklistFile.isEmpty()) {
             validateFile(checklistFile);
             String filePath = saveFile(checklistFile, "Checklist");
             fileData.put("Checklist",filePath);
-//            employee.setStarterChecklistDocument(filePath);  // path stored in DB
-//            employee.setHasStarterChecklistDocumentSubmitted(true);
+
         }
         return fileData;
 
-//        employeeRepository.save(employee);
     }
 
     private void validateFile(MultipartFile file) {

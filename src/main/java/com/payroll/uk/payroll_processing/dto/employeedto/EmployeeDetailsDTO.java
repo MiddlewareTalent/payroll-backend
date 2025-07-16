@@ -106,6 +106,9 @@ public class EmployeeDetailsDTO {
     private boolean hasPensionEligible = false;
 
 
+    private BigDecimal kCodeTaxableAdjustmentAnnual;
+
+
 
 
 

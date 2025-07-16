@@ -7,6 +7,8 @@ import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import com.payroll.uk.payroll_processing.service.payslip.AutoPaySlip;
 import com.payroll.uk.payroll_processing.service.payslip.PaySlipCreationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/payslip")
 public class PaySlipController {
+    private static  final Logger logging= LoggerFactory.getLogger(PaySlipController.class);
     @Autowired
     private PaySlipCreationService paySlipCreationService;
     @Autowired
@@ -30,7 +33,7 @@ public class PaySlipController {
         System.out.println("paySlipCreateDto: "+paySlipCreateDto);
         try{
             PaySlipCreateDto data = paySlipCreationService.createPaySlip(paySlipCreateDto);
-            System.out.println("Data:"+data);
+            logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
         }
         catch (Exception e) {
@@ -41,10 +44,10 @@ public class PaySlipController {
 
     @PostMapping("/auto/{employeeId}")
     public ResponseEntity<PaySlipCreateDto> autoPaySlip(@PathVariable ("employeeId") String employeeId){
-        System.out.println("paySlipCreateDto: "+employeeId);
+        logging.info("paySlipCreateDto: {} ",employeeId);
         try{
             PaySlipCreateDto data = autoPaySlip.fillPaySlip(employeeId);
-            System.out.println("Data:"+data);
+            logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
         }
         catch (Exception e) {
@@ -70,7 +73,7 @@ public class PaySlipController {
         System.out.println("paySlipCreateDto: "+paySlipReference);
         try{
             PaySlipCreateDto data = autoPaySlip.getPaySlipByReferences(paySlipReference);
-            System.out.println("Data:"+data);
+           logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
         }
         catch (Exception e) {

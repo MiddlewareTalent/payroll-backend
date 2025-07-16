@@ -1,10 +1,6 @@
 package com.payroll.uk.payroll_processing.service.incometax;
 
-import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
-import com.payroll.uk.payroll_processing.service.TaxThresholdService;
-import com.payroll.uk.payroll_processing.service.payslip.AutoPaySlip;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +13,7 @@ import java.math.RoundingMode;
 public class IncomeTaxCalculation {
 
     private static final Logger logger = LoggerFactory.getLogger(IncomeTaxCalculation.class);
-    @Autowired
-    private TaxThresholdService taxThresholdService;
+
     @Autowired
     private ScotlandTaxCalculation scotlandTaxCalculation;
 
@@ -26,7 +21,7 @@ public class IncomeTaxCalculation {
     private PersonalAllowanceCalculation personalAllowanceCalculation;
 
 
-
+  //Method for the England, Wales and Northern Ireland Income Tax Calculation
     BigDecimal calculateIncomeTax(BigDecimal grossIncome, BigDecimal personalAllowance, BigDecimal taxableIncome,BigDecimal[][] taxSlabs, BigDecimal[] taxRates, String payPeriod) {
         // Validate inputs
         if (grossIncome == null || personalAllowance == null || taxSlabs == null || taxRates == null || payPeriod == null) {
@@ -57,13 +52,15 @@ public class IncomeTaxCalculation {
 
         logger.info("Income tax calculation in calculateIncomeTax - Wales,England,Northern island");
         grossIncome= calculateGrossSalary(grossIncome,payPeriod);
-        logger.info("Gross Salary : " + grossIncome);
+        logger.info("Gross Salary : {}" ,grossIncome);
 
         // Calculate taxable income
         BigDecimal totalIncomeTax = BigDecimal.ZERO;
 
 
-        logger.info("Taxable Income: " + taxableIncome);
+        logger.info("Taxable Income: {} " , taxableIncome);
+        logger.info("grossIncome: {}, personalAllowance: {}, taxableIncome: {}, payPeriod: {}", grossIncome, personalAllowance, taxableIncome, payPeriod);
+
         if(taxableIncome.compareTo(BigDecimal.ZERO) <= 0) {
             return totalIncomeTax;
         }
@@ -71,17 +68,20 @@ public class IncomeTaxCalculation {
             // Additional rate (45%)
             BigDecimal additionalTaxAmount = taxableIncome.subtract(additionalRate);
             totalIncomeTax = totalIncomeTax.add(additionalTaxAmount.multiply(taxAdditionalRate));
-            logger.info("Annual Additional rate 45% : " + additionalTaxAmount.multiply(taxAdditionalRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual Additional rate 45% : {}" , additionalTaxAmount.multiply(taxAdditionalRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual Additional rate 45% : {}" , additionalTaxAmount.multiply(taxAdditionalRate));
 
             // Higher rate (40%)
             BigDecimal highTax = higherRate.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(highTax.multiply(taxHigherRate));
-            logger.info("Annual High rate 40% : " + highTax.multiply(taxHigherRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual High rate 40% : {}"  ,highTax.multiply(taxHigherRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual High rate 40% : {}"  ,highTax.multiply(taxHigherRate));
 
             // Basic rate (20%)
 //            BigDecimal basicTax = basicRate.subtract(personalRate);
             totalIncomeTax = totalIncomeTax.add(basicRate.multiply(taxBasicRate));
-            logger.info("Annual Basic rate 20% : " + basicRate.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual Basic rate 20% : {}" , basicRate.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual Basic rate 20% : {}" , basicRate.multiply(taxBasicRate));
 
         }
 
@@ -91,19 +91,22 @@ public class IncomeTaxCalculation {
             // Higher rate (40%)
             BigDecimal highTax = taxableIncome.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(highTax.multiply(taxHigherRate));
-            logger.info("Annual High rate 40% : " + highTax.multiply(taxHigherRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual High rate 40% : {}" , highTax.multiply(taxHigherRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual High rate 40% : {}" , highTax.multiply(taxHigherRate));
 
             // Basic rate (20%)
 //            BigDecimal basicTax = basicRate.subtract(personalRate);
             totalIncomeTax = totalIncomeTax.add(basicRate.multiply(taxBasicRate));
-            logger.info("Annual Basic rate of 20% : " + basicRate.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual Basic rate of 20% : {}" , basicRate.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual Basic rate of 20% : {}" , basicRate.multiply(taxBasicRate));
         }
         else if (taxableIncome.compareTo(basicRate) <= 0) {
             // Basic rate only (20%)
             totalIncomeTax = totalIncomeTax.add(taxableIncome.multiply(taxBasicRate));
-            logger.info("Annual Basic rate 20% : " + taxableIncome.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+//            logger.info("Annual Basic rate 20% : {}" , taxableIncome.multiply(taxBasicRate).setScale(2, RoundingMode.HALF_UP));
+            logger.info("Annual Basic rate 20% : {}" , taxableIncome.multiply(taxBasicRate));
         }
-        logger.info("Annual Total Income Tax: " + totalIncomeTax);
+        logger.info("Annual Total Income Tax: {}" ,totalIncomeTax);
 
 
         return totalIncomeTax;
@@ -151,6 +154,7 @@ public class IncomeTaxCalculation {
             BigDecimal baseAllowance = new BigDecimal(numericPart)
                     .multiply(new BigDecimal("10"))
                     .setScale(0, RoundingMode.HALF_UP);
+            logger.info("Base Allowance for K code: {}", baseAllowance);
             // Add the base allowance to the gross income
             grossIncome = grossIncome.add(baseAllowance);
             // Calculate the income tax based on the adjusted gross income
@@ -171,8 +175,9 @@ public class IncomeTaxCalculation {
             case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> annualGross=grossIncome;
             default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
-        };
-        return annualGross.setScale(2, RoundingMode.HALF_UP);
+        }
+         return  annualGross;
+//        return annualGross.setScale(2, RoundingMode.HALF_UP);
 
 
     }
