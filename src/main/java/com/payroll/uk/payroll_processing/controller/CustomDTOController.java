@@ -19,9 +19,9 @@ public class CustomDTOController {
 
     @Autowired
     private CustomDTOService customDTOService;
-    @GetMapping("/employer-dashboard-details/{employerId}")
-    public EmployerDashBoardDetailsDTO getEmployerDashboardDetailsData(@PathVariable String employerId) {
-        return customDTOService.createDataForDashboard(employerId);
+    @GetMapping("/employer-dashboard-details")
+    public EmployerDashBoardDetailsDTO getEmployerDashboardDetailsData() {
+        return customDTOService.createDataForDashboard();
     }
 
     @GetMapping("all/employees-summary")

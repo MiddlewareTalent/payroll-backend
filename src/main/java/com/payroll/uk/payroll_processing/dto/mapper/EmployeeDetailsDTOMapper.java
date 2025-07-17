@@ -220,6 +220,7 @@ public class EmployeeDetailsDTOMapper {
             otherEmployeeDetails = new OtherEmployeeDetails();
             otherEmployeeDetails.setDefaultsIfNull(); // Now it's safe
             otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetails.getTotalPersonalAllowance().subtract(employeeDetails.getPreviouslyUsedPersonalAllowance()));
+            otherEmployeeDetails.setRemainingKCodeAmount(employeeDetails.getKCodeTaxableAdjustmentAnnual());
         }
 
         employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails); // Always set

@@ -71,9 +71,10 @@ public class AutoPaySlip {
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-        EmployerDetails  employerDetails = employerDetailsRepository.findByEmployerId(employeeDetails.getEmployerId())
-                .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + employeeDetails.getEmployerId()));
-
+        EmployerDetails  employerDetails = employerDetailsRepository.findAll().getFirst();
+        if (employerDetails == null) {
+            throw new RuntimeException("Employer details not found");
+        }
         validateEmployeeDetails(employeeDetails);
         validateEmployerDetails(employerDetails);
         PaySlip paySlipCreate = new PaySlip();
