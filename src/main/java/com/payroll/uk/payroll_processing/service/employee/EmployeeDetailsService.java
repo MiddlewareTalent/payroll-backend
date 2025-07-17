@@ -102,6 +102,14 @@ public class EmployeeDetailsService {
 
         EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
         updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
+
+//        String isKCode=employeeDetailsDTO.getTaxCode();
+//        String existingKCode=existingEmployeeDetails.getTaxCode();
+//        BigDecimal getRemainingKCodeAmount=existingEmployeeDetails.getOtherEmployeeDetails().getRemainingKCodeAmount();
+//        if(isKCode.equals(existingKCode)){
+//            updatedEmployeeDetails.getOtherEmployeeDetails().setRemainingKCodeAmount(getRemainingKCodeAmount);
+//        }
+
         updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(updatedEmployeeDetails);
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(savedEmployeeDetails);
@@ -287,6 +295,8 @@ public class EmployeeDetailsService {
             throw new EmployeeValidationException("Bank name is required");
         }
     }
+
+
 
 
 

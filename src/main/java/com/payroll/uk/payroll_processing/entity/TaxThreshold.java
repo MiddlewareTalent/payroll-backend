@@ -39,7 +39,7 @@ public class TaxThreshold {
     private BigDecimal rate;
 
 
-    @Column(name = "band_name", length = 50)
+    @Column(name = "band_name", length = 100)
     @Enumerated(EnumType.STRING)
     private BandName bandName;
 

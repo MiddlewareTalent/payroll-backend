@@ -139,19 +139,31 @@ public class AutoPaySlip {
             logger.error("Error occurred while calculating personal allowance: {}", e.getMessage());
             throw new RuntimeException("Failed to calculate personal allowance for payslip", e);
         }
+        // Check if K Code adjustment is needed
+        BigDecimal currentKCodeAmount=BigDecimal.ZERO;
+        if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
+             currentKCodeAmount = updatingDetails.applyKCodeAdjustment(employeeDetails, paySlipCreate.getPayPeriod());
+
+            logger.info("Current K Code Amount: {}", currentKCodeAmount);
+        }
+
         //taxable income calculation
         try {
-            BigDecimal currentPayPeriodIncome=paySlipCreate.getGrossPayTotal();
-            if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
-                BigDecimal currentKCodeAmount = updatingDetails.applyKCodeAdjustment(employeeDetails, paySlipCreate.getPayPeriod());
 
-                logger.info("Current K Code Amount: {}", currentKCodeAmount);
-                currentPayPeriodIncome = currentPayPeriodIncome.add(currentKCodeAmount);
+            if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
+                System.out.println("K code tax code in taxable income: "+paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
+                paySlipCreate.setTaxableIncome(
+                        taxCodeService.calculateTaxableIncome(
+                                paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance()
+                        ));
             }
-            paySlipCreate.setTaxableIncome(
-                    taxCodeService.calculateTaxableIncome(
-                            currentPayPeriodIncome, paySlipCreate.getPersonalAllowance()
-                    ));
+            else {
+                paySlipCreate.setTaxableIncome(
+                        taxCodeService.calculateTaxableIncome(
+                                paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance()
+                        ));
+            }
+
         }
         catch (Exception e){
             logger.error("Error occurred while calculating taxable income: {}", e.getMessage());
@@ -159,18 +171,22 @@ public class AutoPaySlip {
         }
         // income tax calculation
         try {
-            BigDecimal currentPayPeriodIncome=paySlipCreate.getGrossPayTotal();
+            BigDecimal incomeTax;
             if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
-                BigDecimal currentKCodeAmount = updatingDetails.applyKCodeAdjustment(employeeDetails, paySlipCreate.getPayPeriod());
-
-                logger.info("Current K Code Amount: {}", currentKCodeAmount);
-                currentPayPeriodIncome = currentPayPeriodIncome.add(currentKCodeAmount);
+                System.out.println("K code tax code in income tax: "+paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
+                 incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
+                        paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
+                        paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
+                );
+            }
+            else {
+                 incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
+                        paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
+                        paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
+                );
             }
 
-            BigDecimal incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
-                    currentPayPeriodIncome, paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
-                    paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
-            );
+
             logger.info("incomeTax {} ", incomeTax);
             paySlipCreate.setIncomeTaxTotal(incomeTax);
             logger.info("successfully completed the income tax calculation");

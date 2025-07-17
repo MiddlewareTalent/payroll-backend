@@ -42,4 +42,6 @@ public class OtherEmployeeDetailsDTO {
     private BigDecimal totalAmountPensionContribution = BigDecimal.ZERO;
     private BigDecimal numberOfPayPeriodsPensionContribution = BigDecimal.ZERO;
     private BigDecimal pensionContributeAmount= BigDecimal.ZERO;
+
+    private BigDecimal remainingKCodeAmount=BigDecimal.ZERO;
 }

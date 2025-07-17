@@ -91,9 +91,9 @@ public class PersonalAllowanceCalculation {
     }
     private boolean isZeroAllowanceCode(String taxCode) {
         return taxCode.equals("BR") || taxCode.equals("D0") || taxCode.equals("D1") ||
-                taxCode.equals("NT") || taxCode.startsWith("K") || taxCode.equals("0T") ||
-                taxCode.equals("CBR") || taxCode.equals("CD0") || taxCode.equals("CD1") ||
-                taxCode.equals("CNT") || taxCode.startsWith("CK") ||taxCode.startsWith("SK")|| taxCode.equals("C0T");
+                taxCode.equals("NT") || taxCode.startsWith("K") || taxCode.equals("0T") ||taxCode.equals("S0T") ||
+                taxCode.equals("CBR") || taxCode.equals("SD0") || taxCode.equals("SD1") ||taxCode.equals("SD2") ||taxCode.equals("SBR") ||
+                taxCode.equals("CD0") ||taxCode.equals("CD1") ||taxCode.startsWith("CK") ||taxCode.startsWith("SK")|| taxCode.equals("C0T");
     }
 
     private String stripRegionalPrefix(String taxCode) {
