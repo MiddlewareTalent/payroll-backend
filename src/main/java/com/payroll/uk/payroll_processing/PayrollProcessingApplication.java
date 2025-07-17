@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @SpringBootApplication
 @EnableWebMvc
 @EnableScheduling
-public class PayrollProcessingApplication implements CommandLineRunner  {
+public class PayrollProcessingApplication   {
 
 
 	@Autowired
@@ -25,12 +25,12 @@ public class PayrollProcessingApplication implements CommandLineRunner  {
 		 SpringApplication.run(PayrollProcessingApplication.class, args);
 
 	}
-	@Override
+	/*@Override
 	public void run(String... args) throws Exception {
 		BigDecimal amount = taxCodeService.calculateIncomeBasedOnTaxCode( new BigDecimal("120000"), new BigDecimal("2570"),
 				new BigDecimal("117430.00"), "2025-2026", TaxThreshold.TaxRegion.ENGLAND, "257L", "YEARLY");
 		System.out.println("Calculated Income: " + amount);
-	}
+	}*/
 
 
 

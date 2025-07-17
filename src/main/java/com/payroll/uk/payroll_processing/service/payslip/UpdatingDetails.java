@@ -10,6 +10,7 @@ import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -287,20 +288,36 @@ public class UpdatingDetails {
     }
 
     public BigDecimal applyKCodeAdjustment(EmployeeDetails employeeDetails, String payPeriod) {
+
         BigDecimal totalKCodeAmount = employeeDetails.getKCodeTaxableAdjustmentAnnual();
 
         if (totalKCodeAmount == null || totalKCodeAmount.compareTo(BigDecimal.ZERO) <= 0) {
             totalKCodeAmount = BigDecimal.ZERO;
         }
-        BigDecimal currentKCodeAmount = calculateIncomeTaxBasedOnPayPeriod(
+        BigDecimal periodKCodeAmount = calculateIncomeTaxBasedOnPayPeriod(
                 totalKCodeAmount, payPeriod
         );
-        BigDecimal remainingKCodeAmount = totalKCodeAmount.subtract(currentKCodeAmount);
-        if (remainingKCodeAmount.compareTo(BigDecimal.ZERO) < 0) {
-            remainingKCodeAmount = BigDecimal.ZERO;
+
+        BigDecimal remainingKAmount = employeeDetails.getOtherEmployeeDetails().getRemainingKCodeAmount();
+        if (remainingKAmount == null || remainingKAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            remainingKAmount = BigDecimal.ZERO;
         }
-        employeeDetails.setKCodeTaxableAdjustmentAnnual(remainingKCodeAmount);
-        return currentKCodeAmount;
+        else {
+
+            BigDecimal newRemainingKAmount=remainingKAmount.subtract(periodKCodeAmount);
+            remainingKAmount = newRemainingKAmount.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : newRemainingKAmount;
+
+        }
+        employeeDetails.getOtherEmployeeDetails().setRemainingKCodeAmount(remainingKAmount);
+        if (remainingKAmount.compareTo(BigDecimal.ZERO)<=0){
+            return BigDecimal.ZERO;
+        }
+        if(periodKCodeAmount.compareTo(remainingKAmount)>0){
+            return remainingKAmount;
+        }
+
+
+        return periodKCodeAmount;
     }
 
     public BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){

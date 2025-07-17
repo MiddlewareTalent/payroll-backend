@@ -97,15 +97,20 @@ public class OtherEmployeeDetails {
 
     //Pension related fields
     @Column(name = "total_amount_pension_contribution")
-    @PositiveOrZero
+    @PositiveOrZero(message = "Total amount pension contribution must be zero or positive")
     private BigDecimal totalAmountPensionContribution = BigDecimal.ZERO;
 
     @Column(name = "number_of_pay_periods_pension_contribution")
-    @PositiveOrZero
+    @PositiveOrZero(message = "Number of pay periods for pension contribution must be zero or positive")
     private BigDecimal numberOfPayPeriodsPensionContribution = BigDecimal.ZERO;
 
     @Column(name = "pension_contribute_amount")
+    @PositiveOrZero(message = "Pension contribute amount must be zero or positive")
     private BigDecimal pensionContributeAmount= BigDecimal.ZERO;
+
+    @Column(name = "remaining_k_code_amount")
+    @PositiveOrZero(message = "Remaining K Code Amount must be zero or positive")
+    private BigDecimal remainingKCodeAmount=BigDecimal.ZERO;
 
 
 
@@ -135,6 +140,7 @@ public class OtherEmployeeDetails {
         if (totalAmountPensionContribution == null) totalAmountPensionContribution = BigDecimal.ZERO;
         if (numberOfPayPeriodsPensionContribution == null) numberOfPayPeriodsPensionContribution = BigDecimal.ZERO;
         if (pensionContributeAmount == null) pensionContributeAmount = BigDecimal.ZERO;
+        if (remainingKCodeAmount == null) remainingKCodeAmount = BigDecimal.ZERO;
     }
 
 

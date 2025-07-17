@@ -33,7 +33,7 @@ public class StudentLoan {
     private BigDecimal totalDeductionAmountInStudentLoan = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "student_loan_plan_type",nullable = false)
+    @Column(name = "student_loan_plan_type",nullable = false,length = 100)
     private StudentLoanPlan studentLoanPlanType = StudentLoanPlan.NONE;
 
 
@@ -44,7 +44,7 @@ public class StudentLoan {
 
         STUDENT_LOAN_PLAN_1,
         STUDENT_LOAN_PLAN_2,
-        STUDENT_LOAN_PLAN_3,
+        STUDENT_LOAN_PLAN_4,
         NONE
 
     }

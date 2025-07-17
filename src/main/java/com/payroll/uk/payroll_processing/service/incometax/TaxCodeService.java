@@ -120,7 +120,7 @@ public class TaxCodeService {
 
             } else if (TaxThreshold.TaxRegion.WALES == region) {
                 return switch (normalizedTaxCode) {
-                    case "CNT" -> BigDecimal.ZERO;
+                    case "NT" -> BigDecimal.ZERO;
                     case "CBR" -> grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
                     case "CD0" -> grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
                     case "CD1" -> grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
@@ -132,12 +132,14 @@ public class TaxCodeService {
                 };
             } else if (TaxThreshold.TaxRegion.SCOTLAND == region) {
                 return switch (normalizedTaxCode) {
-                    case "SNT" -> BigDecimal.ZERO;
-                    case "SBR" -> grossIncome.multiply(taxRates[1]); // Basic Rate (20%)
+                    case "NT" -> BigDecimal.ZERO;
+                    case "SBR" -> grossIncome.multiply(taxRates[2]); // Basic Rate (20%)
 
-                    case "SD0" -> grossIncome.multiply(taxRates[2]); // Higher Rate (40%)
 
-                    case "SD1" -> grossIncome.multiply(taxRates[3]); // Additional Rate (45%)
+                    case "SD0" -> grossIncome.multiply(taxRates[3]); // Intermediate Rate (21%)
+
+                    case "SD1" -> grossIncome.multiply(taxRates[4]); // higher Rate (42%)
+                    case "SD2" -> grossIncome.multiply(taxRates[6]);  // Top Rate (48%)
 
                     case "S0T" ->
                             scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);

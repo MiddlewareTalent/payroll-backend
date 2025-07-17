@@ -127,6 +127,7 @@ public class EmployeeDetailsDTOMapper {
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsPensionContribution(otherEmployeeDetails.getNumberOfPayPeriodsPensionContribution());
         otherEmployeeDetailsDTO.setTotalAmountPensionContribution(otherEmployeeDetails.getTotalAmountPensionContribution());
         otherEmployeeDetailsDTO.setPensionContributeAmount(otherEmployeeDetails.getPensionContributeAmount());
+        otherEmployeeDetailsDTO.setRemainingKCodeAmount(otherEmployeeDetails.getRemainingKCodeAmount());
         return otherEmployeeDetailsDTO;
 
     }
@@ -289,6 +290,7 @@ public class EmployeeDetailsDTOMapper {
         otherEmployeeDetails.setTotalAmountPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution());
         otherEmployeeDetails.setNumberOfPayPeriodsPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsPensionContribution());
         otherEmployeeDetails.setPensionContributeAmount(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount());
+        otherEmployeeDetails.setRemainingKCodeAmount(employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual());
         return otherEmployeeDetails;
 
     }
