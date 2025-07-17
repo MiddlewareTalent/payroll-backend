@@ -22,12 +22,14 @@ public class CustomDTOService {
     private final EmployeeDetailsRepository employeeDetailsRepository;
     private final EmployerDetailsRepository employerDetailsRepository;
 
-    public EmployerDashBoardDetailsDTO createDataForDashboard(String employerId) {
+    public EmployerDashBoardDetailsDTO createDataForDashboard() {
 
         try {
 //            EmployerDetails employerField = employerDetailsRepository.findAll().stream().findFirst().get();
-            Optional<EmployerDetails> employerData = employerDetailsRepository.findByEmployerId(employerId);
-            EmployerDetails employerDetails = employerData.orElseThrow(() -> new EmployeeNotFoundException("Employer not found"));
+            EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
+            if (employerDetails == null) {
+                throw new EmployeeNotFoundException("Employer not found with ID: " );
+            }
 
             EmployerDashBoardDetailsDTO employerDashBoardDetailsDTO = new EmployerDashBoardDetailsDTO();
             employerDashBoardDetailsDTO.setTotalEmployees(employeeDetailsRepository.count());

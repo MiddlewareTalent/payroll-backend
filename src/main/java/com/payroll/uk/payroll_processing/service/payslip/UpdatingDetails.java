@@ -186,8 +186,10 @@ public class UpdatingDetails {
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
 
-        EmployerDetails employerDetails = employerDetailsRepository.findByEmployerId(employeeDetails.getEmployerId())
-                .orElseThrow(() -> new RuntimeException("Employer ID not found with employee: " + employeeDetails.getEmployerId()));
+        EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
+                if (employerDetails == null) {
+                    throw new RuntimeException("Employer not found ");
+                }
 
         OtherEmployerDetails otherEmployerDetails=employerDetails.getOtherEmployerDetails();
         OtherEmployerDetails updateOtherEmployerDetails = new OtherEmployerDetails();
