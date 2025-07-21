@@ -4,6 +4,7 @@ package com.payroll.uk.payroll_processing.controller;
 import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import com.payroll.uk.payroll_processing.service.payslip.AutoPaySlip;
 import com.payroll.uk.payroll_processing.service.payslip.PaySlipCreationService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/payslip")
@@ -27,6 +29,9 @@ public class PaySlipController {
     private AutoPaySlip autoPaySlip;
     @Autowired
     private TaxCodeService taxCodeService;
+
+    @Autowired
+    private TaxThresholdService taxThresholdService;
 
     @PostMapping("/create")
     public ResponseEntity<PaySlipCreateDto> createPaySlip(@RequestBody PaySlipCreateDto paySlipCreateDto){
@@ -101,5 +106,15 @@ public class PaySlipController {
 
     }
 
+    @GetMapping("/fetch/allowance/data/{taxYear}")
+    public ResponseEntity<Map<String,BigDecimal>> fetchAllowanceData(@PathVariable("taxYear") String taxYear) {
+        try {
+            Map<String, BigDecimal> data = taxThresholdService.getAllowanceData(taxYear);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 }

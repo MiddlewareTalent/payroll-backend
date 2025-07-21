@@ -53,8 +53,8 @@ public class EmployeeDetails {
     @Column(name = "tax_year", nullable = false, length = 9)
     private String taxYear;
 
-    @Column(name = "is_director",nullable = false)
-    private boolean isDirector=false;
+//    @Column(name = "is_director",nullable = false)
+//    private boolean isDirector=false;
     @Enumerated(EnumType.STRING)
     @Column(name ="gender" , columnDefinition = "ENUM('MALE','FEMALE','OTHER')")
     private Gender gender;
@@ -74,8 +74,8 @@ public class EmployeeDetails {
     @Column(name ="total_personal_allowance" )
     private BigDecimal totalPersonalAllowance=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
 
-    @Column(name = "employer_id")
-    private String employerId;
+//    @Column(name = "employer_id")
+//    private String employerId;
 
     @Column(name = "annual_income_of_employee")
     @PositiveOrZero(message = "Annual income must be zero or positive")
@@ -124,6 +124,10 @@ public class EmployeeDetails {
     private StudentLoan studentLoan;
 
     @Embedded
+    @Column(name = "previousEmploymentData")
+    private PreviousEmploymentData previousEmploymentData;
+
+    @Embedded
     @Column(name = "postGraduateLoan")
     private PostGraduateLoan postGraduateLoan;
     @Column(name = "p45_document")
@@ -142,6 +146,9 @@ public class EmployeeDetails {
     @PositiveOrZero(message = "K code taxable adjustment must be zero or positive")
     private BigDecimal kCodeTaxableAdjustmentAnnual;
 
+    @Column(name = "has_married_employee", nullable = false)
+    private boolean hasMarriedEmployee;
+
 
 
 
@@ -149,8 +156,7 @@ public class EmployeeDetails {
 
     public enum Gender{
         MALE,
-        FEMALE,
-        OTHER
+        FEMALE
     }
 
     @AssertTrue(message = "You must provide either a tax code OR select W1/M1, but not both")

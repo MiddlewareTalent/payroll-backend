@@ -84,7 +84,7 @@ public class ScotlandTaxCalculation {
         }
         else if (taxableIncome.compareTo(higherRate)>0 && taxableIncome.compareTo(additionalRate)<=0){
             //Additional rate (45%)
-            BigDecimal additionalTaxRate=additionalRate.subtract(taxableIncome);
+            BigDecimal additionalTaxRate=taxableIncome.subtract(higherRate);
             totalIncomeTax = totalIncomeTax.add(additionalTaxRate.multiply(taxAdditionalRate));
             System.out.println("Additional rate tax: " + additionalTaxRate.multiply(taxAdditionalRate));
 

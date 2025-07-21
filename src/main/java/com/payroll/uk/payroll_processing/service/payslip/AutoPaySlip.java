@@ -85,13 +85,13 @@ public class AutoPaySlip {
             paySlipCreate.setPostCode(employeeDetails.getPostCode());
             paySlipCreate.setEmployeeId(employeeDetails.getEmployeeId());
             paySlipCreate.setRegion(employeeDetails.getRegion());
-            paySlipCreate.setTaxYear(employerDetails.getTaxYear());
+            paySlipCreate.setTaxYear(employerDetails.getCompanyDetails().getCurrentTaxYear());
             paySlipCreate.setTaxCode(employeeDetails.getTaxCode());
             paySlipCreate.setNI_Number(employeeDetails.getNationalInsuranceNumber());
             paySlipCreate.setNiLetter(employeeDetails.getNiLetter());
             paySlipCreate.setWorkingCompanyName(employeeDetails.getWorkingCompanyName());
             paySlipCreate.setPayPeriod(String.valueOf(employeeDetails.getPayPeriod()));
-            paySlipCreate.setPayDate(employerDetails.getPayDate());
+            paySlipCreate.setPayDate(employerDetails.getCompanyDetails().getPayDate());
             paySlipCreate.setPeriodEnd(getPeriodEndMonthYear(paySlipCreate.getPayDate()));
             logger.info("successfully completed  up to basic details");
         }
@@ -456,10 +456,10 @@ public class AutoPaySlip {
 
     }
     private void validateEmployerDetails(EmployerDetails employerDetails){
-        if(employerDetails.getTaxYear()==null){
+        if(employerDetails.getCompanyDetails().getCurrentTaxYear()==null){
             throw  new IllegalArgumentException("tax year is not found");
         }
-        if (employerDetails.getPayDate()==null){
+        if (employerDetails.getCompanyDetails().getPayDate()==null){
             throw new IllegalArgumentException("pay date is not found");
         }
     }

@@ -6,17 +6,29 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
 public class TaxOffice {
+
+    @NotNull(message = "PAYE scheme start date cannot be null")
+//    @PastOrPresent(message = "PAYE scheme start date must be in the past or present")
+    @Column(name = "date_paye_scheme_started")
+    private LocalDate datePAYESchemeStarted;
+
+    //    @FutureOrPresent(message = "PAYE scheme ceased date must be in the future or present")
+    @Column(name = "date_paye_scheme_ceased")
+    private LocalDate datePAYESchemeCeased;
 
     // ============== HMRC REFERENCES ==============
 //    @NotBlank
@@ -57,28 +69,11 @@ public class TaxOffice {
     private String payrollGivingRef;
 
     // ============== STATUS FLAGS ==============
-    @Schema(defaultValue = "false")
-    @Column(name = "serQualifiedThisYear")
-    private Boolean serQualifiedThisYear=false ;
-    @Schema(defaultValue = "false")
-    @Column(name = "serQualifiedLastYear")
-    private Boolean serQualifiedLastYear=false ;
-    @Schema(defaultValue = "false")
-    @Column(name = "noRtiDueWarnings")
-    private Boolean noRtiDueWarnings = false;
-    @Schema(defaultValue = "false")
-    @Column(name = "claimNICAllowance")
-    private Boolean claimNICAllowance=false; ;
+
     @Schema(defaultValue = "false")
     @Column(name = "claimEmploymentAllowance")
     private Boolean claimEmploymentAllowance=false;
 
-    // ============== CHILD SUPPORT ==============
-//    @Pattern(regexp = "^[A-Za-z0-9]{7}$",
-//            message = "Child Support reference must be 7 alphanumeric characters")
-    @Schema(description = "Child Support reference", example = "1234567", defaultValue = "null")
-    @Column(name = "childSupportRef")
-    private String childSupportRef;
 
 
 

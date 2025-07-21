@@ -36,13 +36,15 @@ public class StudentLoanCalculation {
         BigDecimal studentLoan_Plan1=studentLoanSlabs[0][0]; //26065
         BigDecimal studentLoan_Plan2=studentLoanSlabs[1][0]; //28470
         BigDecimal studentLoan_Plan4=studentLoanSlabs[2][0];  //32745
-        System.out.println("studentLoanSlabs[0][0]: "+studentLoanSlabs[0][0]);
+
+        /*System.out.println("studentLoanSlabs[0][0]: "+studentLoanSlabs[0][0]);
         System.out.println("studentLoanSlabs[0][0]: "+studentLoanSlabs[1][0]);
-        System.out.println("studentLoanSlabs[0][0]: "+studentLoanSlabs[2][0]);
+        System.out.println("studentLoanSlabs[0][0]: "+studentLoanSlabs[2][0]);*/
+
         BigDecimal grossIncomePerYear=calculateGrossSalary(income,payPeriod);
-        System.out.println("GrossIncomePerYear: "+grossIncomePerYear);
+        logger.info("GrossIncomePerYear: {}",grossIncomePerYear);
         if(grossIncomePerYear.compareTo(studentLoan_Plan1)>0 && grossIncomePerYear.compareTo(studentLoan_Plan2)<=0){
-            System.out.println("studentLoan_Plan1 "+studentLoan_Plan1);
+            logger.info("studentLoan_Plan1: {} ",studentLoan_Plan1);
 
             BigDecimal[] rate =taxThresholdService.getStudentLoanBandByPlanTypeRate(taxYear,TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.STUDENT_LOAN_PLAN_1);
             BigDecimal deductionRate=rate[0];
@@ -52,7 +54,7 @@ public class StudentLoanCalculation {
 
         }
         else if (grossIncomePerYear.compareTo(studentLoan_Plan2)>0 && grossIncomePerYear.compareTo(studentLoan_Plan4)<=0) {
-            System.out.println("studentLoan_Plan2 "+studentLoan_Plan2);
+            logger.info("studentLoan_Plan2: {}",studentLoan_Plan2);
             BigDecimal[] rate =taxThresholdService.getStudentLoanBandByPlanTypeRate(taxYear,TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.STUDENT_LOAN_PLAN_2);
             BigDecimal deductionRate=rate[0];
             BigDecimal studentLoanDeductionAmount= grossIncomePerYear.subtract(studentLoan_Plan2);
@@ -60,7 +62,7 @@ public class StudentLoanCalculation {
             return calculateIncomeTaxBasedOnPayPeriod(amount,payPeriod);
         }
         else if (grossIncomePerYear.compareTo(studentLoan_Plan4)>0) {
-            System.out.println("studentLoan_Plan4 "+studentLoan_Plan4);
+            logger.info("studentLoan_Plan4: {} ",studentLoan_Plan4);
             BigDecimal[] rate =taxThresholdService.getStudentLoanBandByPlanTypeRate(taxYear,TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.STUDENT_LOAN, TaxThreshold.BandName.STUDENT_LOAN_PLAN_4);
             BigDecimal deductionRate=rate[0];
             BigDecimal studentLoanDeductionAmount= grossIncomePerYear.subtract(studentLoan_Plan4);

@@ -139,7 +139,8 @@ public class TaxCodeService {
                     case "SD0" -> grossIncome.multiply(taxRates[3]); // Intermediate Rate (21%)
 
                     case "SD1" -> grossIncome.multiply(taxRates[4]); // higher Rate (42%)
-                    case "SD2" -> grossIncome.multiply(taxRates[6]);  // Top Rate (48%)
+                    case "SD2" -> grossIncome.multiply(taxRates[5]);  // Additional Rate (48%)
+                    case "SD3" -> grossIncome.multiply(taxRates[6]);  // Top Rate (48%)
 
                     case "S0T" ->
                             scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);

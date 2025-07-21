@@ -5,13 +5,16 @@ import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.EmployerRegistrationException;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.service.EmployerService;
+import com.payroll.uk.payroll_processing.service.FileStorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -22,7 +25,11 @@ public class EmployerController {
     private EmployerDetailsRepository employerDetailsRepository;  // DTO for employer details
     private  final EmployerService employerService;
 
+    @Autowired
+    private  FileStorageService fileStorageService;
+
     public EmployerController(EmployerService employerService){
+
         this.employerService=employerService;
     }
     // Add methods to handle HTTP requests here
@@ -37,7 +44,18 @@ public class EmployerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Registration failed. Please try again.");
+                    .body("Registration failed. Please try again. "+e);
+        }
+    }
+
+    @PostMapping("/company-logo/upload-documents")
+    public Map<String,String> uploadDocuments(
+            @RequestParam(value = "companyLogo", required = false) MultipartFile companyLogoFile) {
+        try {
+            return fileStorageService.storeLogoDocument(companyLogoFile);
+//            return ResponseEntity.ok("Documents uploaded successfully");
+        } catch (Exception e) {
+            throw  new RuntimeException("File is not exist");
         }
     }
 
@@ -98,7 +116,7 @@ public class EmployerController {
 
     @GetMapping("/test/email/{employerEmail}")
     public Boolean checkEmailExist(@PathVariable String employerEmail) {
-        System.out.println("EMployer : " + employerEmail);
+        System.out.println("Employer : " + employerEmail);
         Optional<EmployerDetails> email_Id = employerDetailsRepository.findByEmployerEmail(employerEmail);
         if (email_Id.isPresent()) {
             return true;

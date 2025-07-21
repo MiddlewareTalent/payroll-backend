@@ -51,6 +51,13 @@ public class OtherEmployeeDetails {
     @PositiveOrZero(message = "Total earnings amount YTD must be zero or positive")
     private BigDecimal totalEarningsAmountYTD = BigDecimal.ZERO;
 
+    @Column(name = "total_earnings_amount_in_this_employment")
+    @PositiveOrZero(message = "Total earnings amount in this employment must be zero or positive")
+    private  BigDecimal totalEarningsAmountInThisEmployment= BigDecimal.ZERO;
+
+    @Column(name = "total_tax_pay_to_date")
+    @PositiveOrZero(message = "Total tax pay to date must be zero or positive")
+    private BigDecimal totalTaxPayToDate = BigDecimal.ZERO;
 
     // Income Tax related fields
     @PositiveOrZero(message = "Income tax paid must be zero or positive")
@@ -59,9 +66,9 @@ public class OtherEmployeeDetails {
 
     @PositiveOrZero(message = "Total income tax paid in company must be zero or positive")
     @Column(name = "total_income_tax_paid_in_company")
-    private BigDecimal totalIncomeTaxPaidInCompany = BigDecimal.ZERO;
+    private BigDecimal totalIncomeTaxPaidInThisEmployment = BigDecimal.ZERO;
 
-    @PositiveOrZero(message = "number of months of income tax paid must be zero or positive")
+   /* @PositiveOrZero(message = "number of months of income tax paid must be zero or positive")
     @Column(name = "number_of_months_of_income_tax_paid")
     private BigDecimal numberOfMonthsOfIncomeTaxPaid = BigDecimal.ZERO;
 
@@ -71,7 +78,10 @@ public class OtherEmployeeDetails {
 
     @PositiveOrZero(message = "number of weeks of income tax paid must be zero or positive")
     @Column(name = "number_of_weeks_of_income_tax_paid")
-    private BigDecimal numberOfWeeksOfIncomeTaxPaid = BigDecimal.ZERO;
+    private BigDecimal numberOfWeeksOfIncomeTaxPaid = BigDecimal.ZERO;*/
+    @PositiveOrZero(message = "number of pay periods income tax paid must be zero or positive")
+    @Column(name = "number_of_pay_periods_income_tax_paid")
+    private BigDecimal numberOfPayPeriodsIncomeTaxPaid = BigDecimal.ZERO;
 
     // National Insurance related fields
     @PositiveOrZero(message = "total employee NI contribution in company must be zero or positive")
@@ -83,7 +93,7 @@ public class OtherEmployeeDetails {
     private BigDecimal employeeNIContribution = BigDecimal.ZERO;
 
     // Number of months, weeks, and years of NI contributions
-    @PositiveOrZero(message = "number of months of NI contributions must be zero or positive")
+   /* @PositiveOrZero(message = "number of months of NI contributions must be zero or positive")
     @Column(name = "number_of_months_of_ni_contributions")
     private BigDecimal numberOfMonthsOfNIContributions = BigDecimal.ZERO;
 
@@ -93,7 +103,11 @@ public class OtherEmployeeDetails {
 
     @PositiveOrZero(message = "number of Years of NI contributions must be zero or positive")
     @Column(name = "number_of_years_of_ni_contributions")
-    private BigDecimal numberOfYearsOfNIContributions = BigDecimal.ZERO;
+    private BigDecimal numberOfYearsOfNIContributions = BigDecimal.ZERO;*/
+
+    @Column(name = "number_of_pay_periods_ni_contributions")
+    @PositiveOrZero(message = "Number of pay periods NI contributions must be zero or positive")
+    private BigDecimal numberOfPayPeriodsNIContributions = BigDecimal.ZERO;
 
     //Pension related fields
     @Column(name = "total_amount_pension_contribution")
@@ -126,21 +140,26 @@ public class OtherEmployeeDetails {
         if( totalEarningsAmountYTD == null) totalEarningsAmountYTD = BigDecimal.ZERO;
 
         if (incomeTaxPaid == null) incomeTaxPaid = BigDecimal.ZERO;
-        if (totalIncomeTaxPaidInCompany == null) totalIncomeTaxPaidInCompany = BigDecimal.ZERO;
-        if (numberOfMonthsOfIncomeTaxPaid == null) numberOfMonthsOfIncomeTaxPaid = BigDecimal.ZERO;
+        if (totalIncomeTaxPaidInThisEmployment == null) totalIncomeTaxPaidInThisEmployment = BigDecimal.ZERO;
+       /* if (numberOfMonthsOfIncomeTaxPaid == null) numberOfMonthsOfIncomeTaxPaid = BigDecimal.ZERO;
         if (numberOfYearsOfIncomeTaxPaid == null) numberOfYearsOfIncomeTaxPaid = BigDecimal.ZERO;
-        if (numberOfWeeksOfIncomeTaxPaid == null) numberOfWeeksOfIncomeTaxPaid = BigDecimal.ZERO;
+        if (numberOfWeeksOfIncomeTaxPaid == null) numberOfWeeksOfIncomeTaxPaid = BigDecimal.ZERO;*/
+
+        if (numberOfPayPeriodsIncomeTaxPaid == null) numberOfPayPeriodsIncomeTaxPaid = BigDecimal.ZERO;
 
         if (totalEmployeeNIContributionInCompany == null) totalEmployeeNIContributionInCompany = BigDecimal.ZERO;
         if (employeeNIContribution == null) employeeNIContribution = BigDecimal.ZERO;
-        if (numberOfMonthsOfNIContributions == null) numberOfMonthsOfNIContributions = BigDecimal.ZERO;
+       /* if (numberOfMonthsOfNIContributions == null) numberOfMonthsOfNIContributions = BigDecimal.ZERO;
         if (numberOfWeeksOfNIContributions == null) numberOfWeeksOfNIContributions = BigDecimal.ZERO;
-        if (numberOfYearsOfNIContributions == null) numberOfYearsOfNIContributions = BigDecimal.ZERO;
+        if (numberOfYearsOfNIContributions == null) numberOfYearsOfNIContributions = BigDecimal.ZERO;*/
+        if (numberOfPayPeriodsNIContributions == null) numberOfPayPeriodsNIContributions = BigDecimal.ZERO;
 
         if (totalAmountPensionContribution == null) totalAmountPensionContribution = BigDecimal.ZERO;
         if (numberOfPayPeriodsPensionContribution == null) numberOfPayPeriodsPensionContribution = BigDecimal.ZERO;
         if (pensionContributeAmount == null) pensionContributeAmount = BigDecimal.ZERO;
         if (remainingKCodeAmount == null) remainingKCodeAmount = BigDecimal.ZERO;
+        if (totalEarningsAmountInThisEmployment ==null) totalEarningsAmountInThisEmployment = BigDecimal.ZERO;
+        if (totalTaxPayToDate==null) totalTaxPayToDate = BigDecimal.ZERO;
     }
 
 

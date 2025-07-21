@@ -2,18 +2,18 @@ package com.payroll.uk.payroll_processing.service;
 
 import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.customdto.EmployerDashBoardDetailsDTO;
+import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
-import com.payroll.uk.payroll_processing.utils.TaxMonthUtils;
+import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -35,10 +35,15 @@ public class CustomDTOService {
             employerDashBoardDetailsDTO.setTotalEmployees(employeeDetailsRepository.count());
             employerDashBoardDetailsDTO.setTotalPaySlips(paySlipRepository.count());
             employerDashBoardDetailsDTO.setTotalPaidGrossAmountYTD(employerDetails.getOtherEmployerDetails().getTotalPaidGrossAmountYTD());
-            employerDashBoardDetailsDTO.setPayPeriod(employerDetails.getPayPeriod());
-            employerDashBoardDetailsDTO.setCurrentYear(employerDetails.getTaxYear());
-            employerDashBoardDetailsDTO.setCurrentPayMonth(TaxMonthUtils.getUkTaxMonth(LocalDate.now()));
-            employerDashBoardDetailsDTO.setCurrentYearCompletedDays(TaxMonthUtils.getDaysCompletedInTaxYear(LocalDate.now()));
+            employerDashBoardDetailsDTO.setPayPeriod(employerDetails.getCompanyDetails().getCurrentPayPeriod());
+            employerDashBoardDetailsDTO.setCurrentYear(employerDetails.getCompanyDetails().getCurrentTaxYear());
+            if (employerDetails.getCompanyDetails().getCurrentPayPeriod()== PayPeriod.MONTHLY) {
+                employerDashBoardDetailsDTO.setCurrentPayMonth(TaxPeriodUtils.getUkTaxMonth(LocalDate.now()));
+            }
+            else if (employerDetails.getCompanyDetails().getCurrentPayPeriod()== PayPeriod.WEEKLY){
+                employerDashBoardDetailsDTO.setCurrentPayMonth(TaxPeriodUtils.getUkTaxWeek(LocalDate.now()));
+            }
+            employerDashBoardDetailsDTO.setCurrentYearCompletedDays(TaxPeriodUtils.getDaysCompletedInTaxYear(LocalDate.now()));
             employerDashBoardDetailsDTO.setTotalIncomeTax(employerDetails.getOtherEmployerDetails().getTotalPAYEYTD());
             employerDashBoardDetailsDTO.setTotalEmployeeNI(employerDetails.getOtherEmployerDetails().getTotalEmployeesNIYTD());
             employerDashBoardDetailsDTO.setTotalEmployerNI(employerDetails.getOtherEmployerDetails().getTotalEmployersNIYTD());

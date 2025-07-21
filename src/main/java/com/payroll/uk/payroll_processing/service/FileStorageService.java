@@ -22,7 +22,7 @@ public class FileStorageService {
             "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );
-    private static final long MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+    private static final long MAX_SIZE = 25 * 1024 * 1024; // 5 MB
 
     private static final String UPLOAD_DIR = "C:/Users/Public/Documents/";
 
@@ -64,6 +64,18 @@ public class FileStorageService {
         Files.createDirectories(filePath.getParent()); // Ensure directories exist
         Files.write(filePath, file.getBytes());
         return filePath.toString(); // stored in DB as path
+    }
+
+    public Map<String,String> storeLogoDocument( MultipartFile companyLogo) throws IOException {
+        Map<String,String> fileData=new ConcurrentHashMap<>();
+        if (companyLogo != null && !companyLogo.isEmpty()) {
+            validateFile(companyLogo);
+            String filePath = saveFile(companyLogo, "companyLogo");
+            fileData.put("companyLogo",filePath);
+
+        }
+        return fileData;
+
     }
 }
 

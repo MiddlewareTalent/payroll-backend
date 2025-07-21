@@ -22,21 +22,28 @@ public class OtherEmployeeDetailsDTO {
     //gross salary related fields
     private BigDecimal totalEarningsAmountYTD = BigDecimal.ZERO;
 
+
+    private BigDecimal totalTaxPayToDate = BigDecimal.ZERO;
+
     // Income Tax related fields
     private BigDecimal incomeTaxPaid;
-    private BigDecimal totalIncomeTaxPaidInCompany= BigDecimal.ZERO;
-    private BigDecimal numberOfMonthsOfIncomeTaxPaid= BigDecimal.ZERO;
+    private  BigDecimal totalEarningsAmountInThisEmployment= BigDecimal.ZERO;
+    private BigDecimal totalIncomeTaxPaidInThisEmployment= BigDecimal.ZERO;
+   /* private BigDecimal numberOfMonthsOfIncomeTaxPaid= BigDecimal.ZERO;
     private BigDecimal numberOfYearsOfIncomeTaxPaid= BigDecimal.ZERO;
-    private BigDecimal numberOfWeeksOfIncomeTaxPaid= BigDecimal.ZERO;
+    private BigDecimal numberOfWeeksOfIncomeTaxPaid= BigDecimal.ZERO;*/
+
+    private BigDecimal numberOfPayPeriodsIncomeTaxPaid = BigDecimal.ZERO;
 
     // National Insurance related fields
     private BigDecimal totalEmployeeNIContributionInCompany= BigDecimal.ZERO;
     private BigDecimal employeeNIContribution= BigDecimal.ZERO;
     //    private int numberOfNIPaidYearsInCompany= 0;
 //    private int totalNumberOfQualifyingYears= 0;
-    private BigDecimal numberOfMonthsOfNIContributions= BigDecimal.ZERO;
+   /* private BigDecimal numberOfMonthsOfNIContributions= BigDecimal.ZERO;
     private BigDecimal numberOfWeeksOfNIContributions= BigDecimal.ZERO;
-    private BigDecimal numberOfYearsOfNIContributions= BigDecimal.ZERO;
+    private BigDecimal numberOfYearsOfNIContributions= BigDecimal.ZERO;*/
+    private BigDecimal numberOfPayPeriodsNIContributions = BigDecimal.ZERO;
 
     //Pension related fields
     private BigDecimal totalAmountPensionContribution = BigDecimal.ZERO;
