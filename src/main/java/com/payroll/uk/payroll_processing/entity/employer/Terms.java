@@ -16,9 +16,9 @@ public class Terms {
     @Column(name = "hours_worked_per_week")
     private int hoursWorkedPerWeek;
 
-    @Schema(description = "Is paid overtime", example = "false", defaultValue = "false")
-    @Column(name = "is_paid_overtime")
-    private Boolean isPaidOvertime;
+//    @Schema(description = "Is paid overtime", example = "false", defaultValue = "false")
+//    @Column(name = "is_paid_overtime")
+//    private Boolean isPaidOvertime;
 
     @Schema(description = "Weeks notice required", example = "4", defaultValue = "4")
     @Column(name = "weeks_notice_required")
@@ -36,9 +36,9 @@ public class Terms {
     @Column(name = "female_retirement_age")
     private int femaleRetirementAge;
 
-    @Schema(description = "May join pension scheme", example = "false", defaultValue = "false")
-    @Column(name = "may_join_pension_scheme")
-    private Boolean mayJoinPensionScheme;
+//    @Schema(description = "May join pension scheme", example = "false", defaultValue = "false")
+//    @Column(name = "may_join_pension_scheme")
+//    private Boolean mayJoinPensionScheme;
 
     @Schema(description = "Days holiday per year", example = "28", defaultValue = "28")
     @Column(name = "days_holiday_per_year")

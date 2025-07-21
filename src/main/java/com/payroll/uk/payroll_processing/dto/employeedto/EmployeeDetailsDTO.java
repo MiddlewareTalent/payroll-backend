@@ -41,8 +41,8 @@ public class EmployeeDetailsDTO {
     @Schema(description = "Employment type of the employee", example = "FULL_TIME")
     private EmploymentType employmentType;
 
-    @Schema(defaultValue = "false")
-    private boolean isDirector=false;
+//    @Schema(defaultValue = "false")
+//    private boolean isDirector=false;
 
 
 
@@ -84,8 +84,8 @@ public class EmployeeDetailsDTO {
     @Enumerated(EnumType.STRING)
     private NICategoryLetters niLetter;
     private OtherEmployeeDetailsDTO otherEmployeeDetailsDTO;
-    @Schema(description = "Employer ID associated with the employee", example = "12345")
-    private String employerId;
+//    @Schema(description = "Employer ID associated with the employee", example = "12345")
+//    private String employerId;
 
     private StudentLoanDTO studentLoanDto;
     private PostGraduateLoanDTO postGraduateLoanDto;
@@ -105,8 +105,13 @@ public class EmployeeDetailsDTO {
     @Schema(defaultValue = "false")
     private boolean hasPensionEligible = false;
 
+    @Schema(defaultValue = "false")
+    private boolean hasMarriedEmployee;
 
     private BigDecimal kCodeTaxableAdjustmentAnnual;
+
+    private PreviousEmploymentDataDTO previousEmploymentDataDTO;
+
 
 
 

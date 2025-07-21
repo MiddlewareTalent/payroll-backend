@@ -1,6 +1,7 @@
 package com.payroll.uk.payroll_processing.config;
 
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,9 @@ public class ResetDataScheduler {
     @Autowired
     private EmployerDetailsRepository employerDetailsRepository;
 
+    @Autowired
+    private EmployeeDetailsRepository employeeDetailsRepository;
+
 //    @Scheduled(cron = "0 */2 * * * *")
     /**
      * Updates the pay date for each employer to the same day next month.
@@ -33,7 +37,7 @@ public class ResetDataScheduler {
         List<EmployerDetails> employers = employerDetailsRepository.findAll();
 
         for (EmployerDetails employer : employers) {
-            LocalDate currentPayDate = employer.getPayDate();
+            LocalDate currentPayDate = employer.getCompanyDetails().getPayDate();
             if (currentPayDate == null) continue;
 
             // Add 1 month, but keep same day-of-month if possible
@@ -45,7 +49,7 @@ public class ResetDataScheduler {
             int nextDay = Math.min(currentDay, lastDayOfNextMonth);
             LocalDate nextPayDate = nextMonth.atDay(nextDay);
 
-            employer.setPayDate(nextPayDate);
+            employer.getCompanyDetails().setPayDate(nextPayDate);
         }
 
         employerDetailsRepository.saveAll(employers);
@@ -62,6 +66,15 @@ public class ResetDataScheduler {
         employerDetailsRepository.resetCurrentPayPeriodFieldsForAll(BigDecimal.ZERO);
         logger.info("successfully Reset current pay period figures to zero for all employers");
     }
+
+    @Scheduled(cron = "0 0 0 7 4 *")  // Run on 7th April at midnight
+//    @Scheduled(cron = "0 */2 * * * *")
+    @Transactional
+    public void resetPreviousEmploymentPayrollFigures(){
+        employeeDetailsRepository.resetPreviousEmploymentFieldsForAll(BigDecimal.ZERO);
+        logger.info("successfully Reset previous employment figures to zero for all employers");
+    }
+
 
 
 }

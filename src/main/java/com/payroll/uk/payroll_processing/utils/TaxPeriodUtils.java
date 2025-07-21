@@ -34,13 +34,13 @@ import java.time.temporal.ChronoUnit;
 
 
 @Configuration
-public class TaxMonthUtils {
+public class TaxPeriodUtils {
 
     /**
      * Returns the UK tax month (1–12) for the given date.
      * UK tax year starts on 6th April.
      */
-    public static int getUkTaxMonth(LocalDate date) {
+    /*public static int getUkTaxMonth(LocalDate date) {
 
         // Get the year of the given date
         int year = date.getYear();
@@ -61,7 +61,53 @@ public class TaxMonthUtils {
 
         // Return tax month (max 12)
         return Math.min(taxMonth, 12);
+    }*/
+
+    public static int getUkTaxMonth(LocalDate date) {
+        int year = date.getYear();
+        LocalDate taxYearStart = LocalDate.of(year, Month.APRIL, 6);
+
+        if (date.isBefore(taxYearStart)) {
+            taxYearStart = taxYearStart.minusYears(1);
+        }
+
+        for (int month = 1; month <= 12; month++) {
+            LocalDate monthStart = taxYearStart.plusMonths(month - 1);
+            LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
+
+            if (!date.isBefore(monthStart) && !date.isAfter(monthEnd)) {
+                return month;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid date for tax month calculation");
     }
+
+    public static int getUkTaxWeek(LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("Date must not be null");
+        }
+
+        // Determine tax year start (6 April of current or previous year)
+        int year = date.getYear();
+        LocalDate taxYearStart = LocalDate.of(year, Month.APRIL, 6);
+
+        if (date.isBefore(taxYearStart)) {
+            taxYearStart = taxYearStart.minusYears(1);
+        }
+
+        // Calculate days elapsed since tax year start
+        long daysBetween = ChronoUnit.DAYS.between(taxYearStart, date);
+
+        // Validate date is within tax year
+        if (daysBetween < 0 || daysBetween > 366) {
+            throw new IllegalArgumentException("Date is not within valid tax year range");
+        }
+
+        // Calculate week (1-53) with safety cap
+        return Math.min((int) (daysBetween / 7) + 1, 53);
+    }
+
 
     /**
      * Calculates how many days have passed in the current UK tax year

@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TaxThresholdService {
@@ -296,6 +298,50 @@ public class TaxThresholdService {
         return new BigDecimal[0];
 
     }
+
+   /* public Map<String,BigDecimal> AllowanceData(String taxYear){
+        if( taxYear == null || taxYear.isEmpty()) {
+            throw new IllegalArgumentException("Tax year and band name cannot be null or empty");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new IllegalStateException("Year range not found: " + taxYear);
+        }
+        TaxThreshold personalAllowanceData = taxThresholdRepository.findByTaxYearAndRegionAndBandName(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandName.PERSONAL_ALLOWANCE);
+        TaxThreshold employmentAllowanceData = taxThresholdRepository.findByTaxYearAndRegionAndBandName(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandName.EMPLOYMENT_ALLOWANCE);
+        TaxThreshold autoEnrollmentTriggerData = taxThresholdRepository.findByTaxYearAndRegionAndBandName(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandName.AUTO_ENROLMENT_PENSION_CONTRIBUTION);
+
+     taxThresholdRepository.findFixedBandsByTaxYear(taxYear);
+        Map<String,BigDecimal> allowanceData= new HashMap<>();
+        allowanceData.put("personalAllowance",personalAllowanceData.getLowerBound());
+        allowanceData.put("employmentAllowance",employmentAllowanceData.getLowerBound());
+        allowanceData.put("AutoEnrollForPension",autoEnrollmentTriggerData.getLowerBound());
+
+        return allowanceData;
+    }*/
+
+    public Map<String, BigDecimal> getAllowanceData(String taxYear) {
+        List<TaxThreshold> thresholds = taxThresholdRepository.findFixedBandsByTaxYear(taxYear);
+
+        Map<String, BigDecimal> allowanceData = new HashMap<>();
+
+        for (TaxThreshold threshold : thresholds) {
+            switch (threshold.getBandName()) {
+                case TaxThreshold.BandName.PERSONAL_ALLOWANCE:
+                    allowanceData.put("personalAllowance", threshold.getLowerBound());
+                    break;
+                case TaxThreshold.BandName.EMPLOYMENT_ALLOWANCE:
+                    allowanceData.put("employmentAllowance", threshold.getLowerBound());
+                    break;
+                case TaxThreshold.BandName.AUTO_ENROLMENT_PENSION_CONTRIBUTION:
+                    allowanceData.put("autoEnrollForPension", threshold.getLowerBound());
+                    break;
+            }
+        }
+
+        return allowanceData;
+    }
+
 
     public List<TaxThreshold> getCombinedThresholds(String taxYear, TaxThreshold.TaxRegion region) {
         List<TaxThreshold> incomeTaxThresholds = taxThresholdRepository

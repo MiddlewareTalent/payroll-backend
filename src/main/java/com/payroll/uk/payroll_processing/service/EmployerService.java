@@ -40,44 +40,6 @@ public class EmployerService {
         }
     }
 
-    public String updateEmployer(Long id, EmployerDetailsDTO employerDetailsDto) {
-        EmployerDetails existingEmployer = employerDetailsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + id));
-
-        // Update the existing employer's details
-        existingEmployer.setEmployerName(employerDetailsDto.getEmployerName());
-        existingEmployer.setEmployerAddress(employerDetailsDto.getEmployerAddress());
-        existingEmployer.setEmployerTelephone(employerDetailsDto.getEmployerTelephone());
-        existingEmployer.setEmployerEmail(employerDetailsDto.getEmployerEmail());
-        existingEmployer.setEmployerPostCode(employerDetailsDto.getEmployerPostCode());
-        existingEmployer.setContactForename(employerDetailsDto.getContactForename());
-        existingEmployer.setContactSurname(employerDetailsDto.getContactSurname());
-        existingEmployer.setPdfPassword(employerDetailsDto.getPdfPassword());
-        existingEmployer.setUserReference(employerDetailsDto.getUserReference());
-        existingEmployer.setDatePAYESchemeStarted(employerDetailsDto.getDatePAYESchemeStarted());
-        existingEmployer.setDatePAYESchemeCeased(employerDetailsDto.getDatePAYESchemeCeased());
-        existingEmployer.setRtiBatchProcessing(employerDetailsDto.getRtiBatchProcessing());
-        existingEmployer.setPreviousWorksNumberUnknown(employerDetailsDto.getPreviousWorksNumberUnknown());
-        existingEmployer.setEnsureUniqueWorksNumber(employerDetailsDto.getEnsureUniqueWorksNumber());
-        existingEmployer.setWarnBelowNationalMinimumWage(employerDetailsDto.getWarnBelowNationalMinimumWage());
-        existingEmployer.setShowAgeOnHourlyTab(employerDetailsDto.getShowAgeOnHourlyTab());
-        existingEmployer.setCompanyLogo(employerDetailsDto.getCompanyLogo());
-        existingEmployer.setTaxOffice(employerDetailsDtoMapper.changeToTaxOffice(employerDetailsDto.getTaxOfficeDto()));
-        existingEmployer.setTerms(employerDetailsDtoMapper.changeToTerms(employerDetailsDto.getTermsDto()));
-//        existingEmployer.setBankDetails(employerDetailsDtoMapper.mapToBankDetails(employerDetailsDto.getBankDetailsDTO()));
-        existingEmployer.setRegion(employerDetailsDto.getRegion());
-        existingEmployer.setTaxYear(employerDetailsDto.getTaxYear());
-        existingEmployer.setPayPeriod(employerDetailsDto.getPayPeriod());
-        existingEmployer.setCompanyName(employerDetailsDto.getCompanyName());
-        existingEmployer.setOtherEmployerDetails(employerDetailsDtoMapper.changeToOtherEmployerDetails(employerDetailsDto.getOtherEmployerDetailsDto()));
-
-
-        // Save the updated employer details
-        employerDetailsRepository.save(existingEmployer);
-
-        return "Updated successfully";
-    }
-
     public EmployerDetailsDTO updateEmployerDetailsById(Long id, EmployerDetailsDTO employerDetailsDto){
         if (employerDetailsDto.getEmployerId() == null || employerDetailsDto.getEmployerId().isEmpty()) {
             throw new IllegalArgumentException("Employee ID or Id cannot be null or empty");

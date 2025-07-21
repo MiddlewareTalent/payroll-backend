@@ -4,12 +4,12 @@ import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
-import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
+import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,13 +22,16 @@ public class EmployeeDetailsService {
     private  final EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
     private  final BankDetailsRepository bankDetailsRepository;
     private final EmployerDetailsRepository employerDetailsRepository;
+    private final TaxThresholdService taxThresholdService;
 
     public EmployeeDetailsService(EmployeeDetailsRepository employeeDetailsRepository,
-                                  EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository, EmployerDetailsRepository employerDetailsRepository) {
+                                  EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository, EmployerDetailsRepository employerDetailsRepository,
+                                  TaxThresholdService taxThresholdService) {
         this.employeeDetailsRepository = employeeDetailsRepository;
         this.employeeDetailsDTOMapper = employeeDetailsDTOMapper;
         this.bankDetailsRepository = bankDetailsRepository;
         this.employerDetailsRepository = employerDetailsRepository;
+        this.taxThresholdService = taxThresholdService;
     }
     // Save employee details
     public EmployeeDetailsDTO saveEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO){
@@ -47,14 +50,18 @@ public class EmployeeDetailsService {
         if (employerDetailsRepository.findByEmployerId(employeeDetailsDTO.getEmployeeId()).isPresent()){
             throw new EmployerRegistrationException("Employee Id already exists as Employer ID");
         }
-        if (!employerDetailsRepository.existsByEmployerId( employeeDetailsDTO.getEmployerId())) {
-            throw new EmployerRegistrationException("Employer with this ID does not exist");
-        }
+//        if (!employerDetailsRepository.existsByEmployerId( employeeDetailsDTO.getEmployerId())) {
+//            throw new EmployerRegistrationException("Employer with this ID does not exist");
+//        }
         if (employeeDetailsRepository.existsByNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber())){
             throw new DuplicateNationalInsuranceException("Employee with this National Insurance Number already exists");
         }
         validateEmployeeDetails(employeeDetailsDTO);
         EmployeeDetails employeeData = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
+
+        employeeData.setTotalPersonalAllowance(taxThresholdService.getPersonalAllowance(employeeData.getTaxYear()));
+        employeeData.getOtherEmployeeDetails().setRemainingPersonalAllowance(employeeData.getTotalPersonalAllowance().subtract(employeeData.getPreviouslyUsedPersonalAllowance()));
+
 //        bankDetailsRepository.save(employeeData.getBankDetails());
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(employeeData);
 
@@ -93,9 +100,9 @@ public class EmployeeDetailsService {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
             throw new EmployeeNotFoundException("Employee ID or Id cannot be null or empty");
         }
-        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
-            throw new EmployeeNotFoundException("Employer with this ID does not exist");
-        }
+//        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
+//            throw new EmployeeNotFoundException("Employer with this ID does not exist");
+//        }
 
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
@@ -120,9 +127,9 @@ public class EmployeeDetailsService {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
             throw new EmployeeNotFoundException("Employee ID cannot be null or empty");
         }
-        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
-            throw new IllegalArgumentException("Employer with this ID does not exist");
-        }
+//        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
+//            throw new IllegalArgumentException("Employer with this ID does not exist");
+//        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
@@ -154,10 +161,10 @@ public class EmployeeDetailsService {
         bankDetails.setBankName(bankDetailsDTO.getBankName());
         bankDetails.setBankAddress(bankDetailsDTO.getBankAddress());
         bankDetails.setBankPostCode(bankDetailsDTO.getBankPostCode());
-        bankDetails.setTelephone(bankDetailsDTO.getTelephone());
-        bankDetails.setPaymentReference(bankDetailsDTO.getPaymentReference());
-        bankDetails.setIsRTIReturnsIncluded(bankDetailsDTO.getIsRTIReturnsIncluded());
-        bankDetails.setPaymentLeadDays(bankDetailsDTO.getPaymentLeadDays());
+//        bankDetails.setTelephone(bankDetailsDTO.getTelephone());
+//        bankDetails.setPaymentReference(bankDetailsDTO.getPaymentReference());
+//        bankDetails.setIsRTIReturnsIncluded(bankDetailsDTO.getIsRTIReturnsIncluded());
+//        bankDetails.setPaymentLeadDays(bankDetailsDTO.getPaymentLeadDays());
         bankDetails.setId(bankDetails.getId());
         return employeeDetailsDTOMapper.mapToBanKDetailsDTO(bankDetailsRepository.save(bankDetails));
 

@@ -18,7 +18,7 @@ public interface EmployerDetailsRepository extends JpaRepository<EmployerDetails
     Optional<EmployerDetails> findByEmployerId(String employerId);
     @Modifying
     @Transactional
-    @Query("UPDATE EmployerDetails e SET e.payDate = :payDate")
+    @Query("UPDATE EmployerDetails e SET e.companyDetails.payDate = :payDate")
     void updatePayDateForAll(@Param("payDate") LocalDate payDate);
 
     Optional<EmployerDetails> findByEmployerEmail(String employerEmail);
@@ -38,6 +38,8 @@ public interface EmployerDetailsRepository extends JpaRepository<EmployerDetails
             "e.otherEmployerDetails.currentPayPeriodPAYE = :zero, " +
             "e.otherEmployerDetails.currentPayPeriodPaidGrossPay = :zero")
     void resetCurrentPayPeriodFieldsForAll(@Param("zero") BigDecimal zero);
+
+
 
 
 }

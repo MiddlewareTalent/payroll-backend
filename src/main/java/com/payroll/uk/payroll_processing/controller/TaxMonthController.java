@@ -1,7 +1,7 @@
 package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.utils.AgeUtils;
-import com.payroll.uk.payroll_processing.utils.TaxMonthUtils;
+import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -15,7 +15,14 @@ public class TaxMonthController {
             @Parameter(description = "Date in yyyy-MM-dd format", example = "2025-06-28")
                                @PathVariable("date") String dateStr) {
         LocalDate date = LocalDate.parse(dateStr);
-        return TaxMonthUtils.getUkTaxMonth(date);
+        return TaxPeriodUtils.getUkTaxMonth(date);
+    }
+    @GetMapping("/week/{date}")
+    public int getTaxWeek(
+            @Parameter(description = "Date in yyyy-MM-dd format", example = "2025-06-28")
+            @PathVariable("date") String dateStr) {
+        LocalDate date = LocalDate.parse(dateStr);
+        return TaxPeriodUtils.getUkTaxWeek(date);
     }
 
     /**
@@ -27,7 +34,7 @@ public class TaxMonthController {
             @Parameter(description = "Date in yyyy-MM-dd format", example = "2025-06-28")
             @PathVariable("date") String dateStr) {
         LocalDate date = LocalDate.parse(dateStr);
-        return TaxMonthUtils.getDaysCompletedInTaxYear(date);
+        return TaxPeriodUtils.getDaysCompletedInTaxYear(date);
     }
 
     @GetMapping("/employee/age/{dob}")
