@@ -48,6 +48,7 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setPayPeriod(employeeDetails.getPayPeriod());
         employeeDetailsDTO.setNationalInsuranceNumber(employeeDetails.getNationalInsuranceNumber());
         employeeDetailsDTO.setNiLetter(employeeDetails.getNiLetter());
+        employeeDetailsDTO.setPayrollId(employeeDetails.getPayrollId());
 
 //        employeeDetailsDTO.setEmployerId(employeeDetails.getEmployerId());
 

@@ -105,6 +105,8 @@ public class EmployeeDetailsDTO {
     @Schema(defaultValue = "false")
     private boolean hasPensionEligible = false;
 
+    private String payrollId;
+
     @Schema(defaultValue = "false")
     private boolean hasMarriedEmployee;
 

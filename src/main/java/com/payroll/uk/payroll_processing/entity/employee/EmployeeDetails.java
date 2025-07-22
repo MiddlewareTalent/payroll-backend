@@ -115,6 +115,10 @@ public class EmployeeDetails {
     @Column(name = "ni_letter",nullable = false)
     private NICategoryLetters niLetter;
 
+    @Column(name = "payroll_id", unique = true, nullable = false)
+    private String payrollId;
+
+
     @Embedded
     @Column(name = "otherEmployeeDetails")
     private OtherEmployeeDetails otherEmployeeDetails;

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class EmployeeDetailsService {
@@ -57,11 +59,28 @@ public class EmployeeDetailsService {
             throw new DuplicateNationalInsuranceException("Employee with this National Insurance Number already exists");
         }
         validateEmployeeDetails(employeeDetailsDTO);
+        String payrollReference = employerDetailsRepository.findByPayrollGivingRef();
+//        if (payrollReference == null || payrollReference.isEmpty()) {
+//            throw new IllegalArgumentException("Payroll Giving Reference not found for the employer");
+//        }
+         String lastPayrollId = employeeDetailsRepository.findLastEmployeePayrollId()
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        String currentPayrollId;
+        if (lastPayrollId==null || lastPayrollId.isEmpty()){
+            payrollReference=payrollReference==null?"T_F01":payrollReference;
+            currentPayrollId= generateNextPayrollId(payrollReference);
+        }
+        else {
+            currentPayrollId=generateNextPayrollId(lastPayrollId);
+        }
         EmployeeDetails employeeData = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
 
         employeeData.setTotalPersonalAllowance(taxThresholdService.getPersonalAllowance(employeeData.getTaxYear()));
         employeeData.getOtherEmployeeDetails().setRemainingPersonalAllowance(employeeData.getTotalPersonalAllowance().subtract(employeeData.getPreviouslyUsedPersonalAllowance()));
-
+         employeeData.setPayrollId(currentPayrollId);
 //        bankDetailsRepository.save(employeeData.getBankDetails());
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(employeeData);
 
@@ -303,6 +322,60 @@ public class EmployeeDetailsService {
         }
     }
 
+
+
+    public String extractPrefix(String payrollId) {
+        if (payrollId == null || payrollId.isEmpty()) {
+            throw new IllegalArgumentException("Payroll ID cannot be null or empty");
+        }
+        return payrollId.replaceAll("\\d+$", ""); // removes all digits from end
+    }
+
+    public String generateNextPayrollId(String lastPayrollId) {
+        if (lastPayrollId == null || lastPayrollId.isEmpty()) {
+            throw new IllegalArgumentException("Payroll ID cannot be null or empty");
+        }
+
+        // Match trailing digits (e.g., EMP12X02 -> prefix=EMP12X, numberPart=02)
+        Pattern pattern = Pattern.compile("^(.*?)(\\d+)?$");
+        Matcher matcher = pattern.matcher(lastPayrollId);
+
+        if (matcher.matches()) {
+            String prefix = matcher.group(1);
+            String numberStr = matcher.group(2);
+
+            int number = 1; // default start
+            int paddingLength = 2; // format like 01, 02, etc.
+
+            if (numberStr != null) {
+                number = Integer.parseInt(numberStr) + 1;
+                paddingLength = numberStr.length(); // preserve existing padding
+            }
+
+            String newNumber = String.format("%0" + paddingLength + "d", number);
+            return prefix + newNumber;
+        }
+
+        throw new IllegalArgumentException("Invalid payroll ID format: " + lastPayrollId);
+    }
+
+
+    public String generateNextPayrollId(String prefix, String lastUsedPayrollId) {
+        int nextNumber = 1;
+
+        if (lastUsedPayrollId != null && lastUsedPayrollId.startsWith(prefix)) {
+            String numberPart = lastUsedPayrollId.substring(prefix.length());
+            try {
+                nextNumber = Integer.parseInt(numberPart) + 1;
+            } catch (NumberFormatException e) {
+                // fallback to 1 if number part is invalid
+                nextNumber = 1;
+            }
+        }
+
+        // Format to 2-digit number with leading zeros: e.g., 01, 02, ... 10
+        return String.format("%s%02d", prefix, nextNumber);
+    }
 
 
 
