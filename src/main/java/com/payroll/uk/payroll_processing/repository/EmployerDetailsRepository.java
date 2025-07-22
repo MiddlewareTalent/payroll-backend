@@ -41,6 +41,9 @@ public interface EmployerDetailsRepository extends JpaRepository<EmployerDetails
 
 
 
+    @Query("SELECT e.taxOffice.payrollGivingRef FROM EmployerDetails e")
+    String findByPayrollGivingRef();
+
 
 }
 

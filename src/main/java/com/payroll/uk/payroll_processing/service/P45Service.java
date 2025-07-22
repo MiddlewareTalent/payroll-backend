@@ -99,8 +99,8 @@ public class P45Service {
         String normalizedGender = gender.trim().toUpperCase();
 
         return switch (normalizedGender) {
-            case "MALE" -> marriedStatus ? "MRS" : "MR";
-            case "FEMALE" -> marriedStatus ? "MISS" : "MS";
+            case "MALE" -> "MR";
+            case "FEMALE" -> marriedStatus ? "MRS" : "MS";
             default -> "OTHER";
         };
     }

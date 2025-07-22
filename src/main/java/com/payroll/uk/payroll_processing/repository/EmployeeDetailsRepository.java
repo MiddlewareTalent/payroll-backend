@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @EnableJpaRepositories
@@ -30,5 +31,11 @@ public interface EmployeeDetailsRepository extends JpaRepository<EmployeeDetails
             "e.previousEmploymentData.previousEmploymentEndDate = null, " +
             "e.previousEmploymentData.previousTaxCode = null")
     void resetPreviousEmploymentFieldsForAll(@Param("zero") BigDecimal zero);
+
+    @Query("SELECT e.payrollId FROM EmployeeDetails e ORDER BY e.payrollId DESC")
+    List<String> findLastEmployeePayrollId();
+
+
+
 
 }
