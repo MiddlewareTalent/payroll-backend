@@ -1,8 +1,7 @@
 package com.payroll.uk.payroll_processing.service.incometax;
 
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
-import com.payroll.uk.payroll_processing.exception.InvalidPayPeriodException;
-import com.payroll.uk.payroll_processing.exception.InvalidTaxCodeException;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public class TaxCodeService {
         logger.info("Income tax calculation");
         // Validate inputs
         if (grossIncome == null || taxCode == null || taxYear == null || region == null || payPeriod == null) {
-            throw new IllegalArgumentException("Parameters cannot be null");
+            throw new DataValidationException("Parameters cannot be null");
         }
 
 
@@ -39,7 +38,7 @@ public class TaxCodeService {
                 grossIncome, personalAllowanceGet, taxableIncomeGet, taxYear, region, taxCode, payPeriod);
 
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Income cannot be negative");
+            throw new DataValidationException("Income cannot be negative");
         }
 
         try {
@@ -115,7 +114,7 @@ public class TaxCodeService {
                         BigDecimal Annual0TTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
                         yield calculateIncomeTaxBasedOnPayPeriod(Annual0TTax, payPeriod);
                     }
-                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                    default -> throw new DataValidationException("Unrecognized tax code: " + taxCode);
                 };
 
             } else if (TaxThreshold.TaxRegion.WALES == region) {
@@ -128,7 +127,7 @@ public class TaxCodeService {
                         BigDecimal AnnualC0TTax = incomeTaxCalculation.calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
                         yield calculateIncomeTaxBasedOnPayPeriod(AnnualC0TTax, payPeriod);
                     }
-                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                    default -> throw new DataValidationException("Unrecognized tax code: " + taxCode);
                 };
             } else if (TaxThreshold.TaxRegion.SCOTLAND == region) {
                 return switch (normalizedTaxCode) {
@@ -145,7 +144,7 @@ public class TaxCodeService {
                     case "S0T" ->
                             scotlandTaxCalculation.calculateScotlandIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual, taxSlabs, taxRates, payPeriod);
 //                    return calculateIncomeTaxBasedOnPayPeriod(AnnualIncomeTax,payPeriod);
-                    default -> throw new InvalidTaxCodeException("Unrecognized tax code: " + taxCode);
+                    default -> throw new DataValidationException("Unrecognized tax code: " + taxCode);
                 };
 
             } else {
@@ -169,7 +168,7 @@ public class TaxCodeService {
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 4, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new InvalidPayPeriodException("Invalid pay period. Must be "+payPeriod);
+            default -> throw new DataValidationException("Invalid pay period. Must be "+payPeriod);
         };
     }
     public BigDecimal calculateTaxableIncome(BigDecimal grossIncome,BigDecimal personalAllowance){
@@ -186,7 +185,7 @@ public class TaxCodeService {
             case "MONTHLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(12));
             case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> annualGross=grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         }
         return annualGross;
 //        return annualGross.setScale(2, RoundingMode.HALF_UP);

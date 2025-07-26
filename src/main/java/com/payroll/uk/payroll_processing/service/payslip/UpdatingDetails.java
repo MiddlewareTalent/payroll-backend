@@ -6,6 +6,7 @@ import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.OtherEmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employer.OtherEmployerDetails;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
@@ -41,10 +42,10 @@ public class UpdatingDetails {
 
     public void updatingOtherEmployeeDetails( PaySlip paySlip){
         if(paySlip.getEmployeeId() == null){
-            throw new IllegalArgumentException("Pay slip and Employee Id are miss match");
+            throw new DataValidationException("Pay slip and Employee Id are miss match");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + paySlip.getEmployeeId()));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
         OtherEmployeeDetails otherEmployeeDetails = employeeDetails.getOtherEmployeeDetails();
         OtherEmployeeDetails updateOtherEmployeeDetails = new OtherEmployeeDetails();
         updateOtherEmployeeDetails=otherEmployeeDetails;

@@ -36,6 +36,47 @@ public interface EmployeeDetailsRepository extends JpaRepository<EmployeeDetails
     List<String> findLastEmployeePayrollId();
 
 
+    @Query(value = "SELECT * FROM employee_details e " +
+            "WHERE e.employee_id = :employeeId " +
+            "AND (e.employment_end_date IS NULL " +
+            "OR e.employment_end_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01'))",
+            nativeQuery = true)
+    List<EmployeeDetails> findCurrentPayPeriodEmployeesForPaySlipGeneration(@Param("employeeId") String employeeId);
+
+    /*@Query(value = "SELECT * FROM employee_details e " +
+            "WHERE e.employment_end_date IS NULL " +
+            "OR e.employment_end_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')",
+            nativeQuery = true)
+    List<EmployeeDetails> findCurrentPayPeriodEmployeesForPaySlipGeneration();*/
+
+
+    @Query(value = "SELECT * FROM employee_details e " +
+            "WHERE e.employment_end_date IS NULL " +
+            "OR e.employment_end_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')",
+            nativeQuery = true)
+    List<EmployeeDetails> findActiveEmployees();
+
+    @Query(value = "SELECT * FROM employee_details e " +
+            "WHERE e.employment_end_date IS NOT NULL " +
+            "AND e.employment_end_date < DATE_FORMAT(CURDATE(), '%Y-%m-01') "+
+            "ORDER BY e.employment_end_date ASC",
+            nativeQuery = true)
+    List<EmployeeDetails> findInactiveEmployees();
+
+    @Query(value = "SELECT * FROM employee_details e " +
+            "WHERE e.employment_end_date IS NOT NULL " +
+            "AND e.employment_end_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') " +
+            "ORDER BY e.employment_end_date ASC",
+            nativeQuery = true)
+    List<EmployeeDetails> findReadyForLeavingEmployees();
+
+
+
+
+
+
+
+
 
 
 }

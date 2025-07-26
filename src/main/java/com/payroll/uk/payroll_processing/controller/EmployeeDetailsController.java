@@ -3,6 +3,7 @@ package com.payroll.uk.payroll_processing.controller;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.service.FileStorageService;
 import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService;
@@ -184,6 +185,38 @@ public class EmployeeDetailsController {
                     .body("Internal server error: " + e.getMessage()); // 500 Internal Server Error
         }
     }
+
+    @GetMapping("/fetch/active-employees")
+    public List<EmployeeDetailsDTO> getActiveEmployees(){
+        try{
+            return employeeDetailsService.getAllActiveEmployees();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            throw new EmployeeNotFoundException("Failed to fetch active employees: " + e.getMessage());
+        }
+    }
+    @GetMapping("/fetch/inactive-employees")
+    public List<EmployeeDetailsDTO> getInactiveEmployees(){
+        try{
+            return employeeDetailsService.getAllInActiveEmployees();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            throw new EmployeeNotFoundException("Failed to fetch inactive employees: " + e.getMessage());
+        }
+    }
+    @GetMapping("/fetch/Ready-for-leave-employees")
+    public List<EmployeeDetailsDTO> getReadyForLeaveEmployees(){
+        try{
+            return employeeDetailsService.getAllReadyForLeavingEmployees();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            throw new EmployeeNotFoundException("Failed to fetch ready for leave employees: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/test/email/{email}")
     public Boolean checkEmailExist(@PathVariable("email") String email){
         Optional<EmployeeDetails> email_Id = employeeDetailsRepository.findByEmail(email);

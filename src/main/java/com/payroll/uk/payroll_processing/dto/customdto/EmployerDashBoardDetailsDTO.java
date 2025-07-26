@@ -15,7 +15,7 @@ public class EmployerDashBoardDetailsDTO {
     private Long TotalPaySlips;
 
     private PayPeriod payPeriod;
-    private  int currentPayMonth;
+    private  String currentPayPeriodNumber;
     private String currentYear;
     private Long currentYearCompletedDays;
 

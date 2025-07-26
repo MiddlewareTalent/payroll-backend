@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.service;
 
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.repository.TaxThresholdRepository;
 import jdk.jfr.Threshold;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class TaxThresholdService {
         List<TaxThreshold> employmentAllowance = taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(
                 taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYMENT_ALLOWANCE);
         if (employmentAllowance.isEmpty()) {
-            throw new IllegalStateException("Personal allowance not found for year: " + taxYear );
+            throw new DataValidationException("Personal allowance not found for year: " + taxYear );
         }
 
         return employmentAllowance.getFirst().getLowerBound();
@@ -99,7 +100,7 @@ public class TaxThresholdService {
         logging.info("Tax Thresholds Service in Fetching tax bounds for year: {}, region: {}, band name type: {}", taxYear, region, BandNameType);
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         List<TaxThreshold> taxBands = getTaxThresholds(taxYear, region,BandNameType);
 
@@ -133,7 +134,7 @@ public class TaxThresholdService {
                                     TaxThreshold.BandNameType BandNameType) {
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         List<TaxThreshold> taxBands = getTaxThresholds(taxYear, region, BandNameType);
 
@@ -166,7 +167,7 @@ public class TaxThresholdService {
     public BigDecimal[][] getEmployeeNIThreshold(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         if(List.of(NICategoryLetters.A,NICategoryLetters.F,NICategoryLetters.H,NICategoryLetters.M,NICategoryLetters.N,
                 NICategoryLetters.V).contains(NILetter)){
@@ -197,7 +198,7 @@ public class TaxThresholdService {
 
     public BigDecimal[][] getThresholdsBands(List<TaxThreshold> niThresholds) {
         if (niThresholds.isEmpty()) {
-            throw new IllegalStateException("No NI thresholds found");
+            throw new DataValidationException("No NI thresholds found");
         }
         BigDecimal[][] bounds = new BigDecimal[niThresholds.size()][2];
         for (int i = 0; i < niThresholds.size(); i++) {
@@ -212,7 +213,7 @@ public class TaxThresholdService {
     public BigDecimal[] getEmployeeNIRates(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         if(List.of(NICategoryLetters.A,NICategoryLetters.F,NICategoryLetters.H,NICategoryLetters.M,NICategoryLetters.N,
                 NICategoryLetters.V).contains(NILetter)){
@@ -242,7 +243,7 @@ public class TaxThresholdService {
     }
     public BigDecimal[] getThresholdRates(List<TaxThreshold> niThresholdsRate) {
         if (niThresholdsRate.isEmpty()) {
-            throw new IllegalStateException("No NI thresholds found");
+            throw new DataValidationException("No NI thresholds found");
         }
         BigDecimal[] rates = new BigDecimal[niThresholdsRate.size()];
         for (int i = 0; i < niThresholdsRate.size(); i++) {
@@ -255,7 +256,7 @@ public class TaxThresholdService {
     public BigDecimal[][] getEmployerThreshold(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         if(List.of(NICategoryLetters.A,NICategoryLetters.B,NICategoryLetters.C,NICategoryLetters.J).contains(NILetter)){
             List<TaxThreshold>Employee_NI_A=getNIThresholds(taxYear,region,BandNameType, TaxThreshold.BandName.EMPLOYER_NI_TYPE_A);
@@ -278,7 +279,7 @@ public class TaxThresholdService {
     public BigDecimal[] getEmployerRates(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
-            throw new IllegalStateException("Year range not found: " + taxYear);
+            throw new DataValidationException("Year range not found: " + taxYear);
         }
         if(List.of(NICategoryLetters.A,NICategoryLetters.B,NICategoryLetters.C,NICategoryLetters.J).contains(NILetter)){
             List<TaxThreshold>Employee_NI_A=getNIThresholds(taxYear,region,BandNameType, TaxThreshold.BandName.EMPLOYER_NI_TYPE_A);

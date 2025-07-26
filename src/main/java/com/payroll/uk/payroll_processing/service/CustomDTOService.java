@@ -22,6 +22,7 @@ public class CustomDTOService {
     private final EmployeeDetailsRepository employeeDetailsRepository;
     private final EmployerDetailsRepository employerDetailsRepository;
 
+
     public EmployerDashBoardDetailsDTO createDataForDashboard() {
 
         try {
@@ -38,10 +39,10 @@ public class CustomDTOService {
             employerDashBoardDetailsDTO.setPayPeriod(employerDetails.getCompanyDetails().getCurrentPayPeriod());
             employerDashBoardDetailsDTO.setCurrentYear(employerDetails.getCompanyDetails().getCurrentTaxYear());
             if (employerDetails.getCompanyDetails().getCurrentPayPeriod()== PayPeriod.MONTHLY) {
-                employerDashBoardDetailsDTO.setCurrentPayMonth(TaxPeriodUtils.getUkTaxMonth(LocalDate.now()));
+                employerDashBoardDetailsDTO.setCurrentPayPeriodNumber(TaxPeriodUtils.getUkTaxMonth(LocalDate.now()));
             }
             else if (employerDetails.getCompanyDetails().getCurrentPayPeriod()== PayPeriod.WEEKLY){
-                employerDashBoardDetailsDTO.setCurrentPayMonth(TaxPeriodUtils.getUkTaxWeek(LocalDate.now()));
+                employerDashBoardDetailsDTO.setCurrentPayPeriodNumber(TaxPeriodUtils.getUkTaxWeek(LocalDate.now()));
             }
             employerDashBoardDetailsDTO.setCurrentYearCompletedDays(TaxPeriodUtils.getDaysCompletedInTaxYear(LocalDate.now()));
             employerDashBoardDetailsDTO.setTotalIncomeTax(employerDetails.getOtherEmployerDetails().getTotalPAYEYTD());
@@ -64,5 +65,15 @@ public class CustomDTOService {
         }
         return data;
     }
+
+   /* public List<EmployeeDetailsDTO> getAllEmployeeDetailsForPaySlip() {
+        List<EmployeeDetails> employeeDetails = employeeDetailsRepository.findCurrentPayPeriodEmployeesForPaySlipGeneration();
+        if (employeeDetails.isEmpty()) {
+            throw new EmployeeNotFoundException("No employee details found");
+        }
+        return employeeDetails.stream().map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO).collect(Collectors.toList());
+    }*/
+
+
 
 }

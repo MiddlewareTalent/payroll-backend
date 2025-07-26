@@ -7,6 +7,9 @@ import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
+import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
@@ -30,11 +33,10 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
-public class AutoPaySlip {
-    private static final Logger logger = LoggerFactory.getLogger(AutoPaySlip.class);
+public class PaySlipGeneration {
+    private static final Logger logger = LoggerFactory.getLogger(PaySlipGeneration.class);
     @Autowired
     private PaySlipRepository paySlipRepository;
     @Autowired
@@ -64,16 +66,16 @@ public class AutoPaySlip {
 
 
     @Transactional
-    public PaySlipCreateDto fillPaySlip(String employeeId){
+     PaySlipCreateDto fillPaySlip(String employeeId){
         if (employeeId.isBlank()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
 
         EmployerDetails  employerDetails = employerDetailsRepository.findAll().getFirst();
         if (employerDetails == null) {
-            throw new RuntimeException("Employer details not found");
+            throw new DataValidationException("Employer details not found");
         }
         validateEmployeeDetails(employeeDetails);
         validateEmployerDetails(employerDetails);
@@ -97,7 +99,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while setting basic details: {}", e.getMessage());
-            throw new RuntimeException("Failed to set basic details for payslip", e);
+            throw new DataValidationException("Failed to set basic details for payslip", e);
         }
         paySlipCreate.setGrossPayTotal(employeeDetails.getPayPeriodOfIncomeOfEmployee());
 
@@ -138,7 +140,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating personal allowance: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate personal allowance for payslip", e);
+            throw new InvalidComputationException("Failed to calculate personal allowance for payslip", e);
         }
         // Check if K Code adjustment is needed
         BigDecimal currentKCodeAmount=BigDecimal.ZERO;
@@ -168,7 +170,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating taxable income: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate taxable income for payslip", e);
+            throw new InvalidComputationException("Failed to calculate taxable income for payslip", e);
         }
         // income tax calculation
         try {
@@ -194,7 +196,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating income tax: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate income tax for payslip", e);
+            throw new InvalidComputationException("Failed to calculate income tax for payslip", e);
         }
         // National Insurance calculation
         try {
@@ -214,7 +216,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating National Insurance: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate National Insurance for payslip", e);
+            throw new InvalidComputationException("Failed to calculate National Insurance for payslip", e);
         }
         // Student Loan and Postgraduate Loan calculation
         try {
@@ -238,7 +240,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating student loan or postgraduate loan: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate student or postgraduate loan for payslip", e);
+            throw new InvalidComputationException("Failed to calculate student or postgraduate loan for payslip", e);
         }
         // Pension contributions calculation
         try {
@@ -261,7 +263,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating pension contributions: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate pension contributions for payslip", e);
+            throw new InvalidComputationException("Failed to calculate pension contributions for payslip", e);
         }
         // Deductions and Net Pay calculation
         try {
@@ -273,11 +275,10 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while calculating deductions or net pay: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate deductions or net pay for payslip", e);
+            throw new InvalidComputationException("Failed to calculate deductions or net pay for payslip ", e);
         }
         PaySlip savedPaySlip=paySlipRepository.save(paySlipCreate);
-        logger.info("successful payslip is created: ");
-        System.out.println("created PaySlip: " + savedPaySlip);
+        logger.info("successful payslip is created: {}", savedPaySlip);
 
         // Update employee details
         try {
@@ -286,7 +287,7 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while updating other employee details: {}", e.getMessage());
-            throw new RuntimeException("Failed to update other employee details for payslip", e);
+            throw new InvalidComputationException("Failed to update other employee details for payslip", e);
         }
        try {
            if (savedPaySlip.getHasStudentLoanStart() || savedPaySlip.getHasPostGraduateLoanStart()) {
@@ -300,7 +301,7 @@ public class AutoPaySlip {
        }
        catch (Exception e){
            logger.error("Error occurred while calculating loan or pension contributions: {}", e.getMessage());
-              throw new RuntimeException("Failed to calculate loan or pension contributions for payslip", e);
+              throw new InvalidComputationException("Failed to calculate loan or pension contributions for payslip", e);
        }
 
 
@@ -320,33 +321,28 @@ public class AutoPaySlip {
         }
         catch (Exception e){
             logger.error("Error occurred while updating employer details: {}", e.getMessage());
-            throw new RuntimeException("Failed to update employer details for payslip", e);
+            throw new InvalidComputationException("Failed to update employer details for payslip", e);
         }
-
-
-
-
-
         return  paySlipCreateDtoMapper.mapToDto(savedPaySlip);
     }
-    public BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
+    private BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 2, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
     }
-    public String generatePayslipReference(String employeeId) {
+    private String generatePayslipReference(String employeeId) {
         String random = new BigInteger(48, new SecureRandom()).toString(36).toUpperCase();
         return String.format("%s-%s", random.substring(0, 6), employeeId);
     }
 
 
-    public String getPeriodEndMonthYear(LocalDate payDate) {
+    private String getPeriodEndMonthYear(LocalDate payDate) {
         if (payDate == null) {
-            throw new IllegalArgumentException("Pay date cannot be null");
+            throw new DataValidationException("Pay date cannot be null");
         }
 
         YearMonth yearMonth = YearMonth.from(payDate);
@@ -357,119 +353,85 @@ public class AutoPaySlip {
         return yearMonth.format(formatter);
     }
 
-    public List<PaySlipCreateDto> getAllEmployeeId(String employeeId){
-        if(employeeId==null){
-            throw new IllegalArgumentException("Employee Cannot be null or empty");
-        }
-        if(!paySlipRepository.existsByEmployeeId(employeeId)){
-            throw new IllegalArgumentException("Employee Id is not found");
-        }
 
-        List<PaySlip> listOfPayslips = paySlipRepository.findByEmployeeId(employeeId);
-        List<PaySlipCreateDto> listOfPayslipsData = listOfPayslips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
 
-        if (listOfPayslipsData.isEmpty()){
-            throw new IllegalArgumentException("Payslip data is not found");
-        }
-        return listOfPayslipsData;
-    }
-    public PaySlipCreateDto getPaySlipByReferences(String paySlipReference){
-        if(paySlipReference ==null){
-            throw new IllegalArgumentException("paySlipReference Number cannot be Null");
-        }
-        if(!paySlipRepository.existsByPaySlipReference(paySlipReference)){
-            throw  new IllegalArgumentException("paySlipReference number is not found");
-        }
-        PaySlip paySlipData = paySlipRepository.findByPaySlipReference(paySlipReference);
-        if(paySlipData==null){
-            throw new IllegalArgumentException("payslip data is null");
-        }
-        return paySlipCreateDtoMapper.mapToDto(paySlipData);
-    }
 
-    private void validateEmployeeDetails(EmployeeDetails employeeDetails) {
+    public void validateEmployeeDetails(EmployeeDetails employeeDetails) {
 
         // Name validations
         if (employeeDetails.getFirstName() == null || employeeDetails.getFirstName().trim().isEmpty()) {
-            throw new IllegalArgumentException("First name is not found");
+            throw new DataValidationException("First name is not found");
         }
         if (employeeDetails.getLastName() == null || employeeDetails.getLastName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Last name is not found");
+            throw new DataValidationException("Last name is not found");
         }
         if (employeeDetails.getAddress() == null || employeeDetails.getAddress().trim().isEmpty()) {
-            throw new IllegalArgumentException("Address is not found");
+            throw new DataValidationException("Address is not found");
         }
         if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().trim().isEmpty()) {
-            throw new IllegalArgumentException("PostCode is not found");
+            throw new DataValidationException("PostCode is not found");
         }
         if (employeeDetails.getRegion() == null ) {
-            throw new IllegalArgumentException("Region is not found");
+            throw new DataValidationException("Region is not found");
         }
         if (employeeDetails.getTaxCode() == null || employeeDetails.getTaxCode().trim().isEmpty()) {
-            throw new IllegalArgumentException("tax code is not found");
+            throw new DataValidationException("tax code is not found");
         }
         if (employeeDetails.getWorkingCompanyName() == null || employeeDetails.getWorkingCompanyName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Working Company Name is not found");
+            throw new DataValidationException("Working Company Name is not found");
         }
 
         // Email validation
         if (employeeDetails.getEmail() == null || employeeDetails.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email is not found");
+            throw new DataValidationException("Email is not found");
         }
 
 
         // Employee ID validation
         if (employeeDetails.getEmployeeId() == null || employeeDetails.getEmployeeId().trim().isEmpty()) {
-            throw new IllegalArgumentException("Employee ID is not found");
+            throw new DataValidationException("Employee ID is not found");
         }
 
         // National Insurance validation
         if (employeeDetails.getNationalInsuranceNumber() != null &&
                 !employeeDetails.getNationalInsuranceNumber().matches("^[A-Z]{2}[0-9]{6}[A-Z]$")) {
-            throw new IllegalArgumentException("National Insurance number is not found");
+            throw new DataValidationException("National Insurance number is not found");
         }
 
         if (employeeDetails.getNiLetter() ==null){
-            throw new IllegalArgumentException("NI Category Letter is not found");
+            throw new DataValidationException("NI Category Letter is not found");
         }
 
         // Financial validations
         if (employeeDetails.getPayPeriodOfIncomeOfEmployee() == null) {
-            throw new IllegalArgumentException("Gross income is not found");
+            throw new DataValidationException("Gross income is not found");
         }
         if (employeeDetails.getPayPeriodOfIncomeOfEmployee().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Gross income cannot be negative");
+            throw new DataValidationException("Gross income cannot be negative");
         }
 
         if (employeeDetails.getPayPeriod() == null) {
-            throw new IllegalArgumentException("Pay period is not found");
+            throw new DataValidationException("Pay period is not found");
         }
         if(employeeDetails.getStudentLoan().getHasStudentLoan()==null){
-            throw new IllegalArgumentException("student loan cannot be null and it can true or false");
+            throw new DataValidationException("student loan cannot be null and it can true or false");
 
         }
         if(employeeDetails.getStudentLoan().getStudentLoanPlanType()==null){
-            throw new IllegalArgumentException("student loan plan Type cannot be null");
+            throw new DataValidationException("student loan plan Type cannot be null");
         }
 
 
 
     }
-    private void validateEmployerDetails(EmployerDetails employerDetails){
+    public void validateEmployerDetails(EmployerDetails employerDetails){
         if(employerDetails.getCompanyDetails().getCurrentTaxYear()==null){
-            throw  new IllegalArgumentException("tax year is not found");
+            throw  new DataValidationException("tax year is not found");
         }
         if (employerDetails.getCompanyDetails().getPayDate()==null){
-            throw new IllegalArgumentException("pay date is not found");
+            throw new DataValidationException("pay date is not found");
         }
     }
 
-    public List<PaySlipCreateDto> getAllPaySlips() {
-        List<PaySlip> paySlips = paySlipRepository.findAll();
-        if (paySlips.isEmpty()) {
-            throw new IllegalArgumentException("No payslips found");
-        }
-        return paySlips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
-    }
 
 }

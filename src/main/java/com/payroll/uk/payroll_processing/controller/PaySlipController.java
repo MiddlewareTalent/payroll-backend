@@ -1,13 +1,12 @@
 package com.payroll.uk.payroll_processing.controller;
 
 
-import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
-import com.payroll.uk.payroll_processing.service.payslip.AutoPaySlip;
-import com.payroll.uk.payroll_processing.service.payslip.PaySlipCreationService;
+import com.payroll.uk.payroll_processing.service.payslip.PaySlipGeneration;
+import com.payroll.uk.payroll_processing.service.payslip.PaySlipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,34 +23,20 @@ import java.util.Map;
 public class PaySlipController {
     private static  final Logger logging= LoggerFactory.getLogger(PaySlipController.class);
     @Autowired
-    private PaySlipCreationService paySlipCreationService;
+    private PaySlipService paySlipService;
     @Autowired
-    private AutoPaySlip autoPaySlip;
+    private PaySlipGeneration paySlipGeneration;
     @Autowired
     private TaxCodeService taxCodeService;
 
     @Autowired
     private TaxThresholdService taxThresholdService;
 
-    @PostMapping("/create")
-    public ResponseEntity<PaySlipCreateDto> createPaySlip(@RequestBody PaySlipCreateDto paySlipCreateDto){
-        System.out.println("paySlipCreateDto: "+paySlipCreateDto);
-        try{
-            PaySlipCreateDto data = paySlipCreationService.createPaySlip(paySlipCreateDto);
-            logging.info("Data: {}",data);
-            return  ResponseEntity.ok(data);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
-
-    }
-
     @PostMapping("/auto/{employeeId}")
     public ResponseEntity<PaySlipCreateDto> autoPaySlip(@PathVariable ("employeeId") String employeeId){
         logging.info("paySlipCreateDto: {} ",employeeId);
         try{
-            PaySlipCreateDto data = autoPaySlip.fillPaySlip(employeeId);
+            PaySlipCreateDto data = paySlipService.createPaySlip(employeeId);
             logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
         }
@@ -64,7 +49,7 @@ public class PaySlipController {
     @GetMapping("/all/payslips/{employeeId}")
     public ResponseEntity<List<PaySlipCreateDto>> getAllPayslipsByEmployeeId(@PathVariable String employeeId) {
         try {
-            List<PaySlipCreateDto> data = autoPaySlip.getAllEmployeeId(employeeId);
+            List<PaySlipCreateDto> data = paySlipService.getAllEmployeeId(employeeId);
             return ResponseEntity.ok(data);
         } catch (Exception e) {
             // Optionally log the error
@@ -77,7 +62,7 @@ public class PaySlipController {
     public ResponseEntity<PaySlipCreateDto> getByReferenceNumber(@PathVariable ("paySlipReference") String paySlipReference){
         System.out.println("paySlipCreateDto: "+paySlipReference);
         try{
-            PaySlipCreateDto data = autoPaySlip.getPaySlipByReferences(paySlipReference);
+            PaySlipCreateDto data = paySlipService.getPaySlipByReferences(paySlipReference);
            logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
         }
@@ -89,7 +74,7 @@ public class PaySlipController {
     @GetMapping("/all/total/payslips")
     public ResponseEntity<List<PaySlipCreateDto>> getAllPaySlips() {
         try {
-            List<PaySlipCreateDto> data = autoPaySlip.getAllPaySlips();
+            List<PaySlipCreateDto> data = paySlipService.getAllPaySlips();
             return ResponseEntity.ok(data);
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,6 +95,28 @@ public class PaySlipController {
     public ResponseEntity<Map<String,BigDecimal>> fetchAllowanceData(@PathVariable("taxYear") String taxYear) {
         try {
             Map<String, BigDecimal> data = taxThresholdService.getAllowanceData(taxYear);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/fetch/all/payslips/{periodEnd}")
+    public ResponseEntity<List<PaySlipCreateDto>> getAllPaySlipsByPayPeriod(@PathVariable String periodEnd){
+        try{
+            List<PaySlipCreateDto> data = paySlipService.getAllPaySlipsByPeriod(periodEnd);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/fetch/payslip/{employeeId}/{periodEnd}")
+    public ResponseEntity<PaySlipCreateDto> getPaySlipByEmployeeIdAndPeriodEnd(@PathVariable String employeeId, @PathVariable String periodEnd) {
+        try {
+            PaySlipCreateDto data = paySlipService.getPaySlipByEmployeeIdAndPeriodEnd(employeeId, periodEnd);
             return ResponseEntity.ok(data);
         } catch (Exception e) {
             e.printStackTrace();

@@ -7,7 +7,7 @@ import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
-import com.payroll.uk.payroll_processing.exception.NoEmployeeDataFoundException;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.LoanCalculationPaySlipRepository;
 import org.slf4j.Logger;
@@ -193,7 +193,7 @@ public class LoanPaySlipCalculation {
     public List<LoanCalculationPaySlipDTO> getAllLoanCalculationPaySlip(){
         List<LoanCalculationPaySlip> loanCalculationPaySlipList = loanCalculationPaySlipRepository.findAll();
         if(loanCalculationPaySlipList.isEmpty()){
-           throw new NoEmployeeDataFoundException("No loan deduction pay slips found");
+           throw new DataValidationException("No loan deduction pay slips found");
         }
         return loanCalculationPaySlipList.stream().map(loanCalculationPaySlipDTOMapper::mapToLoanCalculationPaySlipDTO).toList();
 
@@ -202,7 +202,7 @@ public class LoanPaySlipCalculation {
     public List<LoanCalculationPaySlipDTO> getAllLoanDeductionsByEmployeeId(String employeeId){
         List<LoanCalculationPaySlip> loanCalculationPaySlipList = loanCalculationPaySlipRepository.findAllByEmployeeId(employeeId);
         if(loanCalculationPaySlipList.isEmpty()){
-            throw new NoEmployeeDataFoundException("No loan deduction pay slips found for employee with ID: " + employeeId);
+            throw new DataValidationException("No loan deduction pay slips found for employee with ID: " + employeeId);
         }
         return loanCalculationPaySlipList.stream().map(loanCalculationPaySlipDTOMapper::mapToLoanCalculationPaySlipDTO).toList();
     }
@@ -210,7 +210,7 @@ public class LoanPaySlipCalculation {
     public List<LoanCalculationPaySlipDTO> getAllLoanDeductionsByNINumber(String nationalInsuranceNumber){
         List<LoanCalculationPaySlip> loanCalculationPaySlipList = loanCalculationPaySlipRepository.findAllByNationalInsuranceNumber(nationalInsuranceNumber);
         if(loanCalculationPaySlipList.isEmpty()){
-            throw new NoEmployeeDataFoundException("No loan deduction pay slips found for national insurance number: " + nationalInsuranceNumber);
+            throw new DataValidationException("No loan deduction pay slips found for national insurance number: " + nationalInsuranceNumber);
         }
         return loanCalculationPaySlipList.stream().map(loanCalculationPaySlipDTOMapper::mapToLoanCalculationPaySlipDTO).toList();
     }
