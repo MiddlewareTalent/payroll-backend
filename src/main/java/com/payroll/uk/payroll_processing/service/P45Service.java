@@ -62,7 +62,7 @@ public class P45Service {
                 dtoData.setCurrentPayPeriodNumber(TaxPeriodUtils.getUkTaxWeek(LocalDate.now()));
             }
             else {
-                dtoData.setCurrentPayPeriodNumber(0);
+                dtoData.setCurrentPayPeriodNumber("0");
             }
             dtoData.setTotalPayToDate(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD());
             dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate());

@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeDetailsService {
@@ -38,25 +39,25 @@ public class EmployeeDetailsService {
     // Save employee details
     public EmployeeDetailsDTO saveEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO){
         if (employeeDetailsDTO.getEmployeeId()==null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
-            throw new EmployeeNotFoundException("Employee ID cannot be null or empty");
+            throw new DataValidationException("Employee ID cannot be null or empty");
         }
         if(employeeDetailsRepository.existsByEmail(employeeDetailsDTO.getEmail())){
-            throw new EmployeeNotFoundException("Employee with this email already exists");
+            throw new DataValidationException("Employee with this email already exists");
         }
         if(employerDetailsRepository.existsByEmployerEmail(employeeDetailsDTO.getEmail())){
-            throw new EmployerRegistrationException("Employee email already exists as Employer email");
+            throw new DataValidationException("Employee email already exists as Employer email");
         }
         if(employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId()).isPresent()){
-            throw new EmployeeNotFoundException("Employee with this ID already exists");
+            throw new DataValidationException("Employee with this ID already exists");
         }
         if (employerDetailsRepository.findByEmployerId(employeeDetailsDTO.getEmployeeId()).isPresent()){
-            throw new EmployerRegistrationException("Employee Id already exists as Employer ID");
+            throw new DataValidationException("Employee Id already exists as Employer ID");
         }
 //        if (!employerDetailsRepository.existsByEmployerId( employeeDetailsDTO.getEmployerId())) {
 //            throw new EmployerRegistrationException("Employer with this ID does not exist");
 //        }
         if (employeeDetailsRepository.existsByNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber())){
-            throw new DuplicateNationalInsuranceException("Employee with this National Insurance Number already exists");
+            throw new DataValidationException("Employee with this National Insurance Number already exists");
         }
         validateEmployeeDetails(employeeDetailsDTO);
         String payrollReference = employerDetailsRepository.findByPayrollGivingRef();
@@ -90,7 +91,7 @@ public class EmployeeDetailsService {
     // Get employee details by employee ID
     public EmployeeDetailsDTO getEmployeeDetailsByEmployeeId(String employeeId){
         if (employeeId == null || employeeId.isEmpty()) {
-            throw new IllegalArgumentException("Employee ID cannot be null or empty");
+            throw new DataValidationException("Employee ID cannot be null or empty "+employeeId);
         }
 
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
@@ -101,14 +102,14 @@ public class EmployeeDetailsService {
         List<EmployeeDetails> employeeDetailsList = employeeDetailsRepository.findAll();
         List<EmployeeDetailsDTO> employeeDetailsListedData = employeeDetailsList.stream().map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO).toList();
         if(employeeDetailsListedData.isEmpty()) {
-            throw new  NoEmployeeDataFoundException("No employee details found for the given criteria.");
+            throw new EmployeeNotFoundException("No employee details found ");
         }
         return employeeDetailsListedData;
     }
 // Get employee details by email
     public EmployeeDetailsDTO getEmployeeDetailsByEmail(String email){
         if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+            throw new DataValidationException("Email cannot be null or empty "+email);
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmail(email)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with email: " + email));
@@ -137,6 +138,7 @@ public class EmployeeDetailsService {
 //        }
 
         updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
+        updatedEmployeeDetails.setPayrollId(existingEmployeeDetails.getPayrollId());
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(updatedEmployeeDetails);
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(savedEmployeeDetails);
     }
@@ -161,13 +163,13 @@ public class EmployeeDetailsService {
     //Update employee Bank details by id
     public BankDetailsDTO updateBankDetailsById(Long id,BankDetailsDTO  bankDetailsDTO){
         if(id==null){
-            throw new IllegalArgumentException("Bank details ID cannot be null");
+            throw new DataValidationException("Bank details ID cannot be null");
         }
         if (bankDetailsDTO.getAccountNumber() == null || bankDetailsDTO.getAccountNumber().isEmpty()) {
-            throw new IllegalArgumentException("Account Number cannot be null or empty");
+            throw new DataValidationException("Account Number cannot be null or empty");
         }
         if (bankDetailsDTO.getAccountName() == null || bankDetailsDTO.getAccountName().isEmpty()) {
-            throw new IllegalArgumentException("Account Name cannot be null or empty");
+            throw new DataValidationException("Account Name cannot be null or empty");
         }
 //        if (bankDetailsDTO.getSortCode() == null || bankDetailsDTO.getSortCode().isEmpty()) {
 //            throw new IllegalArgumentException("Sort Code cannot be null or empty");
@@ -194,7 +196,7 @@ public class EmployeeDetailsService {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
         return null;
 
 
@@ -223,102 +225,130 @@ public class EmployeeDetailsService {
     }
 
 
+    public List<EmployeeDetailsDTO> getAllActiveEmployees() {
+        List<EmployeeDetails> activeEmployees = employeeDetailsRepository.findActiveEmployees();
+        if (activeEmployees.isEmpty()) {
+            throw new EmployeeNotFoundException("No active employees found");
+        }
+        return activeEmployees.stream()
+                .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
+                .collect(Collectors.toList());
+    }
+    public List<EmployeeDetailsDTO> getAllInActiveEmployees() {
+        List<EmployeeDetails> inactiveEmployees = employeeDetailsRepository.findInactiveEmployees();
+        if (inactiveEmployees.isEmpty()) {
+            throw new EmployeeNotFoundException("No inactive employees found");
+        }
+        return inactiveEmployees.stream()
+                .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
+                .collect(Collectors.toList());
+    }
+    public List<EmployeeDetailsDTO> getAllReadyForLeavingEmployees() {
+        List<EmployeeDetails> readyForLeavingEmployees = employeeDetailsRepository.findReadyForLeavingEmployees();
+        if (readyForLeavingEmployees.isEmpty()) {
+            throw new EmployeeNotFoundException("No employees ready for leaving found");
+        }
+        return readyForLeavingEmployees.stream()
+                .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
+                .collect(Collectors.toList());
+    }
+
     private void validateEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
 
         // Name validations
         if (employeeDetailsDTO.getFirstName() == null || employeeDetailsDTO.getFirstName().trim().isEmpty()) {
-            throw new EmployeeValidationException("First name is required");
+            throw new DataValidationException("First name is required");
         }
         if (employeeDetailsDTO.getLastName() == null || employeeDetailsDTO.getLastName().trim().isEmpty()) {
-            throw new EmployeeValidationException("Last name is required");
+            throw new DataValidationException("Last name is required");
         }
 
         // Email validation
         if (employeeDetailsDTO.getEmail() == null || employeeDetailsDTO.getEmail().trim().isEmpty()) {
-            throw new EmployeeValidationException("Email is required");
+            throw new DataValidationException("Email is required");
         }
         if (!employeeDetailsDTO.getEmail().matches("^[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-            throw new EmployeeValidationException("Email must be valid");
+            throw new DataValidationException("Email must be valid");
         }
 
         // Date validations
         if (employeeDetailsDTO.getDateOfBirth() == null) {
-            throw new EmployeeValidationException("Date of birth is required");
+            throw new DataValidationException("Date of birth is required");
         }
         if (employeeDetailsDTO.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new EmployeeValidationException("Date of birth cannot be in the future");
+            throw new DataValidationException("Date of birth cannot be in the future");
         }
 
         // Employment dates validation
         if (employeeDetailsDTO.getEmploymentStartedDate() == null) {
-            throw new EmployeeValidationException("Employment start date is required");
+            throw new DataValidationException("Employment start date is required");
         }
         if (employeeDetailsDTO.getEmploymentEndDate() != null &&
                 employeeDetailsDTO.getEmploymentEndDate().isBefore(employeeDetailsDTO.getEmploymentStartedDate())) {
-            throw new EmployeeValidationException("Employment end date cannot be before start date");
+            throw new DataValidationException("Employment end date cannot be before start date");
         }
 
         // Employee ID validation
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().trim().isEmpty()) {
-            throw new EmployeeValidationException("Employee ID is required");
+            throw new DataValidationException("Employee ID is required");
         }
 
         // National Insurance validation
         if (employeeDetailsDTO.getNationalInsuranceNumber() != null &&
                 !employeeDetailsDTO.getNationalInsuranceNumber().matches("^[A-Z]{2}[0-9]{6}[A-Z]$")) {
-            throw new EmployeeValidationException("National Insurance number must be in format AB123456C");
+            throw new DataValidationException("National Insurance number must be in format AB123456C");
         }
 
         if (employeeDetailsDTO.getNiLetter() == null) {
-            throw new EmployeeValidationException("NI Category Letter is required");
+            throw new DataValidationException("NI Category Letter is required");
         }
 
         // Financial validations
         if (employeeDetailsDTO.getAnnualIncomeOfEmployee() == null) {
-            throw new EmployeeValidationException("Gross income is required");
+            throw new DataValidationException("Gross income is required");
         }
         if (employeeDetailsDTO.getAnnualIncomeOfEmployee().compareTo(BigDecimal.ZERO) < 0) {
-            throw new EmployeeValidationException("Gross income cannot be negative");
+            throw new DataValidationException("Gross income cannot be negative");
         }
 
         // Address validations
         if (employeeDetailsDTO.getAddress() == null || employeeDetailsDTO.getAddress().trim().isEmpty()) {
-            throw new EmployeeValidationException("Address is required");
+            throw new DataValidationException("Address is required");
         }
         if (employeeDetailsDTO.getPostCode() == null || employeeDetailsDTO.getPostCode().trim().isEmpty()) {
-            throw new EmployeeValidationException("Post code is required");
+            throw new DataValidationException("Post code is required");
         }
 
         // Enum validations
         if (employeeDetailsDTO.getEmploymentType() == null) {
-            throw new EmployeeValidationException("Employment type is required");
+            throw new DataValidationException("Employment type is required");
         }
         if (employeeDetailsDTO.getGender() == null) {
-            throw new EmployeeValidationException("Gender is required");
+            throw new DataValidationException("Gender is required");
         }
         if (employeeDetailsDTO.getEmployeeDepartment() == null) {
-            throw new EmployeeValidationException("Department is required");
+            throw new DataValidationException("Department is required");
         }
         if (employeeDetailsDTO.getPayPeriod() == null) {
-            throw new EmployeeValidationException("Pay period is required");
+            throw new DataValidationException("Pay period is required");
         }
 
         // Bank details validation
         if (employeeDetailsDTO.getBankDetailsDTO() == null) {
-            throw new EmployeeValidationException("Bank details are required");
+            throw new DataValidationException("Bank details are required");
         }
 
         if (employeeDetailsDTO.getBankDetailsDTO().getAccountNumber() == null || employeeDetailsDTO.getBankDetailsDTO().getAccountNumber().trim().isEmpty()) {
-            throw new EmployeeValidationException("Account number is required");
+            throw new DataValidationException("Account number is required");
         }
         if (employeeDetailsDTO.getBankDetailsDTO().getAccountName() == null || employeeDetailsDTO.getBankDetailsDTO().getAccountName().trim().isEmpty()) {
-            throw new EmployeeValidationException("Account name is required");
+            throw new DataValidationException("Account name is required");
         }
         if (employeeDetailsDTO.getBankDetailsDTO().getSortCode() == null || employeeDetailsDTO.getBankDetailsDTO().getSortCode().trim().isEmpty()) {
-            throw new EmployeeValidationException("Sort code is required");
+            throw new DataValidationException("Sort code is required");
         }
         if (employeeDetailsDTO.getBankDetailsDTO().getBankName() == null || employeeDetailsDTO.getBankDetailsDTO().getBankName().trim().isEmpty()) {
-            throw new EmployeeValidationException("Bank name is required");
+            throw new DataValidationException("Bank name is required");
         }
     }
 
@@ -376,6 +406,8 @@ public class EmployeeDetailsService {
         // Format to 2-digit number with leading zeros: e.g., 01, 02, ... 10
         return String.format("%s%02d", prefix, nextNumber);
     }
+
+
 
 
 

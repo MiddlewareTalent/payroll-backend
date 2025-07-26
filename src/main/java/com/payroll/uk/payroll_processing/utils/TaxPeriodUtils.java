@@ -63,7 +63,7 @@ public class TaxPeriodUtils {
         return Math.min(taxMonth, 12);
     }*/
 
-    public static int getUkTaxMonth(LocalDate date) {
+    public static String getUkTaxMonth(LocalDate date) {
         int year = date.getYear();
         LocalDate taxYearStart = LocalDate.of(year, Month.APRIL, 6);
 
@@ -76,14 +76,15 @@ public class TaxPeriodUtils {
             LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
 
             if (!date.isBefore(monthStart) && !date.isAfter(monthEnd)) {
-                return month;
+                return String.format("%02d", month);
             }
+
         }
 
         throw new IllegalArgumentException("Invalid date for tax month calculation");
     }
 
-    public static int getUkTaxWeek(LocalDate date) {
+    public static String getUkTaxWeek(LocalDate date) {
         if (date == null) {
             throw new IllegalArgumentException("Date must not be null");
         }
@@ -105,7 +106,8 @@ public class TaxPeriodUtils {
         }
 
         // Calculate week (1-53) with safety cap
-        return Math.min((int) (daysBetween / 7) + 1, 53);
+        int week= Math.min((int) (daysBetween / 7) + 1, 53);
+        return String.format("%02d", week);
     }
 
 

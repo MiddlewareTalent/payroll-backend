@@ -2,12 +2,12 @@ package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
-import com.payroll.uk.payroll_processing.exception.EmployerRegistrationException;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.service.EmployerService;
 import com.payroll.uk.payroll_processing.service.FileStorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +40,7 @@ public class EmployerController {
         try {
             String result = employerService.registerEmployer(employerDetailsDto);
             return ResponseEntity.ok(result);
-        } catch (EmployerRegistrationException e) {
+        } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -64,7 +64,7 @@ public class EmployerController {
         try {
             EmployerDetailsDTO employerDetails = employerService.getEmployerDetails(id);
             return ResponseEntity.ok(employerDetails);
-        } catch (EmployerRegistrationException e) {
+        } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -88,7 +88,7 @@ public class EmployerController {
             EmployerDetailsDTO result = employerService.updateEmployerDetailsById(id,employerDetailsDto);
             return ResponseEntity.ok(result);
         }
-        catch (EmployerRegistrationException e) {
+        catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -106,7 +106,7 @@ public class EmployerController {
         try {
             String result = employerService.deleteEmployer(id);
             return ResponseEntity.ok(result);
-        } catch (EmployerRegistrationException e) {
+        } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

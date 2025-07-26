@@ -33,7 +33,7 @@ public class P45DTO {
 //   private BigDecimal studentLoanDeductionAmount;
     private String currentPayPeriod;
 
-    private int currentPayPeriodNumber;
+    private String currentPayPeriodNumber;
     private String taxCodeAtLeaving;
     private BigDecimal totalPayToDate;
     private BigDecimal totalTaxToDate;

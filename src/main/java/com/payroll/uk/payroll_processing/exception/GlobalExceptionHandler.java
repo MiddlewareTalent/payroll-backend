@@ -12,29 +12,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleEmployeeNotFound(EmployeeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-
-    @ExceptionHandler(InvalidTaxCodeException.class)
-    public ResponseEntity<String> handleInvalidTaxCode(InvalidTaxCodeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-    @ExceptionHandler(DuplicateNationalInsuranceException.class)
-    public ResponseEntity<String> handleDuplicateNI(DuplicateNationalInsuranceException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(NoEmployeeDataFoundException.class)
-    public ResponseEntity<String> handleNoEmployeeData(NoEmployeeDataFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-    @ExceptionHandler(EmployeeValidationException.class)
-    public ResponseEntity<String> handleEmployeeValidationException(EmployeeValidationException ex) {
+    @ExceptionHandler(DataValidationException.class)
+    public ResponseEntity<String> handleEmployeeValidationException(DataValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidComputationException.class)
+    public ResponseEntity<String> handlePaySlipCreation(InvalidComputationException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());  //return 422 Unprocessable Entity
 
-    @ExceptionHandler(InvalidPayPeriodException.class)
-    public ResponseEntity<String> handleInvalidPayPeriod(InvalidPayPeriodException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

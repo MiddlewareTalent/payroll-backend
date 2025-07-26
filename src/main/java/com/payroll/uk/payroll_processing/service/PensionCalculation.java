@@ -6,11 +6,10 @@ import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.PensionCalculationPaySlip;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
-import com.payroll.uk.payroll_processing.exception.InvalidPayPeriodException;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PensionDataRepository;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +47,7 @@ public class PensionCalculation {
 
         // Validate input arguments
         if (income == null || taxYear == null || payPeriod == null) {
-            throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
+            throw new DataValidationException("Income, tax year, and pay period cannot be null");
         }
 
         try {
@@ -103,7 +102,7 @@ public class PensionCalculation {
 
         // Validate input arguments
         if (income == null || taxYear == null || payPeriod == null) {
-            throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
+            throw new DataValidationException("Income, tax year, and pay period cannot be null");
         }
 
         try {
@@ -169,7 +168,7 @@ public class PensionCalculation {
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new InvalidPayPeriodException("Invalid pay period. Must be "+payPeriod);
+            default -> throw new DataValidationException("Invalid pay period. Must be "+payPeriod);
         };
     }
 
@@ -181,7 +180,7 @@ public class PensionCalculation {
             case "MONTHLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(12));
             case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> annualGross=grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
         return annualGross.setScale(2, RoundingMode.HALF_UP);
 
@@ -191,7 +190,7 @@ public class PensionCalculation {
 
     public PensionCalculationPaySlipDTO calculatePensionContributionPaySlip(PaySlip paySlip) {
         if (paySlip==null){
-            throw new IllegalArgumentException("PaySlip cannot be null");
+            throw new DataValidationException("PaySlip cannot be null ");
         }
         // Fetch employee details from the repository
         Optional<EmployeeDetails> employeeData = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId());
