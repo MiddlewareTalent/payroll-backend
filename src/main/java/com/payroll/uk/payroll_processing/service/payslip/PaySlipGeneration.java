@@ -7,9 +7,7 @@ import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
-import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
+import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
@@ -65,7 +63,7 @@ public class PaySlipGeneration {
     private PensionCalculation pensionCalculation;
 
 
-    @Transactional
+
      PaySlipCreateDto fillPaySlip(String employeeId){
         if (employeeId.isBlank()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
@@ -73,10 +71,23 @@ public class PaySlipGeneration {
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
 
+        logger.info("employeeDetails: {}", employeeDetails);
         EmployerDetails  employerDetails = employerDetailsRepository.findAll().getFirst();
+        logger.info("employerDetails: {}", employerDetails);
         if (employerDetails == null) {
             throw new DataValidationException("Employer details not found");
         }
+        String periodEnd = getPeriodEndMonthYear(employerDetails.getCompanyDetails().getPayDate());
+
+        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
+        logger.info("exists: {}", exists);
+        if (exists) {
+            System.out.println("1");
+//            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
+            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
+        }
+//        employeeDetails.setFirstName(null);
+         System.out.println("2");
         validateEmployeeDetails(employeeDetails);
         validateEmployerDetails(employerDetails);
         PaySlip paySlipCreate = new PaySlip();
@@ -358,6 +369,7 @@ public class PaySlipGeneration {
 
     public void validateEmployeeDetails(EmployeeDetails employeeDetails) {
 
+        logger.info("Checking employee details for validation: {}", employeeDetails);
         // Name validations
         if (employeeDetails.getFirstName() == null || employeeDetails.getFirstName().trim().isEmpty()) {
             throw new DataValidationException("First name is not found");

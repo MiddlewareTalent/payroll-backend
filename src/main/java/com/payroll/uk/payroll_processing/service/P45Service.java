@@ -4,6 +4,7 @@ import com.payroll.uk.payroll_processing.dto.customdto.P45DTO;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
@@ -22,16 +23,16 @@ public class P45Service {
     private EmployeeDetailsRepository employeeDetailsRepository;
     public P45DTO generateP45File(String employeeId){
         if (employeeId==null || employeeId.isEmpty()) {
-            throw new EmployeeNotFoundException("Employee ID cannot be null or empty");
+            throw new DataValidationException("Employee ID cannot be null or empty");
         }
         EmployeeDetails employeeData = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(()-> new RuntimeException("Employee not found with ID: " + employeeId));
+                .orElseThrow(()-> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
         EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
         if (employerDetails == null) {
-            throw new RuntimeException("Employer details not found");
+            throw new DataValidationException("Employer details not found");
         }
         if (employeeData.getEmploymentEndDate() == null) {
-            throw new RuntimeException("Employee has not left the employment yet");
+            throw new DataValidationException("Employee has not left the employment yet:");
         }
         P45DTO dtoData= new P45DTO();
         //set 1

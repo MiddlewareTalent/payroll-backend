@@ -8,6 +8,8 @@ import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
+import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.LoanCalculationPaySlipRepository;
 import org.slf4j.Logger;
@@ -37,25 +39,26 @@ public class LoanPaySlipCalculation {
 
     @Transactional
     public LoanCalculationPaySlipDTO calculateLoanPaySlip(PaySlip paySlip){
+        logger.info("Starting loan pay slip calculation");
         if(paySlip.getEmployeeId().isBlank()){
-            throw new IllegalArgumentException("Employee ID cannot be empty");
+            throw new DataValidationException("Employee ID cannot be empty");
         }
         Optional<EmployeeDetails> employeeData = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId());
         logger.info("Calculating loan pay slip for employee: {}", paySlip.getEmployeeId());
-        EmployeeDetails employeeDetails = employeeData.orElseThrow(() -> new RuntimeException("Employee not found with ID: " + paySlip.getEmployeeId()));
+        EmployeeDetails employeeDetails = employeeData.orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
 
         if (employeeDetails.getStudentLoan().getHasStudentLoan() && employeeDetails.getStudentLoan().getStudentLoanPlanType() == StudentLoan.StudentLoanPlan.NONE) {
-            throw new IllegalArgumentException("Student loan plan type cannot be NONE when student loan is true.");
+            throw new DataValidationException("Student loan plan type cannot be NONE when student loan is true.");
         }
 
         if (!employeeDetails.getStudentLoan().getHasStudentLoan() && employeeDetails.getStudentLoan().getStudentLoanPlanType() != StudentLoan.StudentLoanPlan.NONE) {
-            throw new IllegalArgumentException("Student loan plan type must be NONE when student loan is false.");
+            throw new DataValidationException("Student loan plan type must be NONE when student loan is false.");
         }
         if (employeeDetails.getPostGraduateLoan().getHasPostgraduateLoan() && employeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType() == PostGraduateLoan.PostgraduateLoanPlanType.NONE) {
-            throw new IllegalArgumentException("Postgraduate loan plan type cannot be NONE when postgraduate loan is true.");
+            throw new DataValidationException("Postgraduate loan plan type cannot be NONE when postgraduate loan is true.");
         }
         if (!employeeDetails.getPostGraduateLoan().getHasPostgraduateLoan() && employeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType() != PostGraduateLoan.PostgraduateLoanPlanType.NONE) {
-            throw new IllegalArgumentException("Postgraduate loan plan type must be NONE when postgraduate loan is false.");
+            throw new DataValidationException("Postgraduate loan plan type must be NONE when postgraduate loan is false.");
         }
         LoanCalculationPaySlip calculation = new LoanCalculationPaySlip();
         calculation.setEmployeeId(employeeDetails.getEmployeeId());
@@ -97,12 +100,13 @@ public class LoanPaySlipCalculation {
     }
 
     public void updatingStudentLoanInEmployeeDetails(LoanCalculationPaySlip loanCalculationPaySlip){
+        logger.info("Updating student loan details in employee details ");
         if (loanCalculationPaySlip==null){
-            throw new IllegalArgumentException("Pay Slip data cannot empty");
+            throw new DataValidationException("Pay Slip data cannot empty");
         }
 
         if(loanCalculationPaySlip.getEmployeeId() == null){
-            throw new IllegalArgumentException("Pay slip and Employee Id are miss match");
+            throw new DataValidationException("Pay slip and Employee Id are miss match");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(loanCalculationPaySlip.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + loanCalculationPaySlip.getEmployeeId()));
@@ -122,11 +126,11 @@ public class LoanPaySlipCalculation {
 
             employeeDetails.setStudentLoan(updateStudentLoan);
             EmployeeDetails employeeData = employeeDetailsRepository.save(employeeDetails);
-            System.out.println("Successfully Updated Student Loan Details in EmployerDetails: \n " + employeeData);
+            logger.info("Successfully Updated Student Loan Details in EmployerDetails: \n {}" , employeeData);
         }
         catch (Exception e) {
             logger.error("Error updating student loan details: {}", e.getMessage());
-            throw new RuntimeException("Failed to update student loan details: " + e.getMessage());
+            throw new InvalidComputationException("Failed to update student loan details: " + e.getMessage(),e);
         }
 
 //        if("YEARLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))){
@@ -145,13 +149,13 @@ public class LoanPaySlipCalculation {
     }
     public void updatingPostGraduateLoanInEmployeeDetails(LoanCalculationPaySlip loanCalculationPaySlip){
         if (loanCalculationPaySlip==null){
-            throw new IllegalArgumentException("Pay Slip data cannot empty");
+            throw new DataValidationException("Pay Slip data cannot empty");
         }
         if(loanCalculationPaySlip.getEmployeeId() == null){
-            throw new IllegalArgumentException("Pay slip and Employee Id are miss match");
+            throw new DataValidationException("Pay slip and Employee Id are miss match");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(loanCalculationPaySlip.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employer not found with ID: " + loanCalculationPaySlip.getEmployeeId()));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + loanCalculationPaySlip.getEmployeeId()));
         PostGraduateLoan postGraduateLoan = employeeDetails.getPostGraduateLoan();
         PostGraduateLoan updatedPostGraduateLoan = new PostGraduateLoan();
         updatedPostGraduateLoan=postGraduateLoan;
@@ -168,11 +172,11 @@ public class LoanPaySlipCalculation {
 
             employeeDetails.setPostGraduateLoan(updatedPostGraduateLoan);
             EmployeeDetails employeeData = employeeDetailsRepository.save(employeeDetails);
-            System.out.println("Successfully Updated Post Graduate Loan Details in EmployerDetails: \n " + employeeData);
+            logger.info("Successfully Updated Post Graduate Loan Details in EmployerDetails: \n {}" , employeeData);
         }
         catch (Exception e) {
             logger.error("Error updating post graduate loan details: {}", e.getMessage());
-            throw new RuntimeException("Failed to update post graduate loan details: " + e.getMessage());
+            throw new InvalidComputationException("Failed to update post graduate loan details: " + e.getMessage(),e);
         }
 
        /* if("YEARLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))){

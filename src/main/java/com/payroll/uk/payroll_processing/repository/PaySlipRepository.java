@@ -2,6 +2,9 @@ package com.payroll.uk.payroll_processing.repository;
 
 import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
+import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,4 +43,7 @@ public interface PaySlipRepository extends JpaRepository<PaySlip,Long> {
     @Query("SELECT p FROM PaySlip p WHERE p.employeeId = :employeeId AND p.periodEnd = :periodEnd")
     List<PaySlip> findPaySlipsByEmployeeIdAndPeriodEnd(@Param("employeeId") String employeeId,@Param("periodEnd") String periodEnd);
 
+    boolean existsByEmployeeIdAndPeriodEnd(String employeeId, String periodEnd);
+
+    Page<PaySlip> findByPeriodEnd(String periodEnd, Pageable pageable);
 }

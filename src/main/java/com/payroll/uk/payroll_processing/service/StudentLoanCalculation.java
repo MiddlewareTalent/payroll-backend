@@ -4,6 +4,7 @@ package com.payroll.uk.payroll_processing.service;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class StudentLoanCalculation {
         }
         // Validate inputs
         if (income == null || taxYear == null || payPeriod == null) {
-            throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
+            throw new DataValidationException("Income, tax year, and pay period cannot be null");
         }
 
         // Get student loan thresholds and rates
@@ -79,7 +80,7 @@ public class StudentLoanCalculation {
         }
         // Validate inputs
         if (income == null || taxYear == null || payPeriod == null) {
-            throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
+            throw new DataValidationException("Income, tax year, and pay period cannot be null");
         }
         logger.info("income: {}, hasStudentLoan: {}, studentLoanPlan: {}, taxYear: {}, payPeriod: {}", income, hasStudentLoan, studentLoanPlan, taxYear, payPeriod);
         String studentLoanType=String.valueOf(studentLoanPlan);
@@ -102,7 +103,7 @@ public class StudentLoanCalculation {
             return BigDecimal.ZERO;
         }
         if (income == null || taxYear == null || payPeriod == null) {
-            throw new IllegalArgumentException("Income, tax year, and pay period cannot be null");
+            throw new DataValidationException("Income, tax year, and pay period cannot be null");
         }
         logger.info("income: {}, hasPostGraduateLoan: {}, postgraduateLoanPlanType: {}, taxYear: {}, payPeriod: {}", income, hasPostGraduateLoan, postgraduateLoanPlanType, taxYear, payPeriod);
         String postGraduateLoanType=String.valueOf(postgraduateLoanPlanType);
@@ -130,7 +131,7 @@ public class StudentLoanCalculation {
             case "WEEKLY" -> grossIncome.multiply(BigDecimal.valueOf(52));
             case "MONTHLY" -> grossIncome.multiply(BigDecimal.valueOf(12));
             case "YEARLY" -> grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
 
 
@@ -141,7 +142,7 @@ public class StudentLoanCalculation {
             case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
     }
 }

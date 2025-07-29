@@ -8,6 +8,7 @@ import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employer.OtherEmployerDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
@@ -70,7 +71,7 @@ public class UpdatingDetails {
                 updateOtherEmployeeDetails.setUsedPersonalAllowance(paySlip.getPersonalAllowance());
                 updateOtherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(paySlip.getPersonalAllowance()));
                 updateOtherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance);
-                logger.error("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
+                logger.info("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
             } else  {
 
                 if (remainingPersonalAllowance.compareTo(BigDecimal.ZERO) <= 0) {
@@ -88,13 +89,13 @@ public class UpdatingDetails {
                 updateOtherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(paySlip.getPersonalAllowance()));
 //            BigDecimal remainingPersonalAllowancesAmount = employeeDetailsRepository.findByRemainingPersonalAllowance(employeeDetails.getEmployeeId());
                 updateOtherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance.subtract(paySlip.getPersonalAllowance()));
-                logger.error("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
+                logger.info("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
 
             }
         }
         catch (Exception e) {
             logger.error("Error updating personal allowance in OtherEmployeeDetails: ", e);
-            throw new RuntimeException("Failed to update personal allowance in OtherEmployeeDetails", e);
+            throw new InvalidComputationException("Failed to update personal allowance in OtherEmployeeDetails"+ e.getMessage(),e);
         }
         try {
             // Update OtherEmployeeDetails with total earnings amount YTD
@@ -112,7 +113,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating total earnings amount in OtherEmployeeDetails: ", e);
-            throw new RuntimeException("Failed to update total earnings amount in OtherEmployeeDetails", e);
+            throw new InvalidComputationException("Failed to update total earnings amount in OtherEmployeeDetails"+ e.getMessage(),e);
         }
         try {
             // Update OtherEmployeeDetails with income tax information
@@ -144,7 +145,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating income tax in OtherEmployeeDetails: ", e);
-            throw new RuntimeException("Failed to update income tax in OtherEmployeeDetails", e);
+            throw new InvalidComputationException("Failed to update income tax in OtherEmployeeDetails"+ e.getMessage(),e);
         }
         try {
             // Update OtherEmployeeDetails with National Insurance contributions
@@ -171,7 +172,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating National Insurance contributions in OtherEmployeeDetails: ", e);
-            throw new RuntimeException("Failed to update National Insurance contributions in OtherEmployeeDetails", e);
+            throw new InvalidComputationException("Failed to update National Insurance contributions in OtherEmployeeDetails"+ e.getMessage(),e);
         }
         try{
             if (paySlip.isHasPensionEligible()) {
@@ -187,7 +188,7 @@ public class UpdatingDetails {
         }
         catch (Exception e){
             logger.error("Error updating pension contribution in OtherEmployeeDetails: ", e);
-            throw new RuntimeException("Failed to update pension contribution in OtherEmployeeDetails", e);
+            throw new InvalidComputationException("Failed to update pension contribution in OtherEmployeeDetails"+ e.getMessage(),e);
         }
 
 
@@ -202,14 +203,14 @@ public class UpdatingDetails {
     public void updatingOtherEmployerDetails(PaySlip paySlip){
         logger.info("updating the other employer details in payslip:");
         if (paySlip==null){
-            throw new IllegalArgumentException("Pay Slip data cannot empty");
+            throw new DataValidationException("Pay Slip data cannot empty");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
 
         EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
                 if (employerDetails == null) {
-                    throw new RuntimeException("Employer not found ");
+                    throw new DataValidationException("Employer not found ");
                 }
 
         OtherEmployerDetails otherEmployerDetails=employerDetails.getOtherEmployerDetails();
@@ -230,7 +231,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating total paid amount in OtherEmployerDetails: ", e);
-            throw new RuntimeException("Failed to update total paid amount in OtherEmployerDetails", e);
+            throw new InvalidComputationException("Failed to update total paid amount in OtherEmployerDetails"+ e.getMessage(),e);
         }
 
         try {
@@ -245,7 +246,9 @@ public class UpdatingDetails {
             logger.info("successfully updated the up to total PAYE ");
         }
         catch (Exception e) {
+
             logger.error("Error fetching totalPAYE", e);
+            throw new InvalidComputationException("Failed to update total PAYE YTD in OtherEmployerDetails "+ e.getMessage(),e);
         }
         try {
             BigDecimal currentPaidEmployeesNIAmount = otherEmployerDetails.getCurrentPayPeriodEmployeesNI();
@@ -258,7 +261,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating total employee NI YTD in OtherEmployerDetails: ", e);
-            throw new RuntimeException("Failed to update total employee NI YTD in OtherEmployerDetails", e);
+            throw new InvalidComputationException("Failed to update total employee NI YTD in OtherEmployerDetails "+e.getMessage(),e);
         }
         try {
             BigDecimal currentPaidEmployerNIAmount = otherEmployerDetails.getCurrentPayPeriodEmployersNI();
@@ -270,7 +273,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating total employers NI YTD in OtherEmployerDetails: ", e);
-            throw new RuntimeException("Failed to update total employers NI YTD in OtherEmployerDetails", e);
+            throw new InvalidComputationException("Failed to update total employers NI YTD in OtherEmployerDetails "+ e.getMessage(),e);
         }
 
         try {
@@ -292,7 +295,7 @@ public class UpdatingDetails {
         }
         catch (Exception e) {
             logger.error("Error updating pension contributions in OtherEmployerDetails: ", e);
-            throw new RuntimeException("Failed to update pension contributions in OtherEmployerDetails", e);
+            throw new InvalidComputationException("Failed to update pension contributions in OtherEmployerDetails "+ e.getMessage(),e);
         }
         logger.info("successfully update the total employers NI YTD ");
         employerDetails.setOtherEmployerDetails(updateOtherEmployerDetails);
@@ -349,7 +352,7 @@ public class UpdatingDetails {
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY ");
         };
     }
 

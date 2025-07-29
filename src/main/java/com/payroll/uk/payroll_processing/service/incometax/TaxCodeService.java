@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.service.incometax;
 
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
+import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,12 +149,12 @@ public class TaxCodeService {
                 };
 
             } else {
-                throw new IllegalArgumentException("Invalid region: " + region);
+                throw new DataValidationException("Invalid region: " + region);
             }
         }
-        catch (IllegalArgumentException e) {
+        catch (InvalidComputationException e) {
             logger.error("Error in calculateIncomeBasedOnTaxCode: {}", e.getMessage());
-            throw e;
+            throw new InvalidComputationException("Error in income tax calculation: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Unexpected error in calculateIncomeBasedOnTaxCode: {}", e.getMessage(), e);
             throw new RuntimeException("An unexpected error occurred while calculating income tax", e);

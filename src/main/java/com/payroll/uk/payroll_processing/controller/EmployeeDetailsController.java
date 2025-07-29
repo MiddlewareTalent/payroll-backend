@@ -10,6 +10,7 @@ import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -216,6 +219,17 @@ public class EmployeeDetailsController {
             throw new EmployeeNotFoundException("Failed to fetch ready for leave employees: " + e.getMessage());
         }
     }
+
+    @GetMapping("/fetch/status/auto-enrollment/{annualIncome}/{dateOfBirth}/{taxYear}/{gender}")
+    public boolean getAutoEnrollmentStatus(
+            @PathVariable("annualIncome") BigDecimal annualIncome,
+            @PathVariable("dateOfBirth") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+            @PathVariable("taxYear") String taxYear,
+            @PathVariable("gender") EmployeeDetails.Gender gender) {
+
+        return employeeDetailsService.isEligibleForAutoEnrollment(annualIncome, dateOfBirth, taxYear, gender);
+    }
+
 
     @GetMapping("/test/email/{email}")
     public Boolean checkEmailExist(@PathVariable("email") String email){

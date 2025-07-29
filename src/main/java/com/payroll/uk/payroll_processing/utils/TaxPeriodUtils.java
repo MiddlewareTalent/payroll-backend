@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.utils;
 
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDate;
@@ -81,12 +82,12 @@ public class TaxPeriodUtils {
 
         }
 
-        throw new IllegalArgumentException("Invalid date for tax month calculation");
+        throw new DataValidationException("Invalid date for tax month calculation "+ date);
     }
 
     public static String getUkTaxWeek(LocalDate date) {
         if (date == null) {
-            throw new IllegalArgumentException("Date must not be null");
+            throw new DataValidationException("Date must not be null");
         }
 
         // Determine tax year start (6 April of current or previous year)
@@ -102,7 +103,7 @@ public class TaxPeriodUtils {
 
         // Validate date is within tax year
         if (daysBetween < 0 || daysBetween > 366) {
-            throw new IllegalArgumentException("Date is not within valid tax year range");
+            throw new DataValidationException("Date is not within valid tax year range");
         }
 
         // Calculate week (1-53) with safety cap

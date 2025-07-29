@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.employerdto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.payroll.uk.payroll_processing.entity.employer.TaxOffice;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -19,7 +20,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class TaxOfficeDTO {
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate datePAYESchemeStarted;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate datePAYESchemeCeased;
     private String payeReference;
     private String accountsOfficeReference;
@@ -27,7 +30,7 @@ public class TaxOfficeDTO {
     private String uniqueTaxRef;
     private String corporationTaxRef;
     private String payrollGivingRef;
-    private Boolean claimEmploymentAllowance=false;
+    private boolean claimEmploymentAllowance=false;
 
 
 

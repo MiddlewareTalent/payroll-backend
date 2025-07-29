@@ -72,7 +72,7 @@ public class TaxOffice {
 
     @Schema(defaultValue = "false")
     @Column(name = "claimEmploymentAllowance")
-    private Boolean claimEmploymentAllowance=false;
+    private boolean claimEmploymentAllowance=false;
 
 
 

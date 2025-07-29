@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.service;
 
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,7 +21,7 @@ public class PersonalAllowanceCalculation {
 
     public BigDecimal calculatePersonalAllowance(BigDecimal grossIncome,String taxCode,String payPeriod) {
         if (taxCode == null || taxCode.isEmpty()) {
-            throw new IllegalArgumentException("Tax code cannot be null or empty");
+            throw new DataValidationException("Tax code cannot be null or empty");
         }
 
 //        if (grossIncome.compareTo(new BigDecimal("100000")) > 0) {
@@ -39,7 +40,7 @@ public class PersonalAllowanceCalculation {
 
         // Check for Scottish Marriage Allowance (invalid)
         if (taxCode.startsWith("SM") || taxCode.startsWith("SN")) {
-            throw new IllegalArgumentException("Marriage Allowance not available in Scotland");
+            throw new DataValidationException("Marriage Allowance not available in Scotland");
         }
 
         // Handle pure Marriage Allowance codes (M/N without numbers)
@@ -109,13 +110,13 @@ public class PersonalAllowanceCalculation {
 
     public BigDecimal calculateMarriageAllowance(String taxCode) {
         if (taxCode == null || taxCode.isEmpty()) {
-            throw new IllegalArgumentException("Tax code cannot be null or empty");
+            throw new DataValidationException("Tax code cannot be null or empty");
         }
 
         taxCode = taxCode.toUpperCase();
 
         if (taxCode.startsWith("SM") || taxCode.startsWith("SN")) {
-            throw new IllegalArgumentException("Marriage Allowance not available in Scotland");
+            throw new DataValidationException("Marriage Allowance not available in Scotland");
         }
 
         if (taxCode.equals("M") || taxCode.equals("CM") ) {
@@ -144,7 +145,7 @@ public class PersonalAllowanceCalculation {
             } else if (payFrequency.equalsIgnoreCase("weekly")) {
                 allowance = annualAllowance.divide(new BigDecimal("52"), 2, RoundingMode.HALF_UP);
             } else {
-                throw new IllegalArgumentException("Unsupported pay frequency for X suffix: " + payFrequency);
+                throw new DataValidationException("Unsupported pay frequency for X suffix: " + payFrequency);
             }
         }
 
@@ -165,7 +166,7 @@ public class PersonalAllowanceCalculation {
             case "MONTHLY" -> baseAllowance.divide(BigDecimal.valueOf(12), 2, ROUNDING_MODE);
             case "QUARTERLY" -> baseAllowance.divide(BigDecimal.valueOf(4),2, ROUNDING_MODE);
             case "YEARLY" -> baseAllowance;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
 
     }
