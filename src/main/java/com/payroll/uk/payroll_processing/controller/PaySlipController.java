@@ -3,6 +3,7 @@ package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.exception.ResourceConflictException;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import com.payroll.uk.payroll_processing.service.payslip.PaySlipGeneration;
@@ -10,6 +11,7 @@ import com.payroll.uk.payroll_processing.service.payslip.PaySlipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,14 +37,18 @@ public class PaySlipController {
     @PostMapping("/auto/{employeeId}")
     public ResponseEntity<PaySlipCreateDto> autoPaySlip(@PathVariable ("employeeId") String employeeId){
         logging.info("paySlipCreateDto: {} ",employeeId);
-        try{
+//        try{
             PaySlipCreateDto data = paySlipService.createPaySlip(employeeId);
             logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+//        }
+//        catch (ResourceConflictException e){
+//            return  ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body(null);
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.status(500).body(null);
+//        }
 
     }
 
@@ -123,5 +129,23 @@ public class PaySlipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @GetMapping("/payslips")
+    public ResponseEntity<Page<PaySlipCreateDto>> getAllPayslips(
+            @RequestParam String periodEnd,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "employeeId") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Page<PaySlipCreateDto> result = paySlipService.getAllPaySlipsByPeriodData(periodEnd, page, size, sortBy, sortDir);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/test")
+    public void test() {
+        throw new ResourceConflictException("Test exception");
+    }
+
 
 }

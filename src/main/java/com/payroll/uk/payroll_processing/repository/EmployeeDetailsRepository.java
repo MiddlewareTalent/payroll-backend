@@ -1,11 +1,14 @@
 package com.payroll.uk.payroll_processing.repository;
 
+import com.payroll.uk.payroll_processing.entity.PayPeriod;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -70,6 +73,20 @@ public interface EmployeeDetailsRepository extends JpaRepository<EmployeeDetails
             nativeQuery = true)
     List<EmployeeDetails> findReadyForLeavingEmployees();
 
+
+
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE EmployeeDetails e SET " +
+            "e.workingCompanyName = :workingCompanyName, " +
+            "e.payPeriod = :payPeriod, " +
+            "e.taxYear = :taxYear, " +
+            "e.region = :region")
+    void updateAllEmployeeDetails(@Param("workingCompanyName") String workingCompanyName,
+                                  @Param("payPeriod") PayPeriod payPeriod,
+                                  @Param("taxYear") String taxYear,
+                                  @Param("region") TaxThreshold.TaxRegion region);
 
 
 

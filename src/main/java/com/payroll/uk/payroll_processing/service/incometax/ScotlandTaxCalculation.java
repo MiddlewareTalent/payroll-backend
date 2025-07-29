@@ -1,7 +1,10 @@
 package com.payroll.uk.payroll_processing.service.incometax;
 
 
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +13,8 @@ import java.math.RoundingMode;
 
 @Service
 public class ScotlandTaxCalculation {
+
+    private static final Logger logger= LoggerFactory.getLogger(ScotlandTaxCalculation.class);
     @Autowired
 
     private TaxThresholdService taxThresholdService;
@@ -22,6 +27,7 @@ public class ScotlandTaxCalculation {
 //        Arrays.stream(taxSlabs)
 //                .forEach(taxSlab -> System.out.println(Arrays.toString(taxSlab)));
 
+        logger.info("Income tax calculation in calculateScotlandIncomeTax - Scotland");
         BigDecimal personalRate = BigDecimal.valueOf(12570); //12570
         BigDecimal starterRate = taxSlabs[1][1].subtract(taxSlabs[0][1]); //2827
         BigDecimal basicRate = (taxSlabs[2][1].subtract(taxSlabs[1][1])).add(starterRate); //14921
@@ -40,13 +46,13 @@ public class ScotlandTaxCalculation {
 
         payPeriod=payPeriod.toUpperCase();
         BigDecimal grossIncome= calculateGrossSalary(income,payPeriod);
-        System.out.println("Annual Gross Income: " + grossIncome);
+        logger.info("Annual Gross Income: {}" , grossIncome);
         BigDecimal totalIncomeTax = BigDecimal.ZERO;
 
         BigDecimal taxableIncome=taxableIncomeAnnual;
 //        BigDecimal taxableIncome = grossIncome.subtract(personalAllowance);
 //        taxableIncome = taxableIncome.compareTo(BigDecimal.ZERO) > 0 ? taxableIncome : BigDecimal.ZERO;
-        System.out.println("Taxable Income: " + taxableIncome);
+       logger.info("Taxable Income: {}" ,taxableIncome);
         if (taxableIncome.compareTo(BigDecimal.ZERO) <= 0) {
             return totalIncomeTax;
         }
@@ -55,105 +61,105 @@ public class ScotlandTaxCalculation {
             //Top rate (48%)
             BigDecimal topRateTax = taxableIncome.subtract(additionalRate);
             totalIncomeTax = totalIncomeTax.add(topRateTax.multiply(taxTopTaxRate));
-            System.out.println("Top rate tax: " + topRateTax.multiply(taxTopTaxRate));
+            logger.info("Top rate tax: {}" , topRateTax.multiply(taxTopTaxRate));
 
             //Additional rate (45%)
             BigDecimal additionalRateTax = additionalRate.subtract(higherRate);
             totalIncomeTax = totalIncomeTax.add(additionalRateTax.multiply(taxAdditionalRate));
-            System.out.println("Additional rate tax: " + additionalRateTax.multiply(taxAdditionalRate));
+            logger.info("Additional rate tax: {}" , additionalRateTax.multiply(taxAdditionalRate));
 
             //Higher rate (42%)
             BigDecimal higherRateTax = higherRate.subtract(intermediateRate);
             totalIncomeTax = totalIncomeTax.add(higherRateTax.multiply(taxHigherRate));
-            System.out.println("Higher rate tax: " + higherRateTax.multiply(taxHigherRate));
+            logger.info("Higher rate tax: {}" ,higherRateTax.multiply(taxHigherRate));
 
             //Intermediate rate (21%)
             BigDecimal intermediateRateTax = intermediateRate.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(intermediateRateTax.multiply(taxIntermediateRate));
-            System.out.println("Intermediate rate tax: " + intermediateRateTax.multiply(taxIntermediateRate));
+            logger.info("Intermediate rate tax: {}" , intermediateRateTax.multiply(taxIntermediateRate));
 
             //Basic rate (20%)
             BigDecimal basicRateTax = basicRate.subtract(starterRate);
             totalIncomeTax = totalIncomeTax.add(basicRateTax.multiply(taxBasicRate));
-            System.out.println("Basic rate tax: " + basicRateTax.multiply(taxBasicRate));
+            logger.info("Basic rate tax: {}" , basicRateTax.multiply(taxBasicRate));
 
             //Starter rate (19%)
 //            BigDecimal starterRateTax = starterRate.subtract(taxSlabs[0][1]);
             totalIncomeTax = totalIncomeTax.add(starterRate.multiply(taxStarterRate));
-            System.out.println("Starter rate tax: " + starterRate.multiply(taxStarterRate));
+            logger.info("Starter rate tax: {}" , starterRate.multiply(taxStarterRate));
         }
         else if (taxableIncome.compareTo(higherRate)>0 && taxableIncome.compareTo(additionalRate)<=0){
             //Additional rate (45%)
             BigDecimal additionalTaxRate=taxableIncome.subtract(higherRate);
             totalIncomeTax = totalIncomeTax.add(additionalTaxRate.multiply(taxAdditionalRate));
-            System.out.println("Additional rate tax: " + additionalTaxRate.multiply(taxAdditionalRate));
+            logger.info("Additional rate tax: {}" , additionalTaxRate.multiply(taxAdditionalRate));
 
             //Higher rate (42%)
             BigDecimal higherTaxRate = higherRate.subtract(intermediateRate);
             totalIncomeTax = totalIncomeTax.add(higherTaxRate.multiply(taxHigherRate));
-            System.out.println("Higher rate tax: " + higherTaxRate.multiply(taxHigherRate));
+            logger.info("Higher rate tax: {}" , higherTaxRate.multiply(taxHigherRate));
 
             //Intermediate rate (21%)
             BigDecimal intermediateTaxRate = intermediateRate.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(intermediateTaxRate.multiply(taxIntermediateRate));
-            System.out.println("Intermediate rate tax: " + intermediateTaxRate.multiply(taxIntermediateRate));
+            logger.info("Intermediate rate tax: {}" , intermediateTaxRate.multiply(taxIntermediateRate));
 
             //Basic rate (20%)
             BigDecimal basicTaxRate = basicRate.subtract(starterRate);
             totalIncomeTax = totalIncomeTax.add(basicTaxRate.multiply(taxBasicRate));
-            System.out.println("Basic rate tax: " + basicTaxRate.multiply(taxBasicRate));
+            logger.info("Basic rate tax: {}" , basicTaxRate.multiply(taxBasicRate));
             //Starter rate (19%)
             BigDecimal starterTaxRate = starterRate.multiply(taxStarterRate);
             totalIncomeTax = totalIncomeTax.add(starterTaxRate);
-            System.out.println("Starter rate tax: " + starterTaxRate);
+            logger.info("Starter rate tax: {}" , starterTaxRate);
         } else if (taxableIncome.compareTo(intermediateRate)>0 && taxableIncome.compareTo(higherRate)<=0) {
             //Higher rate (42%)
              BigDecimal higherTaxRate=taxableIncome.subtract(intermediateRate);
             totalIncomeTax = totalIncomeTax.add(higherTaxRate.multiply(taxHigherRate));
-            System.out.println("Higher rate tax: " + higherTaxRate.multiply(taxHigherRate));
+            logger.info("Higher rate tax: {}" , higherTaxRate.multiply(taxHigherRate));
 
             //Intermediate rate (21%)
             BigDecimal intermediateTaxRate = intermediateRate.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(intermediateTaxRate.multiply(taxIntermediateRate));
-            System.out.println("Intermediate rate tax: " + intermediateTaxRate.multiply(taxIntermediateRate));
+            logger.info("Intermediate rate tax: {}" , intermediateTaxRate.multiply(taxIntermediateRate));
 
             //Basic rate (20%)
             BigDecimal basicTaxRate = basicRate.subtract(starterRate);
             totalIncomeTax = totalIncomeTax.add(basicTaxRate.multiply(taxBasicRate));
-            System.out.println("Basic rate tax: " + basicTaxRate.multiply(taxBasicRate));
+            logger.info("Basic rate tax: {}" , basicTaxRate.multiply(taxBasicRate));
             //Starter rate (19%)
             BigDecimal starterTaxRate = starterRate.multiply(taxStarterRate);
             totalIncomeTax = totalIncomeTax.add(starterTaxRate);
-            System.out.println("Starter rate tax: " + starterTaxRate);
+            logger.info("Starter rate tax: {}" , starterTaxRate);
         } else if (taxableIncome.compareTo(basicRate)>0 && taxableIncome.compareTo(intermediateRate)<=0) {
             //Intermediate rate (21%)
             BigDecimal intermediateTaxRate = taxableIncome.subtract(basicRate);
             totalIncomeTax = totalIncomeTax.add(intermediateTaxRate.multiply(taxIntermediateRate));
-            System.out.println("Intermediate rate tax: " + intermediateTaxRate.multiply(taxIntermediateRate));
+            logger.info("Intermediate rate tax: {}" , intermediateTaxRate.multiply(taxIntermediateRate));
             //Basic rate (20%)
             BigDecimal basicTaxRate = basicRate.subtract(starterRate);
             totalIncomeTax = totalIncomeTax.add(basicTaxRate.multiply(taxBasicRate));
-            System.out.println("Basic rate tax: " + basicTaxRate.multiply(taxBasicRate));
+            logger.info("Basic rate tax: {}",  basicTaxRate.multiply(taxBasicRate));
             //Starter rate (19%)
             BigDecimal starterTaxRate = starterRate.multiply(taxStarterRate);
             totalIncomeTax = totalIncomeTax.add(starterTaxRate);
-            System.out.println("Starter rate tax: " + starterTaxRate);
+            logger.info("Starter rate tax: {}" , starterTaxRate);
 
         }
         else if (taxableIncome.compareTo(starterRate)>0 && taxableIncome.compareTo(basicRate)<=0) {
             //Basic rate (20%)
             BigDecimal basicTaxRate = taxableIncome.subtract(starterRate);
             totalIncomeTax = totalIncomeTax.add(basicTaxRate.multiply(taxBasicRate));
-            System.out.println("Basic rate tax: " + basicTaxRate.multiply(taxBasicRate));
+            logger.info("Basic rate tax: {}" , basicTaxRate.multiply(taxBasicRate));
             //Starter rate (19%)
             BigDecimal starterTaxRate = starterRate.multiply(taxStarterRate);
             totalIncomeTax = totalIncomeTax.add(starterTaxRate);
-            System.out.println("Starter rate tax: " + starterTaxRate);
+            logger.info("Starter rate tax: {}" , starterTaxRate);
         } else if (taxableIncome.compareTo(starterRate)<=0) {
             //Starter rate (19%)
             BigDecimal starterTaxRate = taxableIncome.multiply(taxStarterRate);
             totalIncomeTax = totalIncomeTax.add(starterTaxRate);
-            System.out.println("Starter rate tax: " + starterTaxRate);
+            logger.info("Starter rate tax: {}" , starterTaxRate);
         }
          return calculateIncomeTaxBasedOnPayPeriod(totalIncomeTax, payPeriod);
 
@@ -184,7 +190,7 @@ public class ScotlandTaxCalculation {
             case "MONTHLY" -> grossIncome.multiply(BigDecimal.valueOf(12));
             case "QUARTERLY" -> grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
 
 
@@ -196,7 +202,7 @@ public class ScotlandTaxCalculation {
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
             case "QUARTERLY" -> incomeTax.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY "+ payPeriod);
         };
     }
 

@@ -7,6 +7,7 @@ import com.payroll.uk.payroll_processing.entity.PensionCalculationPaySlip;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
+import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PensionDataRepository;
 import lombok.AllArgsConstructor;
@@ -90,7 +91,7 @@ public class PensionCalculation {
         }
         catch (Exception e) {
             logger.error("Error calculating employee pension contribution: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate employee pension contribution", e);
+            throw new InvalidComputationException("Failed to calculate employee pension contribution "+ e.getMessage(),e);
         }
     }
 
@@ -145,7 +146,7 @@ public class PensionCalculation {
         }
         catch (Exception e) {
             logger.error("Error calculating employer pension contribution: {}", e.getMessage());
-            throw new RuntimeException("Failed to calculate employer pension contribution", e);
+            throw new InvalidComputationException("Failed to calculate employer pension contribution "+ e.getMessage(),e);
         }
     }
 

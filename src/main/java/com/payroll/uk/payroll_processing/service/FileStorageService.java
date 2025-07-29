@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.service;
 
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,10 +52,10 @@ public class FileStorageService {
 
     private void validateFile(MultipartFile file) {
         if (!allowedTypes.contains(file.getContentType())) {
-            throw new IllegalArgumentException("Unsupported file type: " + file.getContentType());
+            throw new DataValidationException("Unsupported file type: " + file.getContentType());
         }
         if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("File too large. Max allowed is 5MB");
+            throw new DataValidationException("File too large. Max allowed is 5MB");
         }
     }
 

@@ -8,7 +8,13 @@ import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
 import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,7 +28,7 @@ import java.util.List;
 
 @Service
 public class PaySlipService {
-
+    private static final Logger logging= LoggerFactory.getLogger(PaySlipService.class);
 
     @Autowired
     private PaySlipRepository paySlipRepository;
@@ -36,6 +42,8 @@ public class PaySlipService {
         if (employeeId== null || employeeId.isEmpty()) {
             throw new DataValidationException("Employee ID cannot be null or empty");
         }
+        logging.info("pay slip creation started for employeeId: {}", employeeId);
+
         return paySlipGeneration.fillPaySlip(employeeId);
     }
 
@@ -102,5 +110,27 @@ public class PaySlipService {
         }
         return paySlipCreateDtoMapper.mapToDto(paySlips.getFirst());
     }
+
+
+    public Page<PaySlipCreateDto> getAllPaySlipsByPeriodData(String periodEnd, int page, int size, String sortBy, String sortDirection) {
+        if (periodEnd == null || periodEnd.isEmpty()) {
+            throw new DataValidationException("Period end date cannot be null or empty");
+        }
+
+        // Set up sorting direction
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // Fetch paginated data
+        Page<PaySlip> paySlipsPage = paySlipRepository.findByPeriodEnd(periodEnd, pageable);
+
+        if (paySlipsPage.isEmpty()) {
+            throw new DataValidationException("No payslips found for the specified period");
+        }
+
+        // Convert to DTO page
+        return paySlipsPage.map(paySlipCreateDtoMapper::mapToDto);
+    }
+
 
 }

@@ -4,6 +4,7 @@ import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmploye
 import com.payroll.uk.payroll_processing.dto.customdto.EmployerDashBoardDetailsDTO;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
@@ -29,7 +30,7 @@ public class CustomDTOService {
 //            EmployerDetails employerField = employerDetailsRepository.findAll().stream().findFirst().get();
             EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
             if (employerDetails == null) {
-                throw new EmployeeNotFoundException("Employer not found with ID: " );
+                throw new DataValidationException("Employer not found with ID: " );
             }
 
             EmployerDashBoardDetailsDTO employerDashBoardDetailsDTO = new EmployerDashBoardDetailsDTO();
@@ -61,7 +62,7 @@ public class CustomDTOService {
     public List<EmployeesSummaryInEmployerDTO> getAllData(){
         List<EmployeesSummaryInEmployerDTO> data = paySlipRepository.findByAllData();
         if (data.isEmpty()){
-            throw new IllegalArgumentException("No data found");
+            throw new DataValidationException("No data found");
         }
         return data;
     }

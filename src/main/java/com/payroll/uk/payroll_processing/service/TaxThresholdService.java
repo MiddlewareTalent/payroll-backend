@@ -76,20 +76,20 @@ public class TaxThresholdService {
         List<TaxThreshold> personalAllowance = taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(
                 taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.PERSONAL_ALLOWANCE);
         if (personalAllowance.isEmpty()) {
-            throw new IllegalStateException("Personal allowance not found for year: " + taxYear );
+            throw new DataValidationException("Personal allowance not found for year: " + taxYear );
         }
 
         return personalAllowance.getFirst().getLowerBound();
     }
     // Get employment allowance By tax year
-    public BigDecimal getEmploymentAllowance(String taxYear) {
-        List<TaxThreshold> employmentAllowance = taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(
-                taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYMENT_ALLOWANCE);
-        if (employmentAllowance.isEmpty()) {
-            throw new DataValidationException("Personal allowance not found for year: " + taxYear );
+    public BigDecimal getAllowanceData(String taxYear,TaxThreshold.BandName bandName) {
+        TaxThreshold AllowanceData = taxThresholdRepository.findByTaxYearAndRegionAndBandName(
+                taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, bandName);
+        if (AllowanceData==null) {
+            throw new DataValidationException("Data is not found for this year: " + taxYear );
         }
 
-        return employmentAllowance.getFirst().getLowerBound();
+        return AllowanceData.getLowerBound();
     }
   // Get all available regions for a given tax year
     public List<TaxThreshold.TaxRegion> getAvailableRegions(String taxYear) {

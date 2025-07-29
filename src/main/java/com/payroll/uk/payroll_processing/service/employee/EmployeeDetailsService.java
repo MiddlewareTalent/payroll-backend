@@ -4,12 +4,17 @@ import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class EmployeeDetailsService {
+    private static final Logger logging= LoggerFactory.getLogger("EmployeeDetailsService.class");
     private final EmployeeDetailsRepository employeeDetailsRepository;
     private  final EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
     private  final BankDetailsRepository bankDetailsRepository;
@@ -84,6 +90,7 @@ public class EmployeeDetailsService {
          employeeData.setPayrollId(currentPayrollId);
 //        bankDetailsRepository.save(employeeData.getBankDetails());
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(employeeData);
+        logging.info("successfully saved employee details with ID: {}", savedEmployeeDetails.getEmployeeId());
 
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(savedEmployeeDetails);
     }
@@ -96,6 +103,7 @@ public class EmployeeDetailsService {
 
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee with ID " + employeeId + " not found"));
+        logging.info("successfully fetched employee details with ID: {}", employeeId);
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(employeeDetails);
     }
     public List<EmployeeDetailsDTO> getAllEmployeeDetails() {
@@ -104,6 +112,7 @@ public class EmployeeDetailsService {
         if(employeeDetailsListedData.isEmpty()) {
             throw new EmployeeNotFoundException("No employee details found ");
         }
+        logging.info("successfully fetched all employee details");
         return employeeDetailsListedData;
     }
 // Get employee details by email
@@ -113,6 +122,7 @@ public class EmployeeDetailsService {
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmail(email)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with email: " + email));
+        logging.info("successfully fetched employee details with email: {}", email);
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(employeeDetails);
     }
     // Update employee details by ID
@@ -140,6 +150,7 @@ public class EmployeeDetailsService {
         updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
         updatedEmployeeDetails.setPayrollId(existingEmployeeDetails.getPayrollId());
         EmployeeDetails savedEmployeeDetails = employeeDetailsRepository.save(updatedEmployeeDetails);
+        logging.info("successfully updated employee details with ID: {}", savedEmployeeDetails.getEmployeeId());
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(savedEmployeeDetails);
     }
 
@@ -175,7 +186,7 @@ public class EmployeeDetailsService {
 //            throw new IllegalArgumentException("Sort Code cannot be null or empty");
 //        }
         BankDetails bankDetails = bankDetailsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Bank details not found with ID: " + id));
+                .orElseThrow(() -> new EmployeeNotFoundException("Bank details not found with ID: " + id));
         bankDetails.setAccountNumber(bankDetailsDTO.getAccountNumber());
         bankDetails.setAccountName(bankDetailsDTO.getAccountName());
         bankDetails.setSortCode(bankDetailsDTO.getSortCode());
@@ -187,13 +198,14 @@ public class EmployeeDetailsService {
 //        bankDetails.setIsRTIReturnsIncluded(bankDetailsDTO.getIsRTIReturnsIncluded());
 //        bankDetails.setPaymentLeadDays(bankDetailsDTO.getPaymentLeadDays());
         bankDetails.setId(bankDetails.getId());
+
         return employeeDetailsDTOMapper.mapToBanKDetailsDTO(bankDetailsRepository.save(bankDetails));
 
     }
 
     public EmployeeDetailsDTO updateEmployeeOtherDetailsById(String employeeId){
        if(employeeId.isEmpty()|| employeeId == null) {
-            throw new IllegalArgumentException("Employee ID cannot be null or empty");
+            throw new DataValidationException("Employee ID cannot be null or empty");
        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
@@ -211,6 +223,7 @@ public class EmployeeDetailsService {
         EmployeeDetails employeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + id));
         employeeDetailsRepository.delete(employeeDetails);
+        logging.info("successfully deleted employee details with ID: {}", id);
         return true;
     }
     // Delete employee details by employee ID
@@ -230,6 +243,7 @@ public class EmployeeDetailsService {
         if (activeEmployees.isEmpty()) {
             throw new EmployeeNotFoundException("No active employees found");
         }
+        logging.info("successfully fetched all active employees");
         return activeEmployees.stream()
                 .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
                 .collect(Collectors.toList());
@@ -239,6 +253,7 @@ public class EmployeeDetailsService {
         if (inactiveEmployees.isEmpty()) {
             throw new EmployeeNotFoundException("No inactive employees found");
         }
+        logging.info("successfully fetched all inactive employees");
         return inactiveEmployees.stream()
                 .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
                 .collect(Collectors.toList());
@@ -248,9 +263,57 @@ public class EmployeeDetailsService {
         if (readyForLeavingEmployees.isEmpty()) {
             throw new EmployeeNotFoundException("No employees ready for leaving found");
         }
+        logging.info("successfully fetched all employees ready for leaving");
         return readyForLeavingEmployees.stream()
                 .map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO)
                 .collect(Collectors.toList());
+    }
+
+    //pension contributions auto enrollment
+    public boolean isEligibleForAutoEnrollment(BigDecimal annualIncome, LocalDate dateOfBirth, String taxYear, EmployeeDetails.Gender gender) {
+        if (dateOfBirth == null || annualIncome == null ||taxYear==null||gender==null) {
+            throw new DataValidationException("Invalid input: Data cannot be null");
+        }
+        if (annualIncome.compareTo(BigDecimal.ZERO) < 0) {
+            throw new DataValidationException("Annual income cannot be negative");
+        }
+        if (dateOfBirth.isAfter(LocalDate.now())) {
+            throw new DataValidationException("Date of birth cannot be in the future");
+        }
+
+        // 1. Calculate age from DOB
+        int employeeAge = TaxPeriodUtils.calculateAge(dateOfBirth);
+
+        // 2. Get auto-enrolment threshold from tax thresholds service
+        BigDecimal autoEnrolmentThreshold = taxThresholdService.getAllowanceData(
+               taxYear,
+                TaxThreshold.BandName.AUTO_ENROLMENT_PENSION_CONTRIBUTION
+        );
+
+        if (autoEnrolmentThreshold == null) {
+            throw new DataValidationException("Auto-enrolment threshold not configured for tax year: " + taxYear);
+        }
+
+        // 3. Get employer details (ensure it's not null and has valid retirement ages)
+        EmployerDetails employerData = employerDetailsRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new DataValidationException("Employer details not found"));
+
+        int retirementAge = getRetirementAgeBasedOnGender(employerData, String.valueOf(gender));
+
+        logging.info("Employee Age: {}, Auto-Enrolment Threshold: {}, Retirement Age: {}", employeeAge, autoEnrolmentThreshold, retirementAge);
+        // 4. Evaluate eligibility: age, salary, and below retirement age
+        return annualIncome.compareTo(autoEnrolmentThreshold) > 0
+                && employeeAge >= 22
+                && employeeAge < retirementAge;
+    }
+
+
+    private int getRetirementAgeBasedOnGender(EmployerDetails employer, String gender) {
+        return switch (gender.toUpperCase()) {
+            case "MALE" -> employer.getTerms().getMaleRetirementAge();
+            case "FEMALE" -> employer.getTerms().getFemaleRetirementAge();
+            default -> throw new DataValidationException("Unknown gender: " + gender);
+        };
     }
 
     private void validateEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {

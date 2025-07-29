@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.service.ni;
 
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class NationalInsuranceCalculator {
     public BigDecimal calculateEmployeeNIContribution(BigDecimal income, String taxYear,  String payPeriod, NICategoryLetters niCategoryLetter){
 //        System.out.println("Calculating Employee NI Contribution for income: " + income + ", taxYear: " + taxYear + ", payPeriod: " + payPeriod + ", NI Category Letter: " + niCategoryLetter);
         if (income == null || payPeriod == null || niCategoryLetter == null) {
-            throw new IllegalArgumentException("Income, pay period, and NI category letter cannot be null");
+            throw new DataValidationException("Income, pay period, and NI category letter cannot be null");
         }
 
         BigDecimal niContribution = BigDecimal.ZERO;
@@ -88,7 +89,7 @@ public class NationalInsuranceCalculator {
             case "WEEKLY" -> grossIncome.multiply(BigDecimal.valueOf(52));
             case "MONTHLY" -> grossIncome.multiply(BigDecimal.valueOf(12));
             case "YEARLY" -> grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
 
 
@@ -99,14 +100,14 @@ public class NationalInsuranceCalculator {
             case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
             case "YEARLY" -> incomeTax;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         };
     }
 
     // Updated Employer NI Contribution Logic for All Categories
     public BigDecimal calculatingEmployerNIContribution(BigDecimal income, String taxYear,  String payPeriod, NICategoryLetters niCategoryLetter) {
         if (income == null || payPeriod == null || niCategoryLetter == null) {
-            throw new IllegalArgumentException("Income, pay period, and NI category letter cannot be null");
+            throw new DataValidationException("Income, pay period, and NI category letter cannot be null");
         }
 
         BigDecimal employerNIContributions = BigDecimal.ZERO;

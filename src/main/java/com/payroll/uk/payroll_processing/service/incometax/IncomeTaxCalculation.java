@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.service.incometax;
 
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +26,10 @@ public class IncomeTaxCalculation {
     BigDecimal calculateIncomeTax(BigDecimal grossIncome, BigDecimal personalAllowance, BigDecimal taxableIncome,BigDecimal[][] taxSlabs, BigDecimal[] taxRates, String payPeriod) {
         // Validate inputs
         if (grossIncome == null || personalAllowance == null || taxSlabs == null || taxRates == null || payPeriod == null) {
-            throw new IllegalArgumentException("Parameters cannot be null");
+            throw new DataValidationException("grossIncome, personalAllowance, taxSlabs, taxRates, and payPeriod cannot be null" );
         }
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Income cannot be negative");
+            throw new DataValidationException("Income cannot be negative");
         }
 
         //England, Wales and Northern Ireland Tax Slabs and Rates
@@ -115,10 +116,10 @@ public class IncomeTaxCalculation {
     public BigDecimal calculateTaxWithKCode(BigDecimal grossIncome, String normalizedTaxCode,BigDecimal taxableIncomeAnnual, BigDecimal[][] taxSlabs, BigDecimal[] taxRates,String payPeriod) {
         // Validate inputs
         if (grossIncome == null || normalizedTaxCode == null || taxSlabs == null || taxRates == null) {
-            throw new IllegalArgumentException("Parameters cannot be null");
+            throw new DataValidationException("grossIncome, normalizedTaxCode, taxSlabs, and taxRates cannot be null");
         }
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Income cannot be negative");
+            throw new DataValidationException("Income cannot be negative");
         }
         BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome, normalizedTaxCode,payPeriod);
 
@@ -160,7 +161,7 @@ public class IncomeTaxCalculation {
             // Calculate the income tax based on the adjusted gross income
             return calculateIncomeTax(grossIncome, personalAllowance, taxableIncomeAnnual,taxSlabs, taxRates,payPeriod);
         } else {
-            throw new IllegalArgumentException("Invalid K code: " + normalizedTaxCode);
+            throw new DataValidationException("Invalid K code: " + normalizedTaxCode);
 
         }
 
@@ -174,7 +175,7 @@ public class IncomeTaxCalculation {
             case "MONTHLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(12));
             case "QUARTERLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(4));
             case "YEARLY" -> annualGross=grossIncome;
-            default -> throw new IllegalArgumentException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
+            default -> throw new DataValidationException("Invalid pay period. Must be WEEKLY, MONTHLY or YEARLY");
         }
          return  annualGross;
 //        return annualGross.setScale(2, RoundingMode.HALF_UP);

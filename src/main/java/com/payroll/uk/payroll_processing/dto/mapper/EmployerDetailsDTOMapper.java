@@ -91,7 +91,7 @@ public class EmployerDetailsDTOMapper {
         dto.setUniqueTaxRef(taxOffice.getUniqueTaxRef());
         dto.setCorporationTaxRef(taxOffice.getCorporationTaxRef());
         dto.setPayrollGivingRef(taxOffice.getPayrollGivingRef());
-        dto.setClaimEmploymentAllowance(taxOffice.getClaimEmploymentAllowance());
+        dto.setClaimEmploymentAllowance(taxOffice.isClaimEmploymentAllowance());
 
 
         return dto;
@@ -99,13 +99,15 @@ public class EmployerDetailsDTOMapper {
     }
     public TaxOffice changeToTaxOffice(TaxOfficeDTO taxOfficeDto) {
         TaxOffice taxOffice = new TaxOffice();
+        taxOffice.setDatePAYESchemeStarted(taxOfficeDto.getDatePAYESchemeStarted());
+        taxOffice.setDatePAYESchemeCeased(taxOfficeDto.getDatePAYESchemeCeased());
         taxOffice.setPayeReference(taxOfficeDto.getPayeReference());
         taxOffice.setAccountsOfficeReference(taxOfficeDto.getAccountsOfficeReference());
         taxOffice.setPaymentMethod(taxOfficeDto.getPaymentMethod());
         taxOffice.setUniqueTaxRef(taxOfficeDto.getUniqueTaxRef());
         taxOffice.setCorporationTaxRef(taxOfficeDto.getCorporationTaxRef());
         taxOffice.setPayrollGivingRef(taxOfficeDto.getPayrollGivingRef());
-        taxOffice.setClaimEmploymentAllowance(taxOfficeDto.getClaimEmploymentAllowance());
+        taxOffice.setClaimEmploymentAllowance(taxOfficeDto.isClaimEmploymentAllowance());
 
         return taxOffice;
 
