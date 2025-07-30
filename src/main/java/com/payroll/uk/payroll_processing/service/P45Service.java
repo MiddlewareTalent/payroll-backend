@@ -21,6 +21,8 @@ public class P45Service {
     private EmployerDetailsRepository employerDetailsRepository;
     @Autowired
     private EmployeeDetailsRepository employeeDetailsRepository;
+    @Autowired
+    private ValidateData validateData;
     public P45DTO generateP45File(String employeeId){
         if (employeeId==null || employeeId.isEmpty()) {
             throw new DataValidationException("Employee ID cannot be null or empty");
@@ -32,8 +34,9 @@ public class P45Service {
             throw new DataValidationException("Employer details not found");
         }
         if (employeeData.getEmploymentEndDate() == null) {
-            throw new DataValidationException("Employee has not left the employment yet:");
+            throw new DataValidationException("Employee has not left the employment yet: "+employeeId);
         }
+        validateData.validateP45Data(employeeData,employerDetails);
         P45DTO dtoData= new P45DTO();
         //set 1
         dtoData.setEmployerPAYEReference(employerDetails.getTaxOffice().getPayeReference());
@@ -65,12 +68,24 @@ public class P45Service {
             else {
                 dtoData.setCurrentPayPeriodNumber("0");
             }
+            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD().compareTo(BigDecimal.ZERO)<=0){
+                throw new DataValidationException("Total earnings amount YTD cannot be zero or negative for employee: " + employeeId);
+            }
             dtoData.setTotalPayToDate(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD());
+            if (employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate().compareTo(BigDecimal.ZERO)<=0){
+                throw new DataValidationException("Total income tax pay to Date cannot be zero or negative for employee: " + employeeId);
+            }
             dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate());
         }
         //set 8
         if (isNonCumulativeTaxCode(employeeData.getTaxCode())){
+            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment().compareTo(BigDecimal.ZERO)<=0){
+                throw new DataValidationException("Total earnings amount in this employment cannot be zero or negative for employee: " + employeeId);
+            }
             dtoData.setTotalPayInThisEmployment(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment());
+            if (employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment().compareTo(BigDecimal.ZERO)<=0){
+                throw new DataValidationException("Total income tax paid in this employment cannot be zero or negative for employee: " + employeeId);
+            }
             dtoData.setTotalTaxInThisEmployment(employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment());
         }
         //set 9

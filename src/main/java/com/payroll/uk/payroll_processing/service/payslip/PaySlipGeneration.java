@@ -11,10 +11,7 @@ import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
-import com.payroll.uk.payroll_processing.service.LoanPaySlipCalculation;
-import com.payroll.uk.payroll_processing.service.PensionCalculation;
-import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
-import com.payroll.uk.payroll_processing.service.StudentLoanCalculation;
+import com.payroll.uk.payroll_processing.service.*;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
 import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculator;
@@ -61,6 +58,9 @@ public class PaySlipGeneration {
     @Autowired
     private PensionCalculation pensionCalculation;
 
+    @Autowired
+    private ValidateData validateData;
+
 
 
      PaySlipCreateDto fillPaySlip(String employeeId){
@@ -78,15 +78,15 @@ public class PaySlipGeneration {
         }
         String periodEnd = getPeriodEndMonthYear(employerDetails.getCompanyDetails().getPayDate());
 
-//        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
-//        logger.info("exists: {}", exists);
-//        if (exists) {
-//            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
-//            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
-//        }
+        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
+        logger.info("exists: {}", exists);
+        if (exists) {
+            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
+            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
+        }
 
-        validateEmployeeDetails(employeeDetails);
-        validateEmployerDetails(employerDetails);
+         validateData.validateEmployeeDetails(employeeDetails);
+         validateData.validateEmployerDetails(employerDetails);
         PaySlip paySlipCreate = new PaySlip();
         try{
             paySlipCreate.setFirstName(employeeDetails.getFirstName());
@@ -364,83 +364,7 @@ public class PaySlipGeneration {
 
 
 
-    public void validateEmployeeDetails(EmployeeDetails employeeDetails) {
 
-        logger.info("Checking employee details for validation: {}", employeeDetails);
-        // Name validations
-        if (employeeDetails.getFirstName() == null || employeeDetails.getFirstName().trim().isEmpty()) {
-            throw new DataValidationException("First name is not found");
-        }
-        if (employeeDetails.getLastName() == null || employeeDetails.getLastName().trim().isEmpty()) {
-            throw new DataValidationException("Last name is not found");
-        }
-        if (employeeDetails.getAddress() == null || employeeDetails.getAddress().trim().isEmpty()) {
-            throw new DataValidationException("Address is not found");
-        }
-        if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().trim().isEmpty()) {
-            throw new DataValidationException("PostCode is not found");
-        }
-        if (employeeDetails.getRegion() == null ) {
-            throw new DataValidationException("Region is not found");
-        }
-        if (employeeDetails.getTaxCode() == null || employeeDetails.getTaxCode().trim().isEmpty()) {
-            throw new DataValidationException("tax code is not found");
-        }
-        if (employeeDetails.getWorkingCompanyName() == null || employeeDetails.getWorkingCompanyName().trim().isEmpty()) {
-            throw new DataValidationException("Working Company Name is not found");
-        }
-
-        // Email validation
-        if (employeeDetails.getEmail() == null || employeeDetails.getEmail().trim().isEmpty()) {
-            throw new DataValidationException("Email is not found");
-        }
-
-
-        // Employee ID validation
-        if (employeeDetails.getEmployeeId() == null || employeeDetails.getEmployeeId().trim().isEmpty()) {
-            throw new DataValidationException("Employee ID is not found");
-        }
-
-        // National Insurance validation
-        if (employeeDetails.getNationalInsuranceNumber() != null &&
-                !employeeDetails.getNationalInsuranceNumber().matches("^[A-Z]{2}[0-9]{6}[A-Z]$")) {
-            throw new DataValidationException("National Insurance number is not found");
-        }
-
-        if (employeeDetails.getNiLetter() ==null){
-            throw new DataValidationException("NI Category Letter is not found");
-        }
-
-        // Financial validations
-        if (employeeDetails.getPayPeriodOfIncomeOfEmployee() == null) {
-            throw new DataValidationException("Gross income is not found");
-        }
-        if (employeeDetails.getPayPeriodOfIncomeOfEmployee().compareTo(BigDecimal.ZERO) < 0) {
-            throw new DataValidationException("Gross income cannot be negative");
-        }
-
-        if (employeeDetails.getPayPeriod() == null) {
-            throw new DataValidationException("Pay period is not found");
-        }
-        if(employeeDetails.getStudentLoan().getHasStudentLoan()==null){
-            throw new DataValidationException("student loan cannot be null and it can true or false");
-
-        }
-        if(employeeDetails.getStudentLoan().getStudentLoanPlanType()==null){
-            throw new DataValidationException("student loan plan Type cannot be null");
-        }
-
-
-
-    }
-    public void validateEmployerDetails(EmployerDetails employerDetails){
-        if(employerDetails.getCompanyDetails().getCurrentTaxYear()==null){
-            throw  new DataValidationException("tax year is not found");
-        }
-        if (employerDetails.getCompanyDetails().getPayDate()==null){
-            throw new DataValidationException("pay date is not found");
-        }
-    }
 
 
 }

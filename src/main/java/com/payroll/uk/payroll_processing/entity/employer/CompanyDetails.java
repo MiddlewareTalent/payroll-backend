@@ -33,8 +33,8 @@ public class CompanyDetails {
     @Column(name = "company_logo")
     private String companyLogo;
 
-    @Schema(description = "Tax year in format yyyy-yyyy, e.g., 2025-2026", example = "2025-2026")
-    @Pattern(regexp = "^\\d{4}-\\d{4}$", message = "Tax year must be in the format YYYY-YYYY, e.g., 2025-2026")
+//    @Schema(description = "Tax year in format yyyy-yyyy, e.g., 2025-2026", example = "2025-2026")
+//    @Pattern(regexp = "^\\d{4}-\\d{4}$", message = "Tax year must be in the format YYYY-YYYY, e.g., 2025-2026")
     @Column(name = "tax_year", nullable = false)
     private String currentTaxYear;
 
