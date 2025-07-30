@@ -7,12 +7,11 @@ import com.payroll.uk.payroll_processing.entity.employee.OtherEmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employer.OtherEmployerDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,7 +45,7 @@ public class UpdatingDetails {
             throw new DataValidationException("Pay slip and Employee Id are miss match");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
         OtherEmployeeDetails otherEmployeeDetails = employeeDetails.getOtherEmployeeDetails();
         OtherEmployeeDetails updateOtherEmployeeDetails = new OtherEmployeeDetails();
         updateOtherEmployeeDetails=otherEmployeeDetails;
@@ -206,7 +205,7 @@ public class UpdatingDetails {
             throw new DataValidationException("Pay Slip data cannot empty");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
 
         EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
                 if (employerDetails == null) {

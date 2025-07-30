@@ -26,12 +26,41 @@ public class TaxThresholdService {
     }
 
     public List<TaxThreshold> getTaxThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
 //        System.out.println("Fetching tax thresholds for year: " + taxYear + ", region: " + region + ", tax band type: " + bandNameType);
         return taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(taxYear, region, bandNameType);
     }
 
     // Get NI thresholds by tax year, region, band name type, and band name
     public List<TaxThreshold> getNIThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (bandName == null) {
+            throw new DataValidationException("Band name cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
 //        System.out.println("Fetching NI thresholds for year: " + taxYear + ", region: " + region + ", tax band type: " + bandNameType+ ", band name: " + bandName);
         return taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName);
     }
@@ -39,30 +68,118 @@ public class TaxThresholdService {
 
     //Get Pension thresholds by tax year, region, band name type, and band name
     public BigDecimal[][] getPensionThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (bandName == null) {
+            throw new DataValidationException("Band name cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
         return  getThresholdsBands( taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
     }
 
     // Get pension contribution rates by tax year, region, band name type, and band name
     public BigDecimal[] getPensionContributionRate(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (bandName == null) {
+            throw new DataValidationException("Band name cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
 
         return getThresholdRates(taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
     }
     // Get student loan thresholds by tax year, region, band name type, and band name
     public BigDecimal[][] getStudentLoanThresholds(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
       return  getThresholdsBands( taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(taxYear, region, bandNameType));
 
     }
     //
     public BigDecimal[][] getStudentLoanThresholdsByPlanType(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (bandName==null){
+            throw new DataValidationException("Band name cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
 
         return  getThresholdsBands( taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
     }
     public BigDecimal[] getStudentLoanBandByPlanTypeRate(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType, TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
 
         return getThresholdRates(taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType, bandName));
     }
 
     public List<TaxThreshold> getPostGraduateLoan(String taxYear, TaxThreshold.TaxRegion region, TaxThreshold.BandNameType bandNameType,TaxThreshold.BandName bandName){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (bandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
+
         return taxThresholdRepository.findByTaxYearAndRegionAndBandNameTypeAndBandName(taxYear, region, bandNameType,bandName);
     }
   // Get all available tax years
@@ -73,6 +190,13 @@ public class TaxThresholdService {
 
     // Get personal allowance By tax year
     public BigDecimal getPersonalAllowance(String taxYear) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
         List<TaxThreshold> personalAllowance = taxThresholdRepository.findByTaxYearAndRegionAndBandNameType(
                 taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.PERSONAL_ALLOWANCE);
         if (personalAllowance.isEmpty()) {
@@ -83,6 +207,13 @@ public class TaxThresholdService {
     }
     // Get employment allowance By tax year
     public BigDecimal getAllowanceData(String taxYear,TaxThreshold.BandName bandName) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (bandName == null) {
+            throw new DataValidationException("Band name cannot be null");
+        }
+
         TaxThreshold AllowanceData = taxThresholdRepository.findByTaxYearAndRegionAndBandName(
                 taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, bandName);
         if (AllowanceData==null) {
@@ -97,6 +228,15 @@ public class TaxThresholdService {
     }
     public BigDecimal[][] getTaxBounds(String taxYear, TaxThreshold.TaxRegion region,
                                        TaxThreshold.BandNameType BandNameType) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
         logging.info("Tax Thresholds Service in Fetching tax bounds for year: {}, region: {}, band name type: {}", taxYear, region, BandNameType);
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
@@ -132,6 +272,15 @@ public class TaxThresholdService {
     }
     public BigDecimal[] getTaxRates(String taxYear, TaxThreshold.TaxRegion region,
                                     TaxThreshold.BandNameType BandNameType) {
+        if (taxYear==null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new DataValidationException("Year range not found: " + taxYear);
@@ -165,6 +314,18 @@ public class TaxThresholdService {
         return rates;
     }
     public BigDecimal[][] getEmployeeNIThreshold(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (NILetter==null){
+            throw new DataValidationException("NI Letter cannot be null");
+        }
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new DataValidationException("Year range not found: " + taxYear);
@@ -211,6 +372,18 @@ public class TaxThresholdService {
 
 
     public BigDecimal[] getEmployeeNIRates(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
+        if (taxYear== null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (NILetter == null) {
+            throw new DataValidationException("NI Letter cannot be null");
+        }
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new DataValidationException("Year range not found: " + taxYear);
@@ -254,6 +427,18 @@ public class TaxThresholdService {
     }
 
     public BigDecimal[][] getEmployerThreshold(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (NILetter == null) {
+            throw new DataValidationException("NI Letter cannot be null");
+        }
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new DataValidationException("Year range not found: " + taxYear);
@@ -277,6 +462,18 @@ public class TaxThresholdService {
 
     }
     public BigDecimal[] getEmployerRates(String taxYear,TaxThreshold.TaxRegion region,TaxThreshold.BandNameType BandNameType,NICategoryLetters NILetter){
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        if (BandNameType == null) {
+            throw new DataValidationException("Band name type cannot be null");
+        }
+        if (NILetter == null) {
+            throw new DataValidationException("NI Letter cannot be null");
+        }
         boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
         if (!isExist) {
             throw new DataValidationException("Year range not found: " + taxYear);
@@ -322,7 +519,14 @@ public class TaxThresholdService {
     }*/
 
     public Map<String, BigDecimal> getAllowanceData(String taxYear) {
+        if (taxYear==null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+
         List<TaxThreshold> thresholds = taxThresholdRepository.findFixedBandsByTaxYear(taxYear);
+        if (thresholds.isEmpty()) {
+            throw new DataValidationException("No allowance data found for tax year: " + taxYear);
+        }
 
         Map<String, BigDecimal> allowanceData = new HashMap<>();
 
@@ -337,6 +541,9 @@ public class TaxThresholdService {
                 case TaxThreshold.BandName.AUTO_ENROLMENT_PENSION_CONTRIBUTION:
                     allowanceData.put("autoEnrollForPension", threshold.getLowerBound());
                     break;
+                default:
+                    logging.warn("Unknown band name: {}", threshold.getBandName());
+                    break;
             }
         }
 
@@ -345,11 +552,27 @@ public class TaxThresholdService {
 
 
     public List<TaxThreshold> getCombinedThresholds(String taxYear, TaxThreshold.TaxRegion region) {
+        if (taxYear == null || taxYear.isEmpty()) {
+            throw new DataValidationException("Tax year cannot be null or empty");
+        }
+        if (region == null) {
+            throw new DataValidationException("Region cannot be null");
+        }
+        boolean isExist = taxThresholdRepository.existsByTaxYear(taxYear);
+        if (!isExist) {
+            throw new DataValidationException("Year range not found: " + taxYear);
+        }
         List<TaxThreshold> incomeTaxThresholds = taxThresholdRepository
                 .findByTaxYearAndRegionAndBandNameType(taxYear, region, TaxThreshold.BandNameType.INCOME_TAX);
+        if (incomeTaxThresholds.isEmpty()) {
+            throw new DataValidationException("Income tax thresholds not found for year: " + taxYear + " and region: " + region);
+        }
 
         List<TaxThreshold> otherThresholds = taxThresholdRepository
                 .findByTaxYearAndRegion(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS);
+        if (otherThresholds.isEmpty()) {
+            throw new DataValidationException("Other thresholds not found for year: " + taxYear + " and region: " + region);
+        }
 
         List<TaxThreshold> all = new ArrayList<>();
         all.addAll(incomeTaxThresholds);
@@ -357,4 +580,5 @@ public class TaxThresholdService {
 
         return all;
     }
+
 }

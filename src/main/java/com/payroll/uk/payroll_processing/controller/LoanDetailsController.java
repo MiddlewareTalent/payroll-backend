@@ -20,33 +20,24 @@ public class LoanDetailsController {
 
     @GetMapping("/all/loan-deducted/details")
     public ResponseEntity<?> getAllLoanDeductionDetails() {
-        try{
+
             List<LoanCalculationPaySlipDTO> allData = loanPaySlipCalculation.getAllLoanCalculationPaySlip();
             return ResponseEntity.ok(allData);
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+
     }
     @GetMapping("/loan-details/employeeId/{employeeId}")
     public ResponseEntity<?> getLoanDataByEmployeeId(@PathVariable String employeeId){
-        try{
+
             List<LoanCalculationPaySlipDTO> employeeLoanData = loanPaySlipCalculation.getAllLoanDeductionsByEmployeeId(employeeId);
             return ResponseEntity.ok(employeeLoanData);
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+
     }
     @GetMapping("/loan-details/ni/{nationalInsuranceNumber}")
     public ResponseEntity<?> getLoanDataByNationalInsuranceNumber(@PathVariable String nationalInsuranceNumber){
-        try{
+
             List<LoanCalculationPaySlipDTO> employeeLoanData = loanPaySlipCalculation.getAllLoanDeductionsByNINumber(nationalInsuranceNumber);
             return ResponseEntity.ok(employeeLoanData);
-        }
-        catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+
 
     }
 }

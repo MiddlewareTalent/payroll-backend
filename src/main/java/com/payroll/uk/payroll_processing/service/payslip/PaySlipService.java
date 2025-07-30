@@ -116,6 +116,18 @@ public class PaySlipService {
         if (periodEnd == null || periodEnd.isEmpty()) {
             throw new DataValidationException("Period end date cannot be null or empty");
         }
+        if (page < 0) {
+            throw new DataValidationException("Page number must be zero or greater");
+        }
+        if (size <= 0) {
+            throw new DataValidationException("Page size must be greater than zero");
+        }
+        if (sortBy == null || sortBy.isEmpty()) {
+            throw new DataValidationException("Sort field cannot be null or empty");
+        }
+        if (!sortDirection.equalsIgnoreCase("asc") && !sortDirection.equalsIgnoreCase("desc")) {
+            throw new DataValidationException("Sort direction must be 'asc' or 'desc'");
+        }
 
         // Set up sorting direction
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;

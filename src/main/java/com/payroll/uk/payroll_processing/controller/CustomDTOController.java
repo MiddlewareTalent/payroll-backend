@@ -30,23 +30,16 @@ public class CustomDTOController {
 
     @GetMapping("all/employees-summary")
     public ResponseEntity<List<EmployeesSummaryInEmployerDTO>> getAllDataFromPaySlip(){
-        try{
+
             List<EmployeesSummaryInEmployerDTO> data = customDTOService.getAllData();
             return ResponseEntity.ok(data);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
     @GetMapping("/p45/employee-data/{employeeId}")
     public ResponseEntity<P45DTO> getP45DataForEmployee(@PathVariable String employeeId) {
-        try {
+
             P45DTO p45Data = p45Service.generateP45File(employeeId);
             return ResponseEntity.ok(p45Data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 }

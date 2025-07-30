@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.customdto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,11 @@ public class P45DTO {
 
     //Employee Details
     private String employeeNationalInsuranceNumber;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate employeeDateOfBirth;
     private String firstName;
     private String lastName;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate employeeLeavingDate;
     private boolean employeeGender;
     private String employeeAddress;
@@ -37,6 +40,7 @@ public class P45DTO {
     private String taxCodeAtLeaving;
     private BigDecimal totalPayToDate;
     private BigDecimal totalTaxToDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate p45Date;
     private boolean studentLoanToContinue;
 
@@ -44,5 +48,7 @@ public class P45DTO {
     private BigDecimal totalTaxInThisEmployment;
     private String employeeTitle;
     private boolean week1Month1Box; // true = tick X
+
+    private String payrollId;
 
 }

@@ -5,7 +5,7 @@ import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
@@ -26,7 +26,7 @@ public class P45Service {
             throw new DataValidationException("Employee ID cannot be null or empty");
         }
         EmployeeDetails employeeData = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(()-> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
+                .orElseThrow(()-> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
         EmployerDetails employerDetails = employerDetailsRepository.findAll().getFirst();
         if (employerDetails == null) {
             throw new DataValidationException("Employer details not found");
@@ -74,6 +74,7 @@ public class P45Service {
             dtoData.setTotalTaxInThisEmployment(employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment());
         }
         //set 9
+        dtoData.setPayrollId(employeeData.getPayrollId());
         //set 10
         dtoData.setEmployeeGender(isMale(String.valueOf(employeeData.getGender())));
         //set 11

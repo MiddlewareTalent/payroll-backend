@@ -17,20 +17,12 @@ import java.math.BigDecimal;
 @EnableScheduling
 public class PayrollProcessingApplication   {
 
-
-	@Autowired
-	private TaxCodeService taxCodeService;
 	public static void main(String[] args) {
 
 		 SpringApplication.run(PayrollProcessingApplication.class, args);
 
 	}
-	/*@Override
-	public void run(String... args) throws Exception {
-		BigDecimal amount = taxCodeService.calculateIncomeBasedOnTaxCode( new BigDecimal("120000"), new BigDecimal("2570"),
-				new BigDecimal("117430.00"), "2025-2026", TaxThreshold.TaxRegion.ENGLAND, "257L", "YEARLY");
-		System.out.println("Calculated Income: " + amount);
-	}*/
+
 
 
 
