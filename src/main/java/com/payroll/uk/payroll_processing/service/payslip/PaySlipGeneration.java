@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -69,7 +68,7 @@ public class PaySlipGeneration {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
 
         logger.info("employeeDetails: {}", employeeDetails);
         EmployerDetails  employerDetails = employerDetailsRepository.findAll().getFirst();
@@ -79,15 +78,13 @@ public class PaySlipGeneration {
         }
         String periodEnd = getPeriodEndMonthYear(employerDetails.getCompanyDetails().getPayDate());
 
-        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
-        logger.info("exists: {}", exists);
-        if (exists) {
-            System.out.println("1");
+//        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
+//        logger.info("exists: {}", exists);
+//        if (exists) {
 //            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
-            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
-        }
-//        employeeDetails.setFirstName(null);
-         System.out.println("2");
+//            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
+//        }
+
         validateEmployeeDetails(employeeDetails);
         validateEmployerDetails(employerDetails);
         PaySlip paySlipCreate = new PaySlip();

@@ -5,7 +5,7 @@ import com.payroll.uk.payroll_processing.dto.customdto.EmployerDashBoardDetailsD
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
@@ -53,7 +53,7 @@ public class CustomDTOService {
             return employerDashBoardDetailsDTO;
         }
         catch (Exception e){
-            throw new EmployeeNotFoundException("Error retrieving employer dashboard details: " + e.getMessage());
+            throw new ResourceNotFoundException("Error retrieving employer dashboard details: " + e.getMessage());
         }
 
 

@@ -8,7 +8,7 @@ import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.exception.InvalidComputationException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.LoanCalculationPaySlipRepository;
@@ -45,7 +45,7 @@ public class LoanPaySlipCalculation {
         }
         Optional<EmployeeDetails> employeeData = employeeDetailsRepository.findByEmployeeId(paySlip.getEmployeeId());
         logger.info("Calculating loan pay slip for employee: {}", paySlip.getEmployeeId());
-        EmployeeDetails employeeDetails = employeeData.orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
+        EmployeeDetails employeeDetails = employeeData.orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + paySlip.getEmployeeId()));
 
         if (employeeDetails.getStudentLoan().getHasStudentLoan() && employeeDetails.getStudentLoan().getStudentLoanPlanType() == StudentLoan.StudentLoanPlan.NONE) {
             throw new DataValidationException("Student loan plan type cannot be NONE when student loan is true.");
@@ -155,7 +155,7 @@ public class LoanPaySlipCalculation {
             throw new DataValidationException("Pay slip and Employee Id are miss match");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(loanCalculationPaySlip.getEmployeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + loanCalculationPaySlip.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + loanCalculationPaySlip.getEmployeeId()));
         PostGraduateLoan postGraduateLoan = employeeDetails.getPostGraduateLoan();
         PostGraduateLoan updatedPostGraduateLoan = new PostGraduateLoan();
         updatedPostGraduateLoan=postGraduateLoan;
@@ -204,6 +204,9 @@ public class LoanPaySlipCalculation {
 
     }
     public List<LoanCalculationPaySlipDTO> getAllLoanDeductionsByEmployeeId(String employeeId){
+        if(employeeId == null || employeeId.isEmpty()){
+            throw new DataValidationException("Employee ID cannot be null or empty");
+        }
         List<LoanCalculationPaySlip> loanCalculationPaySlipList = loanCalculationPaySlipRepository.findAllByEmployeeId(employeeId);
         if(loanCalculationPaySlipList.isEmpty()){
             throw new DataValidationException("No loan deduction pay slips found for employee with ID: " + employeeId);
@@ -212,6 +215,9 @@ public class LoanPaySlipCalculation {
     }
 
     public List<LoanCalculationPaySlipDTO> getAllLoanDeductionsByNINumber(String nationalInsuranceNumber){
+        if(nationalInsuranceNumber == null || nationalInsuranceNumber.isEmpty()){
+            throw new DataValidationException("National Insurance Number cannot be null or empty");
+        }
         List<LoanCalculationPaySlip> loanCalculationPaySlipList = loanCalculationPaySlipRepository.findAllByNationalInsuranceNumber(nationalInsuranceNumber);
         if(loanCalculationPaySlipList.isEmpty()){
             throw new DataValidationException("No loan deduction pay slips found for national insurance number: " + nationalInsuranceNumber);

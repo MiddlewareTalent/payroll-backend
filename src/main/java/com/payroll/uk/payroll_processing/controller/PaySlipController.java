@@ -54,38 +54,27 @@ public class PaySlipController {
 
     @GetMapping("/all/payslips/{employeeId}")
     public ResponseEntity<List<PaySlipCreateDto>> getAllPayslipsByEmployeeId(@PathVariable String employeeId) {
-        try {
+
             List<PaySlipCreateDto> data = paySlipService.getAllEmployeeId(employeeId);
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            // Optionally log the error
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 
     @GetMapping("/reference/number/{paySlipReference}")
     public ResponseEntity<PaySlipCreateDto> getByReferenceNumber(@PathVariable ("paySlipReference") String paySlipReference){
-        System.out.println("paySlipCreateDto: "+paySlipReference);
-        try{
+
             PaySlipCreateDto data = paySlipService.getPaySlipByReferences(paySlipReference);
            logging.info("Data: {}",data);
             return  ResponseEntity.ok(data);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+
 
     }
     @GetMapping("/all/total/payslips")
     public ResponseEntity<List<PaySlipCreateDto>> getAllPaySlips() {
-        try {
+
             List<PaySlipCreateDto> data = paySlipService.getAllPaySlips();
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 
 
@@ -99,35 +88,25 @@ public class PaySlipController {
 
     @GetMapping("/fetch/allowance/data/{taxYear}")
     public ResponseEntity<Map<String,BigDecimal>> fetchAllowanceData(@PathVariable("taxYear") String taxYear) {
-        try {
+
             Map<String, BigDecimal> data = taxThresholdService.getAllowanceData(taxYear);
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 
     @GetMapping("/fetch/all/payslips/{periodEnd}")
     public ResponseEntity<List<PaySlipCreateDto>> getAllPaySlipsByPayPeriod(@PathVariable String periodEnd){
-        try{
             List<PaySlipCreateDto> data = paySlipService.getAllPaySlipsByPeriod(periodEnd);
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 
     @GetMapping("/fetch/payslip/{employeeId}/{periodEnd}")
     public ResponseEntity<PaySlipCreateDto> getPaySlipByEmployeeIdAndPeriodEnd(@PathVariable String employeeId, @PathVariable String periodEnd) {
-        try {
+
             PaySlipCreateDto data = paySlipService.getPaySlipByEmployeeIdAndPeriodEnd(employeeId, periodEnd);
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+
     }
 
     @GetMapping("/payslips")

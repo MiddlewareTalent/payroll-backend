@@ -164,6 +164,9 @@ public class PensionCalculation {
 
 
     private BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
+        if (incomeTax == null || payPeriod == null) {
+            throw new DataValidationException("Income tax and pay period cannot be null");
+        }
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 2, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
@@ -175,6 +178,9 @@ public class PensionCalculation {
 
 
     private BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
+        if (grossIncome == null || payPeriod == null) {
+            throw new DataValidationException("Gross income and pay period cannot be null");
+        }
         BigDecimal annualGross;
         switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> annualGross=grossIncome.multiply(BigDecimal.valueOf(52));

@@ -127,6 +127,9 @@ public class StudentLoanCalculation {
 
     }
     private BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
+        if (grossIncome == null || payPeriod == null) {
+            throw new DataValidationException("Gross income and pay period cannot be null");
+        }
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> grossIncome.multiply(BigDecimal.valueOf(52));
             case "MONTHLY" -> grossIncome.multiply(BigDecimal.valueOf(12));
@@ -138,6 +141,9 @@ public class StudentLoanCalculation {
     }
 
     private BigDecimal  calculateIncomeTaxBasedOnPayPeriod(BigDecimal incomeTax,String payPeriod){
+        if (incomeTax == null || payPeriod == null) {
+            throw new DataValidationException("Income tax and pay period cannot be null");
+        }
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> incomeTax.divide(BigDecimal.valueOf(52), 4, RoundingMode.HALF_UP);
             case "MONTHLY" -> incomeTax.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);

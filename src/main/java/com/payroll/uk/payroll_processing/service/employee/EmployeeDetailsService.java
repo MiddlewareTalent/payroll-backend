@@ -102,15 +102,18 @@ public class EmployeeDetailsService {
         }
 
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee with ID " + employeeId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + employeeId + " not found"));
         logging.info("successfully fetched employee details with ID: {}", employeeId);
+        if (employeeDetails==null){
+            throw  new ResourceNotFoundException("Employee details not found for ID: " + employeeId);
+        }
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(employeeDetails);
     }
     public List<EmployeeDetailsDTO> getAllEmployeeDetails() {
         List<EmployeeDetails> employeeDetailsList = employeeDetailsRepository.findAll();
         List<EmployeeDetailsDTO> employeeDetailsListedData = employeeDetailsList.stream().map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO).toList();
         if(employeeDetailsListedData.isEmpty()) {
-            throw new EmployeeNotFoundException("No employee details found ");
+            throw new ResourceNotFoundException("No employee details found ");
         }
         logging.info("successfully fetched all employee details");
         return employeeDetailsListedData;
@@ -121,21 +124,22 @@ public class EmployeeDetailsService {
             throw new DataValidationException("Email cannot be null or empty "+email);
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmail(email)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with email: " + email));
         logging.info("successfully fetched employee details with email: {}", email);
+        if (employeeDetails==null){
+            throw  new ResourceNotFoundException("Employee details not found for ID: " + email);
+        }
         return employeeDetailsDTOMapper.mapToEmployeeDetailsDTO(employeeDetails);
     }
     // Update employee details by ID
     public EmployeeDetailsDTO updateEmployeeDetailsById(Long id,EmployeeDetailsDTO employeeDetailsDTO){
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
-            throw new EmployeeNotFoundException("Employee ID or Id cannot be null or empty");
+            throw new ResourceNotFoundException("Employee ID or Id cannot be null or empty");
         }
-//        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
-//            throw new EmployeeNotFoundException("Employer with this ID does not exist");
-//        }
+        validateEmployeeDetails(employeeDetailsDTO);
 
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
         EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
         updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
@@ -157,13 +161,13 @@ public class EmployeeDetailsService {
     //Update employee details by employee ID
     public EmployeeDetailsDTO updateEmployeeDetailsByEmployeeId(EmployeeDetailsDTO employeeDetailsDTO) {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
-            throw new EmployeeNotFoundException("Employee ID cannot be null or empty");
+            throw new ResourceNotFoundException("Employee ID cannot be null or empty");
         }
 //        if (!employerDetailsRepository.existsByEmployerId(employeeDetailsDTO.getEmployerId())) {
 //            throw new IllegalArgumentException("Employer with this ID does not exist");
 //        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
         EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
 //        updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
@@ -186,7 +190,7 @@ public class EmployeeDetailsService {
 //            throw new IllegalArgumentException("Sort Code cannot be null or empty");
 //        }
         BankDetails bankDetails = bankDetailsRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Bank details not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Bank details not found with ID: " + id));
         bankDetails.setAccountNumber(bankDetailsDTO.getAccountNumber());
         bankDetails.setAccountName(bankDetailsDTO.getAccountName());
         bankDetails.setSortCode(bankDetailsDTO.getSortCode());
@@ -208,7 +212,7 @@ public class EmployeeDetailsService {
             throw new DataValidationException("Employee ID cannot be null or empty");
        }
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
         return null;
 
 
@@ -217,22 +221,22 @@ public class EmployeeDetailsService {
     // Delete employee details by ID
     public Boolean deleteEmployeeDetailsById(Long id){
         if (id == null) {
-            throw new EmployeeNotFoundException("Id of Employee cannot be null");
+            throw new ResourceNotFoundException("Id of Employee cannot be null");
         }
 
         EmployeeDetails employeeDetails = employeeDetailsRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + id));
-        employeeDetailsRepository.delete(employeeDetails);
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + id));
+         employeeDetailsRepository.delete(employeeDetails);
         logging.info("successfully deleted employee details with ID: {}", id);
         return true;
     }
     // Delete employee details by employee ID
     public Boolean deleteEmployeeDetailsByEmployeeId(String employeeId) {
         if (employeeId == null || employeeId.isEmpty()) {
-            throw new EmployeeNotFoundException("Employee ID cannot be null or empty");
+            throw new ResourceNotFoundException("Employee ID cannot be null or empty");
         }
         EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee Id not found with ID: " + employeeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee Id not found with ID: " + employeeId));
         employeeDetailsRepository.delete(employeeDetails);
         return true;
     }
@@ -241,7 +245,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllActiveEmployees() {
         List<EmployeeDetails> activeEmployees = employeeDetailsRepository.findActiveEmployees();
         if (activeEmployees.isEmpty()) {
-            throw new EmployeeNotFoundException("No active employees found");
+            throw new ResourceNotFoundException("No active employees found");
         }
         logging.info("successfully fetched all active employees");
         return activeEmployees.stream()
@@ -251,7 +255,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllInActiveEmployees() {
         List<EmployeeDetails> inactiveEmployees = employeeDetailsRepository.findInactiveEmployees();
         if (inactiveEmployees.isEmpty()) {
-            throw new EmployeeNotFoundException("No inactive employees found");
+            throw new ResourceNotFoundException("No inactive employees found");
         }
         logging.info("successfully fetched all inactive employees");
         return inactiveEmployees.stream()
@@ -261,7 +265,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllReadyForLeavingEmployees() {
         List<EmployeeDetails> readyForLeavingEmployees = employeeDetailsRepository.findReadyForLeavingEmployees();
         if (readyForLeavingEmployees.isEmpty()) {
-            throw new EmployeeNotFoundException("No employees ready for leaving found");
+            throw new ResourceNotFoundException("No employees ready for leaving found");
         }
         logging.info("successfully fetched all employees ready for leaving");
         return readyForLeavingEmployees.stream()

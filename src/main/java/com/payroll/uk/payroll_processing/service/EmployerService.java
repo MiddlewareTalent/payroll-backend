@@ -2,11 +2,9 @@ package com.payroll.uk.payroll_processing.service;
 
 import com.payroll.uk.payroll_processing.dto.employerdto.EmployerDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployerDetailsDTOMapper;
-import com.payroll.uk.payroll_processing.entity.PayPeriod;
-import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
-import com.payroll.uk.payroll_processing.exception.EmployeeNotFoundException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import org.slf4j.Logger;
@@ -30,21 +28,25 @@ public class EmployerService {
         this.employeeDetailsRepository = employeeDetailsRepository;
     }
     public String registerEmployer(EmployerDetailsDTO employerDetailsDto) {
-        // Check for existing email
-//        if (employerRegistrationRepository.existsByEmail(employerDetailsDto.getEmail())) {
-//            throw new EmployerRegistrationException("Email already registered");
-//        }
 
+        if (employerDetailsDto==null){
+            throw new ResourceNotFoundException("Employer details cannot be null");
+        }
         EmployerDetails employerData = employerDetailsDtoMapper.changeToEmployerDetails(employerDetailsDto);
+        if (employerData==null){
+            throw new DataValidationException("Employer data cannot be null");
+        }
         EmployerDetails savedEmployer = employerDetailsRepository.save(employerData);
-
         return "Employer registered successfully. ID: " + savedEmployer.getId();
     }
 
     public EmployerDetailsDTO getEmployerDetails(Long id) {
+        if (id==null) {
+            throw new DataValidationException("Employer ID cannot be null");
+        }
 
         if (employerDetailsRepository.findById(id).isPresent()) {
-            EmployerDetails employerDetails = employerDetailsRepository.findById(id).get();
+            EmployerDetails employerDetails = employerDetailsRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employer not found with ID: " + id));
             return employerDetailsDtoMapper.mapToEmployerDetailsDTO(employerDetails);
         } else {
             throw new DataValidationException("Employer not found with ID: " + id);
@@ -57,7 +59,7 @@ public class EmployerService {
         }
         logging.info("update Employer Data: {}", employerDetailsDto);
         EmployerDetails existingEmployerDetails = employerDetailsRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employer not found with ID: " + employerDetailsDto.getEmployerId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Employer not found with ID: " + employerDetailsDto.getEmployerId()));
 
         logging.info("Existing Employer Details: {}", existingEmployerDetails);
         EmployerDetails updatedEmployerDetails = employerDetailsDtoMapper.changeToEmployerDetails(employerDetailsDto);
@@ -78,8 +80,11 @@ public class EmployerService {
         return employerDetailsDtoMapper.mapToEmployerDetailsDTO(savedEmployerDetails);
     }
 
-    public List<EmployerDetailsDTO> getAllEmployeeDetails() {
+    public List<EmployerDetailsDTO> getAllEmployerDetails() {
         List<EmployerDetails> employerDetailsList = employerDetailsRepository.findAll();
+        if ( employerDetailsList.isEmpty()) {
+            throw new ResourceNotFoundException("No employer details found");
+        }
         List<EmployerDetailsDTO> employerDetailsListedData = employerDetailsList.stream().map(employerDetailsDtoMapper::mapToEmployerDetailsDTO).toList();
         if(employerDetailsListedData.isEmpty()) {
             throw new DataValidationException("No employee details found");
@@ -88,11 +93,14 @@ public class EmployerService {
     }
 
     public String deleteEmployer(Long id) {
+        if (id==null) {
+            throw new DataValidationException("Employer ID cannot be null");
+        }
         if (employerDetailsRepository.existsById(id)) {
             employerDetailsRepository.deleteById(id);
             return "Employer deleted successfully";
         } else {
-            throw new DataValidationException("Employer not found with ID: " + id);
+            throw new ResourceNotFoundException("Employer not found with ID: " + id);
         }
     }
 
