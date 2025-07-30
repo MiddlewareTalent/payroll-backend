@@ -12,6 +12,7 @@ import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
+import com.payroll.uk.payroll_processing.service.ValidateData;
 import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +33,17 @@ public class EmployeeDetailsService {
     private  final BankDetailsRepository bankDetailsRepository;
     private final EmployerDetailsRepository employerDetailsRepository;
     private final TaxThresholdService taxThresholdService;
+    private  final ValidateData validateData;
 
     public EmployeeDetailsService(EmployeeDetailsRepository employeeDetailsRepository,
                                   EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository, EmployerDetailsRepository employerDetailsRepository,
-                                  TaxThresholdService taxThresholdService) {
+                                  TaxThresholdService taxThresholdService,ValidateData validateData) {
         this.employeeDetailsRepository = employeeDetailsRepository;
         this.employeeDetailsDTOMapper = employeeDetailsDTOMapper;
         this.bankDetailsRepository = bankDetailsRepository;
         this.employerDetailsRepository = employerDetailsRepository;
         this.taxThresholdService = taxThresholdService;
+        this.validateData = validateData;
     }
     // Save employee details
     public EmployeeDetailsDTO saveEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO){
@@ -65,7 +68,7 @@ public class EmployeeDetailsService {
         if (employeeDetailsRepository.existsByNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber())){
             throw new DataValidationException("Employee with this National Insurance Number already exists");
         }
-        validateEmployeeDetails(employeeDetailsDTO);
+        validateData.validateEmployeeDetailsData(employeeDetailsDTO);
         String payrollReference = employerDetailsRepository.findByPayrollGivingRef();
 //        if (payrollReference == null || payrollReference.isEmpty()) {
 //            throw new IllegalArgumentException("Payroll Giving Reference not found for the employer");
@@ -136,20 +139,13 @@ public class EmployeeDetailsService {
         if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().isEmpty()) {
             throw new ResourceNotFoundException("Employee ID or Id cannot be null or empty");
         }
-        validateEmployeeDetails(employeeDetailsDTO);
+        validateData.validateEmployeeDetailsData(employeeDetailsDTO);
 
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
         EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
         updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
-
-//        String isKCode=employeeDetailsDTO.getTaxCode();
-//        String existingKCode=existingEmployeeDetails.getTaxCode();
-//        BigDecimal getRemainingKCodeAmount=existingEmployeeDetails.getOtherEmployeeDetails().getRemainingKCodeAmount();
-//        if(isKCode.equals(existingKCode)){
-//            updatedEmployeeDetails.getOtherEmployeeDetails().setRemainingKCodeAmount(getRemainingKCodeAmount);
-//        }
 
         updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
         updatedEmployeeDetails.setPayrollId(existingEmployeeDetails.getPayrollId());
@@ -320,104 +316,7 @@ public class EmployeeDetailsService {
         };
     }
 
-    private void validateEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
 
-        // Name validations
-        if (employeeDetailsDTO.getFirstName() == null || employeeDetailsDTO.getFirstName().trim().isEmpty()) {
-            throw new DataValidationException("First name is required");
-        }
-        if (employeeDetailsDTO.getLastName() == null || employeeDetailsDTO.getLastName().trim().isEmpty()) {
-            throw new DataValidationException("Last name is required");
-        }
-
-        // Email validation
-        if (employeeDetailsDTO.getEmail() == null || employeeDetailsDTO.getEmail().trim().isEmpty()) {
-            throw new DataValidationException("Email is required");
-        }
-        if (!employeeDetailsDTO.getEmail().matches("^[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-            throw new DataValidationException("Email must be valid");
-        }
-
-        // Date validations
-        if (employeeDetailsDTO.getDateOfBirth() == null) {
-            throw new DataValidationException("Date of birth is required");
-        }
-        if (employeeDetailsDTO.getDateOfBirth().isAfter(LocalDate.now())) {
-            throw new DataValidationException("Date of birth cannot be in the future");
-        }
-
-        // Employment dates validation
-        if (employeeDetailsDTO.getEmploymentStartedDate() == null) {
-            throw new DataValidationException("Employment start date is required");
-        }
-        if (employeeDetailsDTO.getEmploymentEndDate() != null &&
-                employeeDetailsDTO.getEmploymentEndDate().isBefore(employeeDetailsDTO.getEmploymentStartedDate())) {
-            throw new DataValidationException("Employment end date cannot be before start date");
-        }
-
-        // Employee ID validation
-        if (employeeDetailsDTO.getEmployeeId() == null || employeeDetailsDTO.getEmployeeId().trim().isEmpty()) {
-            throw new DataValidationException("Employee ID is required");
-        }
-
-        // National Insurance validation
-        if (employeeDetailsDTO.getNationalInsuranceNumber() != null &&
-                !employeeDetailsDTO.getNationalInsuranceNumber().matches("^[A-Z]{2}[0-9]{6}[A-Z]$")) {
-            throw new DataValidationException("National Insurance number must be in format AB123456C");
-        }
-
-        if (employeeDetailsDTO.getNiLetter() == null) {
-            throw new DataValidationException("NI Category Letter is required");
-        }
-
-        // Financial validations
-        if (employeeDetailsDTO.getAnnualIncomeOfEmployee() == null) {
-            throw new DataValidationException("Gross income is required");
-        }
-        if (employeeDetailsDTO.getAnnualIncomeOfEmployee().compareTo(BigDecimal.ZERO) < 0) {
-            throw new DataValidationException("Gross income cannot be negative");
-        }
-
-        // Address validations
-        if (employeeDetailsDTO.getAddress() == null || employeeDetailsDTO.getAddress().trim().isEmpty()) {
-            throw new DataValidationException("Address is required");
-        }
-        if (employeeDetailsDTO.getPostCode() == null || employeeDetailsDTO.getPostCode().trim().isEmpty()) {
-            throw new DataValidationException("Post code is required");
-        }
-
-        // Enum validations
-        if (employeeDetailsDTO.getEmploymentType() == null) {
-            throw new DataValidationException("Employment type is required");
-        }
-        if (employeeDetailsDTO.getGender() == null) {
-            throw new DataValidationException("Gender is required");
-        }
-        if (employeeDetailsDTO.getEmployeeDepartment() == null) {
-            throw new DataValidationException("Department is required");
-        }
-        if (employeeDetailsDTO.getPayPeriod() == null) {
-            throw new DataValidationException("Pay period is required");
-        }
-
-        // Bank details validation
-        if (employeeDetailsDTO.getBankDetailsDTO() == null) {
-            throw new DataValidationException("Bank details are required");
-        }
-
-        if (employeeDetailsDTO.getBankDetailsDTO().getAccountNumber() == null || employeeDetailsDTO.getBankDetailsDTO().getAccountNumber().trim().isEmpty()) {
-            throw new DataValidationException("Account number is required");
-        }
-        if (employeeDetailsDTO.getBankDetailsDTO().getAccountName() == null || employeeDetailsDTO.getBankDetailsDTO().getAccountName().trim().isEmpty()) {
-            throw new DataValidationException("Account name is required");
-        }
-        if (employeeDetailsDTO.getBankDetailsDTO().getSortCode() == null || employeeDetailsDTO.getBankDetailsDTO().getSortCode().trim().isEmpty()) {
-            throw new DataValidationException("Sort code is required");
-        }
-        if (employeeDetailsDTO.getBankDetailsDTO().getBankName() == null || employeeDetailsDTO.getBankDetailsDTO().getBankName().trim().isEmpty()) {
-            throw new DataValidationException("Bank name is required");
-        }
-    }
 
 
 

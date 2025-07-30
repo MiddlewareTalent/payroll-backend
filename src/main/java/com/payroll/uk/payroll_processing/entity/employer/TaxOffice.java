@@ -31,17 +31,22 @@ public class TaxOffice {
     private LocalDate datePAYESchemeCeased;
 
     // ============== HMRC REFERENCES ==============
-//    @NotBlank
-//    @Pattern(regexp = "^\\d{3}/\\d{3,5}$",
-//            message = "PAYE reference must be in format 123/456 or 123/45678")
-    @Schema(description = "HMRC PAYE reference", example = "123/45678", defaultValue = "null")
+//    @NotBlank(message = "Enter the employer PAYE reference")
+//    @Pattern(
+//            regexp = "^\\d{3}/[A-Za-z0-9]{1,10}$",
+//            message = "Enter the employer PAYE reference in the correct format, like 123/AB456"
+//    )
+    @Schema(description = "HMRC Employer PAYE Reference (3 digits, slash, 1–10 alphanumeric characters)",
+            example = "123/AB456")
     @Column(name = "payereference")
     private String payeReference;
 
+
 //    @NotBlank
-//    @Pattern(regexp = "^\\d{3}[A-Za-z]\\d{3}$",
-//            message = "Accounts office reference must be in format 123A456")
-    @Schema(description = "Accounts office reference", example = "123A456", defaultValue = "null")
+//    @Pattern(
+//            regexp = "^\\d{3}P[A-Z]{1}(\\d{8}|\\d{7}X)$",
+//            message = "Enter your Accounts Office reference in the correct format, like 123PX00123456 or 123PX0012345X"
+//    )
     @Column(name = "accounts_office_reference")
     private String accountsOfficeReference;
 

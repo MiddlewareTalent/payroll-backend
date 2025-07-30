@@ -47,7 +47,7 @@ public class EmployerDetails {
     private String employerPostCode;
 
 
-    @NotBlank(message = "Telephone number cannot be blank")
+//    @NotBlank(message = "Telephone number cannot be blank")
 //    @Pattern(regexp = "^(\\+44|0)[1-9]\\d{8,9}$",
 //            message = "Invalid UK telephone number format")
     @Column(name = "employerTelephone")

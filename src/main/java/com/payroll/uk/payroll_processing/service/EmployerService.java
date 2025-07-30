@@ -19,19 +19,26 @@ public class EmployerService {
     private final EmployerDetailsRepository employerDetailsRepository;
     private final EmployerDetailsDTOMapper employerDetailsDtoMapper;
     private final EmployeeDetailsRepository employeeDetailsRepository;
+    private final ValidateData validateData;
 
     public EmployerService(EmployerDetailsRepository employerDetailsRepository,
                            EmployerDetailsDTOMapper employerDetailsDtoMapper,
-                           EmployeeDetailsRepository employeeDetailsRepository) {
+                           EmployeeDetailsRepository employeeDetailsRepository,ValidateData validateData) {
         this.employerDetailsRepository = employerDetailsRepository;
         this.employerDetailsDtoMapper = employerDetailsDtoMapper;
         this.employeeDetailsRepository = employeeDetailsRepository;
+        this.validateData = validateData;
     }
     public String registerEmployer(EmployerDetailsDTO employerDetailsDto) {
 
         if (employerDetailsDto==null){
             throw new ResourceNotFoundException("Employer details cannot be null");
         }
+        else{
+            validateData.validateEmployerDetails(employerDetailsDto);
+        }
+        validateAlreadyRegisteredEmployer(employerDetailsDto);
+
         EmployerDetails employerData = employerDetailsDtoMapper.changeToEmployerDetails(employerDetailsDto);
         if (employerData==null){
             throw new DataValidationException("Employer data cannot be null");
@@ -55,7 +62,7 @@ public class EmployerService {
 
     public EmployerDetailsDTO updateEmployerDetailsById(Long id, EmployerDetailsDTO employerDetailsDto){
         if (employerDetailsDto.getEmployerId() == null || employerDetailsDto.getEmployerId().isEmpty()) {
-            throw new DataValidationException("Employee ID or Id cannot be null or empty");
+            throw new DataValidationException("Employee ID or Id is required for update");
         }
         logging.info("update Employer Data: {}", employerDetailsDto);
         EmployerDetails existingEmployerDetails = employerDetailsRepository.findById(id)
@@ -111,4 +118,18 @@ public class EmployerService {
                !existingEmployerDetails.getCompanyDetails().getRegion().equals(updatedEmployerDetails.getCompanyDetails().getRegion());
 
     }
+
+    public void validateAlreadyRegisteredEmployer(EmployerDetailsDTO employerDetailsDTO) {
+        if(employerDetailsRepository.existsByEmployerEmail(employerDetailsDTO.getEmployerEmail())){
+            throw new DataValidationException("Employer with this email already exists");
+        }
+
+        if (employerDetailsRepository.existsByEmployerId(employerDetailsDTO.getEmployerId())) {
+            throw new DataValidationException("Employer with this ID already exists");
+        }
+    }
+
+
+
+
 }
