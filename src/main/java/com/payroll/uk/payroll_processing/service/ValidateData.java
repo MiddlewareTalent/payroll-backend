@@ -71,10 +71,10 @@ public class ValidateData {
     }
 
     public void validateTermsDetails(EmployerDetailsDTO employerDetailsDto) {
-        if (employerDetailsDto.getTermsDTO().getFemaleRetirementAge()>=0){
+        if (employerDetailsDto.getTermsDTO().getFemaleRetirementAge()<=0){
             throw new DataValidationException("female retirement age is required ");
         }
-        if (employerDetailsDto.getTermsDTO().getMaleRetirementAge()>=0) {
+        if (employerDetailsDto.getTermsDTO().getMaleRetirementAge()<=0) {
             throw new DataValidationException("Male retirement age is required ");
         }
     }
@@ -227,11 +227,11 @@ public class ValidateData {
         if (employeeDetailsDTO.isHasP45DocumentSubmitted()){
             validatePreviousEmploymentData(employeeDetailsDTO);
         }
-        else {
-            if (employeeDetailsDTO.getPreviousEmploymentDataDTO() != null) {
-                throw new DataValidationException("Previous employment data should not be provided if P45 document is not submitted");
-            }
-        }
+//        else {
+//            if (employeeDetailsDTO.getPreviousEmploymentDataDTO() != null) {
+//                throw new DataValidationException("Previous employment data should not be provided if P45 document is not submitted");
+//            }
+//        }
 
 
     }

@@ -64,6 +64,7 @@ public class EmployerService {
         if (employerDetailsDto.getEmployerId() == null || employerDetailsDto.getEmployerId().isEmpty()) {
             throw new DataValidationException("Employee ID or Id is required for update");
         }
+        validateData.validateEmployerDetails(employerDetailsDto);
         logging.info("update Employer Data: {}", employerDetailsDto);
         EmployerDetails existingEmployerDetails = employerDetailsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employer not found with ID: " + employerDetailsDto.getEmployerId()));
