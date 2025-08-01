@@ -87,24 +87,7 @@ public class PaySlipGeneration {
 
          validateData.validateEmployeeDetails(employeeDetails);
          validateData.validateEmployerDetails(employerDetails);
-         String currentTaxCode = employeeDetails.getTaxCode();
-         boolean isNonCumulative = isNonCumulativeTaxCode(currentTaxCode);
-         boolean hasEmergencyFlag = employeeDetails.isHasEmergencyCode();
-
-         if (isNonCumulative && !hasEmergencyFlag) {
-             throw new DataValidationException(
-                     String.format("Non-cumulative tax code '%s' requires the emergency flag to be set", currentTaxCode)
-             );
-
-
-         }
-
-         else if (!isNonCumulative && hasEmergencyFlag) {
-             throw new DataValidationException(
-                     String.format("Non-cumulative tax code '%s' requires the emergency flag to be set", currentTaxCode)
-             );
-
-         }
+         validateTaxCodeAndEmergencyFlag(employeeDetails);
 
          PaySlip paySlipCreate = new PaySlip();
         try{
@@ -183,7 +166,7 @@ public class PaySlipGeneration {
         try {
 
             if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
-                System.out.println("K code tax code in taxable income: "+paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
+                logger.info("K code tax code in taxable income: {}",paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
                 paySlipCreate.setTaxableIncome(
                         taxCodeService.calculateTaxableIncome(
                                 paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance()
@@ -412,6 +395,25 @@ public class PaySlipGeneration {
         String upper = taxCode.trim().toUpperCase();
         return upper.endsWith("W1") || upper.endsWith("M1") || upper.endsWith("X");
     }
+
+    public void validateTaxCodeAndEmergencyFlag(EmployeeDetails employeeDetails) {
+        String currentTaxCode = employeeDetails.getTaxCode();
+        boolean isNonCumulative = isNonCumulativeTaxCode(currentTaxCode);
+        boolean hasEmergencyFlag = employeeDetails.isHasEmergencyCode();
+
+        if (isNonCumulative && !hasEmergencyFlag) {
+            throw new DataValidationException(
+                    String.format("Non-cumulative tax code '%s' requires the emergency flag to be set", currentTaxCode)
+            );
+        }
+
+        if (!isNonCumulative && hasEmergencyFlag) {
+            throw new DataValidationException(
+                    String.format("Emergency flag must not be set for cumulative tax code '%s'", currentTaxCode)
+            );
+        }
+    }
+
 
 
 
