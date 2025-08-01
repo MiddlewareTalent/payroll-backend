@@ -121,7 +121,7 @@ public class IncomeTaxCalculation {
         if (grossIncome.compareTo(BigDecimal.ZERO) < 0) {
             throw new DataValidationException("Income cannot be negative");
         }
-        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance(grossIncome, normalizedTaxCode,payPeriod);
+        BigDecimal personalAllowance = personalAllowanceCalculation.calculatePersonalAllowance( normalizedTaxCode,payPeriod);
 
         if (normalizedTaxCode.startsWith("SK") || normalizedTaxCode.startsWith("CK")) {
             // Remove the first character ('S' or 'C') from the code

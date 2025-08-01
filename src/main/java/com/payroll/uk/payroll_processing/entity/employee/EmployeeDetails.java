@@ -176,6 +176,13 @@ public class EmployeeDetails {
         }
     }
 
+    public boolean isNonCumulativeTaxCode(String taxCode) {
+        if (taxCode == null) return false;
+        String upper = taxCode.trim().toUpperCase();
+        return upper.endsWith("W1") || upper.endsWith("M1") || upper.endsWith("X");
+    }
+
+
     private boolean checkIfEmergencyTaxCode(String code) {
         if (code == null) return false;
 

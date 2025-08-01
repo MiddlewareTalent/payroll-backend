@@ -19,14 +19,10 @@ public class PersonalAllowanceCalculation {
     private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 
 
-    public BigDecimal calculatePersonalAllowance(BigDecimal grossIncome,String taxCode,String payPeriod) {
+    public BigDecimal calculatePersonalAllowance(String taxCode,String payPeriod) {
         if (taxCode == null || taxCode.isEmpty()) {
             throw new DataValidationException("Tax code cannot be null or empty");
         }
-
-//        if (grossIncome.compareTo(new BigDecimal("100000")) > 0) {
-//            return BigDecimal.ZERO;
-//        }
 
 
         taxCode = taxCode.toUpperCase();
@@ -50,17 +46,6 @@ public class PersonalAllowanceCalculation {
         if (taxCode.equals("N") || taxCode.equals("CN")) {
             return MARRIAGE_ALLOWANCE_TRANSFER.negate();
         }
-        if (grossIncome.compareTo(new BigDecimal("125140")) >= 0) {
-            return BigDecimal.ZERO;
-        }
-        if(taxCode.equals("1257L")||taxCode.equals("1257L M1")||
-                taxCode.equals("C1257L") ||taxCode.equals("S1257L")||
-                taxCode.equals("1257L W1")||taxCode.equals("1257L X")) {
-            return STANDARD_ALLOWANCE;
-        }
-//        if(isEmergencyCode(taxCode)){
-//           return  getPersonalAllowanceFromEmergencyTaxCode(taxCode,payPeriod);
-//        }
 
 
 
@@ -159,8 +144,8 @@ public class PersonalAllowanceCalculation {
     }
 
 
-    public BigDecimal calculatePersonalAllowanceByPayPeriod(BigDecimal grossIncome,String taxCode,String payPeriod){
-        BigDecimal baseAllowance = calculatePersonalAllowance(grossIncome, taxCode,payPeriod);
+    public BigDecimal calculatePersonalAllowanceByPayPeriod(String taxCode,String payPeriod){
+        BigDecimal baseAllowance = calculatePersonalAllowance( taxCode,payPeriod);
         return switch (payPeriod.toUpperCase()) {
             case "WEEKLY" -> baseAllowance.divide(BigDecimal.valueOf(52), 2, ROUNDING_MODE);
             case "MONTHLY" -> baseAllowance.divide(BigDecimal.valueOf(12), 2, ROUNDING_MODE);
