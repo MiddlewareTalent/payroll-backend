@@ -87,7 +87,9 @@ public class PaySlipGeneration {
 
          validateData.validateEmployeeDetails(employeeDetails);
          validateData.validateEmployerDetails(employerDetails);
-        PaySlip paySlipCreate = new PaySlip();
+         validateTaxCodeAndEmergencyFlag(employeeDetails);
+
+         PaySlip paySlipCreate = new PaySlip();
         try{
             paySlipCreate.setFirstName(employeeDetails.getFirstName());
             paySlipCreate.setLastName(employeeDetails.getLastName());
@@ -117,14 +119,16 @@ public class PaySlipGeneration {
             BigDecimal personalAllowance=BigDecimal.ZERO;
             if(!employeeDetails.isHasEmergencyCode()){
                 BigDecimal personal = personalAllowanceCalculation.calculatePersonalAllowance(
-                        paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod()
+                         paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod()
                 );
                 personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreate.getPayPeriod());
 
             }
 
-            else if (employeeDetails.isHasEmergencyCode()){
-                personalAllowance=personalAllowanceCalculation.getPersonalAllowanceFromEmergencyTaxCode(paySlipCreate.getTaxCode(),paySlipCreate.getPayPeriod());
+            else {
+                String taxCode = getBaseTaxCode(paySlipCreate.getTaxCode());
+                BigDecimal personal=personalAllowanceCalculation.calculatePersonalAllowance(taxCode,paySlipCreate.getPayPeriod());
+                personalAllowance=calculateIncomeTaxBasedOnPayPeriod(personal, paySlipCreate.getPayPeriod());
 
             }
 
@@ -162,7 +166,7 @@ public class PaySlipGeneration {
         try {
 
             if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
-                System.out.println("K code tax code in taxable income: "+paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
+                logger.info("K code tax code in taxable income: {}",paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
                 paySlipCreate.setTaxableIncome(
                         taxCodeService.calculateTaxableIncome(
                                 paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance()
@@ -184,17 +188,30 @@ public class PaySlipGeneration {
         try {
             BigDecimal incomeTax;
             if (updatingDetails.isKTaxCode(paySlipCreate.getTaxCode())) {
-                System.out.println("K code tax code in income tax: "+paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
+                logger.info("K code tax code in income tax: {} ",paySlipCreate.getGrossPayTotal().add(currentKCodeAmount));
                  incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
                         paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
                         paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
                 );
             }
             else {
-                 incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
-                        paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
-                        paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
-                );
+
+                if (employeeDetails.isHasEmergencyCode()){
+
+                String taxCode=getBaseTaxCode(paySlipCreate.getTaxCode());
+                    logger.info("Emergency tax code in income tax: {} ",taxCode);
+                    incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
+                            paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
+                            paySlipCreate.getRegion(), taxCode, paySlipCreate.getPayPeriod()
+                    );
+                }
+                else {
+                    logger.info("Normal tax code in income tax: {} ",paySlipCreate.getTaxCode());
+                    incomeTax = taxCodeService.calculateIncomeBasedOnTaxCode(
+                            paySlipCreate.getGrossPayTotal(), paySlipCreate.getPersonalAllowance(), paySlipCreate.getTaxableIncome(), paySlipCreate.getTaxYear(),
+                            paySlipCreate.getRegion(), paySlipCreate.getTaxCode(), paySlipCreate.getPayPeriod()
+                    );
+                }
             }
 
 
@@ -360,6 +377,44 @@ public class PaySlipGeneration {
 
         return yearMonth.format(formatter);
     }
+
+    public String getBaseTaxCode(String taxCode) {
+        if (taxCode == null) return null;
+        String code = taxCode.trim().toUpperCase();
+
+        // Remove suffixes W1, M1, or X if present
+        if (code.endsWith("W1") || code.endsWith("M1")) {
+            return code.substring(0, code.length() - 2).trim();
+        } else if (code.endsWith("X")) {
+            return code.substring(0, code.length() - 1).trim();
+        }
+        return code;
+    }
+    public boolean isNonCumulativeTaxCode(String taxCode) {
+        if (taxCode == null) return false;
+        String upper = taxCode.trim().toUpperCase();
+        return upper.endsWith("W1") || upper.endsWith("M1") || upper.endsWith("X");
+    }
+
+    public void validateTaxCodeAndEmergencyFlag(EmployeeDetails employeeDetails) {
+        String currentTaxCode = employeeDetails.getTaxCode();
+        boolean isNonCumulative = isNonCumulativeTaxCode(currentTaxCode);
+        boolean hasEmergencyFlag = employeeDetails.isHasEmergencyCode();
+
+        if (isNonCumulative && !hasEmergencyFlag) {
+            throw new DataValidationException(
+                    String.format("Non-cumulative tax code '%s' requires the emergency flag to be set", currentTaxCode)
+            );
+        }
+
+        if (!isNonCumulative && hasEmergencyFlag) {
+            throw new DataValidationException(
+                    String.format("Emergency flag must not be set for cumulative tax code '%s'", currentTaxCode)
+            );
+        }
+    }
+
+
 
 
 
