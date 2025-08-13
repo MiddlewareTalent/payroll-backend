@@ -4,6 +4,8 @@ import com.payroll.uk.payroll_processing.dto.PaySlipCreateDto;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class PaySlipCreateDTOMapper {
     public PaySlipCreateDto mapToDto(PaySlip paySlip) {
@@ -40,6 +42,9 @@ public class PaySlipCreateDTOMapper {
         dto.setHasPensionEligible(paySlip.isHasPensionEligible());
         dto.setEmployeePensionContribution(paySlip.getEmployeePensionContribution());
         dto.setEmployerPensionContribution(paySlip.getEmployerPensionContribution());
+        dto.setEarningsAtLEL(paySlip.getEarningsAtLEL()== null ? BigDecimal.ZERO : paySlip.getEarningsAtLEL());
+        dto.setEarningsLelToPt(paySlip.getEarningsLelToPt()== null ? BigDecimal.ZERO : paySlip.getEarningsLelToPt());
+        dto.setEarningsPtToUel(paySlip.getEarningsPtToUel()== null ? BigDecimal.ZERO : paySlip.getEarningsPtToUel());
         return dto;
     }
     /*public PaySlip changeToPaySlip(PaySlipCreateDto paySlipCreateDto) {

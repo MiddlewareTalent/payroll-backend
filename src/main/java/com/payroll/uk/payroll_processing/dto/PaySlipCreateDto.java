@@ -59,6 +59,9 @@ public class PaySlipCreateDto {
     private boolean hasPensionEligible= false;
     private BigDecimal employeePensionContribution;
     private  BigDecimal employerPensionContribution;
+    private BigDecimal earningsAtLEL;
+    private BigDecimal earningsLelToPt;
+    private BigDecimal earningsPtToUel;
 
     /*public LocalDate getPreviousMonthEndDate() {
         // Get current system date as Pay Date

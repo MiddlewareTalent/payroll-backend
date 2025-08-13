@@ -14,15 +14,21 @@ import java.util.Optional;
 @NoArgsConstructor
 @Embeddable
 public class OtherEmployeeDetails {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
 
+    @PositiveOrZero(message = "total taxable pay in this employment must be zero or positive")
+    @Column(name = "total_taxable_pay_in_this_employment")
+    private BigDecimal totalTaxablePayInThisEmployment=BigDecimal.ZERO;
 
-    // Personal Allowance related fields
-//    @PositiveOrZero(message = "previously used personal allowance must be zero or positive")
-//    private BigDecimal previouslyUsedPersonalAllowance= BigDecimal.ZERO;
-//    private BigDecimal totalPersonalAllowanceInCompany=new BigDecimal("12570.00"); // Default value for 2025/26 tax year
+    @PositiveOrZero(message = "earnings at LEL YTD must be zero or positive")
+    @Column(name = "earnings_at_lel_ytd")
+    private BigDecimal earningsAtLELYtd;    // AtLELYTD
+    @PositiveOrZero(message = "earnings at LEL to PT YTD must be zero or positive")
+    @Column(name = "earnings_lel_to_pt_ytd")
+    private BigDecimal earningsLelToPtYtd;  // LELtoPTYTD
+    @PositiveOrZero(message = "earnings at PT to UEL YTD must be zero or positive")
+    @Column(name = "earnings_pt_to_uel_ytd")
+    private BigDecimal earningsPtToUelYtd;  // PTtoUELYTD
+
 
 
     //Personal Allowance related fields
@@ -68,17 +74,6 @@ public class OtherEmployeeDetails {
     @Column(name = "total_income_tax_paid_in_company")
     private BigDecimal totalIncomeTaxPaidInThisEmployment = BigDecimal.ZERO;
 
-   /* @PositiveOrZero(message = "number of months of income tax paid must be zero or positive")
-    @Column(name = "number_of_months_of_income_tax_paid")
-    private BigDecimal numberOfMonthsOfIncomeTaxPaid = BigDecimal.ZERO;
-
-    @PositiveOrZero(message = "number of years of income tax paid must be zero or positive")
-    @Column(name = "number_of_years_of_income_tax_paid")
-    private BigDecimal numberOfYearsOfIncomeTaxPaid = BigDecimal.ZERO;
-
-    @PositiveOrZero(message = "number of weeks of income tax paid must be zero or positive")
-    @Column(name = "number_of_weeks_of_income_tax_paid")
-    private BigDecimal numberOfWeeksOfIncomeTaxPaid = BigDecimal.ZERO;*/
     @PositiveOrZero(message = "number of pay periods income tax paid must be zero or positive")
     @Column(name = "number_of_pay_periods_income_tax_paid")
     private BigDecimal numberOfPayPeriodsIncomeTaxPaid = BigDecimal.ZERO;
@@ -92,18 +87,6 @@ public class OtherEmployeeDetails {
     @Column(name = "employee_ni_contribution")
     private BigDecimal employeeNIContribution = BigDecimal.ZERO;
 
-    // Number of months, weeks, and years of NI contributions
-   /* @PositiveOrZero(message = "number of months of NI contributions must be zero or positive")
-    @Column(name = "number_of_months_of_ni_contributions")
-    private BigDecimal numberOfMonthsOfNIContributions = BigDecimal.ZERO;
-
-    @PositiveOrZero(message = "number of Weeks of NI contributions must be zero or positive")
-    @Column(name = "number_of_weeks_of_ni_contributions")
-    private BigDecimal numberOfWeeksOfNIContributions = BigDecimal.ZERO;
-
-    @PositiveOrZero(message = "number of Years of NI contributions must be zero or positive")
-    @Column(name = "number_of_years_of_ni_contributions")
-    private BigDecimal numberOfYearsOfNIContributions = BigDecimal.ZERO;*/
 
     @Column(name = "number_of_pay_periods_ni_contributions")
     @PositiveOrZero(message = "Number of pay periods NI contributions must be zero or positive")
@@ -130,7 +113,6 @@ public class OtherEmployeeDetails {
 
 
     // Only called when the entity is first persisted
-    @PrePersist
     public void setDefaultsIfNull() {
         if (numberOfPayPeriodsEmergencyTaxCodeUsed == null) numberOfPayPeriodsEmergencyTaxCodeUsed = BigDecimal.ZERO;
         if (totalAllowanceUsedDuringEmergencyCode == null) totalAllowanceUsedDuringEmergencyCode = BigDecimal.ZERO;
@@ -160,6 +142,10 @@ public class OtherEmployeeDetails {
         if (remainingKCodeAmount == null) remainingKCodeAmount = BigDecimal.ZERO;
         if (totalEarningsAmountInThisEmployment ==null) totalEarningsAmountInThisEmployment = BigDecimal.ZERO;
         if (totalTaxPayToDate==null) totalTaxPayToDate = BigDecimal.ZERO;
+        if (totalTaxablePayInThisEmployment == null) totalTaxablePayInThisEmployment = BigDecimal.ZERO;
+        if (earningsAtLELYtd == null) earningsAtLELYtd = BigDecimal.ZERO;
+        if (earningsLelToPtYtd == null) earningsLelToPtYtd = BigDecimal.ZERO;
+        if (earningsPtToUelYtd == null) earningsPtToUelYtd = BigDecimal.ZERO;
     }
 
 
