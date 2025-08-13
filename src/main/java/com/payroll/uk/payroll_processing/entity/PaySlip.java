@@ -98,6 +98,19 @@ public class PaySlip {
     @PositiveOrZero(message = "Employer pension contribution must be zero or positive")
     private  BigDecimal employerPensionContribution;
 
+    @Column(name = "earnings_at_lel")
+    @PositiveOrZero(message = "Earnings at LEL must be zero or positive")
+    private BigDecimal earningsAtLEL;
+    @Column(name = "earnings_lel_to_pt")
+    @PositiveOrZero(message = "Earnings LEL to PT must be zero or positive")
+    private BigDecimal earningsLelToPt;
+    @Column(name = "earnings_pt_to_uel")
+    @PositiveOrZero(message = "Earnings PT to UEL must be zero or positive")
+    private BigDecimal earningsPtToUel;
+
+
+
+
     public String getPreviousMonthEndDate() {
         // Get current system date as Pay Date
         LocalDate payDate = LocalDate.now();

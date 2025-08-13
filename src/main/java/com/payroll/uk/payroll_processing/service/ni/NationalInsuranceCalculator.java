@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -21,20 +23,32 @@ public class NationalInsuranceCalculator {
     public NationalInsuranceCalculator(TaxThresholdService taxThresholdService) {
         this.taxThresholdService = taxThresholdService;
     }
-    public BigDecimal calculateEmployeeNIContribution(BigDecimal income, String taxYear,  String payPeriod, NICategoryLetters niCategoryLetter){
+
+
+    public HashMap<String,BigDecimal> calculateEmployeeNIContribution(BigDecimal income, String taxYear,  String payPeriod, NICategoryLetters niCategoryLetter){
 //        System.out.println("Calculating Employee NI Contribution for income: " + income + ", taxYear: " + taxYear + ", payPeriod: " + payPeriod + ", NI Category Letter: " + niCategoryLetter);
         if (income == null || payPeriod == null || niCategoryLetter == null) {
             throw new DataValidationException("Income, pay period, and NI category letter cannot be null");
         }
+        HashMap<String,BigDecimal> niContributionMap = new LinkedHashMap<>();
+         BigDecimal earningsAtLEL= BigDecimal.ZERO; // Earnings at LEL YTD
+         BigDecimal earningsLelToPt= BigDecimal.ZERO; // Earnings at LEL to PT YTD
+         BigDecimal earningsPtToUel= BigDecimal.ZERO; // Earnings at PT to UEL YTD
 
         BigDecimal niContribution = BigDecimal.ZERO;
+        // Category X = no NI due
         if(NICategoryLetters.X ==niCategoryLetter){
-            return niContribution;
+            niContributionMap.put("earningsAtLEL", BigDecimal.ZERO);
+            niContributionMap.put("earningsLelToPt", BigDecimal.ZERO);
+            niContributionMap.put("earningsPtToUel", BigDecimal.ZERO);
+            niContributionMap.put("niContribution", BigDecimal.ZERO);
+            return niContributionMap;
         }
+        // Get thresholds & rates
        BigDecimal[][] niSlabs=taxThresholdService.getEmployeeNIThreshold(taxYear, TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYEE_NI,niCategoryLetter);
        BigDecimal[] niRates=taxThresholdService.getEmployeeNIRates(taxYear,TaxThreshold.TaxRegion.ALL_REGIONS, TaxThreshold.BandNameType.EMPLOYEE_NI,niCategoryLetter);
 
-        BigDecimal belowLowerEarningsLimit=niSlabs[0][1];//6500
+        BigDecimal lowerEarningsLimit =niSlabs[0][1];//6500
         BigDecimal primaryThreshold=niSlabs[1][1];//12570
         BigDecimal upperEarningsLimit=niSlabs[2][1];  //50270
         BigDecimal aboveUpperEarningsLimit=niSlabs[3][0];  //above 50270
@@ -54,34 +68,52 @@ public class NationalInsuranceCalculator {
 //        System.out.println("Threshold Rate 3: " + ABOVE_UEL_Rate);
 
         BigDecimal grossIncome = calculateGrossSalary(income, payPeriod);
+        // Above UEL band
         if (grossIncome.compareTo(upperEarningsLimit) > 0) {
-            BigDecimal aboveThreshold2 = grossIncome.subtract(upperEarningsLimit);
-            niContribution = niContribution.add(aboveThreshold2.multiply(ABOVE_UEL_Rate));
+            BigDecimal bandAboveUel  = grossIncome.subtract(upperEarningsLimit);
+            niContribution = niContribution.add(bandAboveUel .multiply(ABOVE_UEL_Rate));
 
-            logger.info("NI Contribution after Threshold 2: {}",  niContribution);
+            logger.info("NI Contribution Above UEL band: {}",  niContribution);
             grossIncome = upperEarningsLimit;
         }
+        // PT to UEL band
         if (grossIncome.compareTo(primaryThreshold) > 0) {
-            BigDecimal aboveThreshold1 = grossIncome.subtract(primaryThreshold);
-            niContribution = niContribution.add(aboveThreshold1.multiply(UEL_Rate));
+            BigDecimal bandPtToUel  = grossIncome.subtract(primaryThreshold);
+            earningsPtToUel = bandPtToUel; // store for YTD output
+            niContribution = niContribution.add(bandPtToUel .multiply(UEL_Rate));
 
-            logger.info("NI Contribution after Threshold 1: {}" , niContribution);
+            logger.info("NI Contribution PT to UEL band: {}" , niContribution);
             grossIncome= primaryThreshold;
         }
-        if (grossIncome.compareTo(belowLowerEarningsLimit) > 0) {
-            BigDecimal aboveThreshold0 = grossIncome.subtract(belowLowerEarningsLimit);
-            niContribution = niContribution.add(aboveThreshold0.multiply(PT_Rate));
+        // LEL to PT band
+        if (grossIncome.compareTo(lowerEarningsLimit) > 0) {
+            BigDecimal bandLelToPt  = grossIncome.subtract(lowerEarningsLimit);
+            earningsLelToPt = bandLelToPt;
+            niContribution = niContribution.add(bandLelToPt .multiply(PT_Rate));
 
-            logger.info("NI Contribution after Threshold 0: {}",  niContribution);
-            grossIncome = belowLowerEarningsLimit;
+            logger.info("NI Contribution LEL to PT band: {}",  niContribution);
+            grossIncome = lowerEarningsLimit;
 //           niContribution =niContribution.add(grossIncome.multiply(thresholdRate1));
         }
-        if (grossIncome.compareTo(belowLowerEarningsLimit) <0) {
-            niContribution =niContribution.add(grossIncome.multiply(BLEL_Rate));
-            logger.info("NI Contribution for income below Threshold 0:  {}" , niContribution);
+        // Below LEL band
+        if (grossIncome.compareTo(lowerEarningsLimit) <= 0) {
+            earningsAtLEL = grossIncome; // store for YTD output
+            niContribution = niContribution.add(grossIncome.multiply(BLEL_Rate));
+        } else {
+            earningsAtLEL= lowerEarningsLimit; // reached LEL fully
         }
         logger.info("NI Contribution: {} " , niContribution);
-        return calculateIncomeTaxBasedOnPayPeriod(niContribution,payPeriod);
+        niContributionMap.put("earningsAtLEL", earningsAtLEL);
+        niContributionMap.put("earningsLelToPt", earningsLelToPt);
+        niContributionMap.put("earningsPtToUel", earningsPtToUel);
+        niContributionMap.put("niContribution", niContribution);
+
+        // Adjust all amounts in the map based on pay period
+        niContributionMap.replaceAll((key, value) -> calculateIncomeTaxBasedOnPayPeriod(value, payPeriod));
+        logger.info("NI Contribution Map: {}", niContributionMap);
+
+        return niContributionMap;
+
     }
 
     private BigDecimal calculateGrossSalary(BigDecimal grossIncome,String payPeriod){
