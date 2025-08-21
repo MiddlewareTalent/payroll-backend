@@ -68,22 +68,22 @@ public class P45Service {
             else {
                 dtoData.setCurrentPayPeriodNumber("0");
             }
-            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD().compareTo(BigDecimal.ZERO)<=0){
+            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD().compareTo(BigDecimal.ZERO)<0){
                 throw new DataValidationException("Total earnings amount YTD cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalPayToDate(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD());
-            if (employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate().compareTo(BigDecimal.ZERO)<=0){
+            if (employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate().compareTo(BigDecimal.ZERO)<0){
                 throw new DataValidationException("Total income tax pay to Date cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate());
         }
         //set 8
         if (isNonCumulativeTaxCode(employeeData.getTaxCode())){
-            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment().compareTo(BigDecimal.ZERO)<=0){
+            if (employeeData.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment().compareTo(BigDecimal.ZERO)<0){
                 throw new DataValidationException("Total earnings amount in this employment cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalPayInThisEmployment(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment());
-            if (employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment().compareTo(BigDecimal.ZERO)<=0){
+            if (employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment().compareTo(BigDecimal.ZERO)<0){
                 throw new DataValidationException("Total income tax paid in this employment cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalTaxInThisEmployment(employeeData.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment());
