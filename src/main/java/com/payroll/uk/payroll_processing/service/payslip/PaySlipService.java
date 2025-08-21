@@ -5,9 +5,6 @@ import com.payroll.uk.payroll_processing.dto.mapper.PaySlipCreateDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PaySlip;
 import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
-import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
-import com.payroll.uk.payroll_processing.service.PersonalAllowanceCalculation;
-import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
