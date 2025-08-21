@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -145,7 +144,7 @@ public class EmployeeDetailsService {
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
-        EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToUpdateEmployeeDetails(employeeDetailsDTO);
+        EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
         updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
 
         updatedEmployeeDetails.setId(existingEmployeeDetails.getId()); // Preserve the existing ID
@@ -242,8 +241,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllActiveEmployees() {
         List<EmployeeDetails> activeEmployees = employeeDetailsRepository.findActiveEmployees();
         if (activeEmployees.isEmpty()) {
-//            throw new ResourceNotFoundException("No active employees found");
-            return Collections.emptyList();
+            throw new ResourceNotFoundException("No active employees found");
         }
         logging.info("successfully fetched all active employees");
         return activeEmployees.stream()
@@ -253,8 +251,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllInActiveEmployees() {
         List<EmployeeDetails> inactiveEmployees = employeeDetailsRepository.findInactiveEmployees();
         if (inactiveEmployees.isEmpty()) {
-//            throw new ResourceNotFoundException("No inactive employees found");
-            return Collections.emptyList();
+            throw new ResourceNotFoundException("No inactive employees found");
         }
         logging.info("successfully fetched all inactive employees");
         return inactiveEmployees.stream()
@@ -264,8 +261,7 @@ public class EmployeeDetailsService {
     public List<EmployeeDetailsDTO> getAllReadyForLeavingEmployees() {
         List<EmployeeDetails> readyForLeavingEmployees = employeeDetailsRepository.findReadyForLeavingEmployees();
         if (readyForLeavingEmployees.isEmpty()) {
-//            throw new ResourceNotFoundException("No employees ready for leaving found");
-            return Collections.emptyList();
+            throw new ResourceNotFoundException("No employees ready for leaving found");
         }
         logging.info("successfully fetched all employees ready for leaving");
         return readyForLeavingEmployees.stream()
