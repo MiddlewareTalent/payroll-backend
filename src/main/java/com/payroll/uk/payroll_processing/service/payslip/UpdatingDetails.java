@@ -96,6 +96,9 @@ public class UpdatingDetails {
             logger.error("Error updating personal allowance in OtherEmployeeDetails: ", e);
             throw new InvalidComputationException("Failed to update personal allowance in OtherEmployeeDetails"+ e.getMessage(),e);
         }
+         BigDecimal taxableAmount=otherEmployeeDetails.getTotalTaxablePayInThisEmployment()==null?BigDecimal.ZERO:otherEmployeeDetails.getTotalTaxablePayInThisEmployment();
+        updateOtherEmployeeDetails.setTotalTaxablePayInThisEmployment(taxableAmount.add(paySlip.getTaxableIncome()));
+
         try {
             // Update OtherEmployeeDetails with total earnings amount YTD
             BigDecimal totalAmountEarned = otherEmployeeDetails.getTotalEarningsAmountInThisEmployment();
@@ -126,17 +129,6 @@ public class UpdatingDetails {
             previousTaxPaid = previousTaxPaid != null ? previousTaxPaid : BigDecimal.ZERO;
             updateOtherEmployeeDetails.setTotalTaxPayToDate(previousTaxPaid.add(paySlip.getIncomeTaxTotal()));
 
-           /* if ("Yearly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal yearCount = otherEmployeeDetails.getNumberOfYearsOfIncomeTaxPaid();
-                updateOtherEmployeeDetails.setNumberOfYearsOfIncomeTaxPaid(yearCount.add(BigDecimal.ONE));
-            } else if ("Monthly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal monthCount = otherEmployeeDetails.getNumberOfMonthsOfIncomeTaxPaid();
-                updateOtherEmployeeDetails.setNumberOfMonthsOfIncomeTaxPaid(monthCount.add(BigDecimal.ONE));
-            } else if ("Weekly".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal weekCount = otherEmployeeDetails.getNumberOfWeeksOfIncomeTaxPaid();
-                updateOtherEmployeeDetails.setNumberOfWeeksOfIncomeTaxPaid(weekCount.add(BigDecimal.ONE));
-            }*/
-
             BigDecimal numberOfPayPeriodsIncomeTax = otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid();
             numberOfPayPeriodsIncomeTax = numberOfPayPeriodsIncomeTax != null ? numberOfPayPeriodsIncomeTax : BigDecimal.ZERO;
             updateOtherEmployeeDetails.setNumberOfPayPeriodsIncomeTaxPaid(numberOfPayPeriodsIncomeTax.add(BigDecimal.ONE));
@@ -153,25 +145,26 @@ public class UpdatingDetails {
             updateOtherEmployeeDetails.setTotalEmployeeNIContributionInCompany(
                     totalEmployeeNIContributionInCompany.add(paySlip.getEmployeeNationalInsurance())
             );
-
-
-            /*if ("YEARLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal yearCount = otherEmployeeDetails.getNumberOfYearsOfNIContributions();
-                updateOtherEmployeeDetails.setNumberOfYearsOfNIContributions(yearCount.add(BigDecimal.ONE));
-            } else if ("MONTHLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal monthCount = otherEmployeeDetails.getNumberOfMonthsOfNIContributions();
-                updateOtherEmployeeDetails.setNumberOfMonthsOfNIContributions(monthCount.add(BigDecimal.ONE));
-            } else if ("WEEKLY".equalsIgnoreCase(String.valueOf(employeeDetails.getPayPeriod()))) {
-                BigDecimal weekCount = otherEmployeeDetails.getNumberOfWeeksOfNIContributions();
-                updateOtherEmployeeDetails.setNumberOfWeeksOfNIContributions(weekCount.add(BigDecimal.ONE));
-            }*/
             BigDecimal numberOfPayPeriodsNIContribution = otherEmployeeDetails.getNumberOfPayPeriodsNIContributions();
             numberOfPayPeriodsNIContribution = numberOfPayPeriodsNIContribution != null ? numberOfPayPeriodsNIContribution : BigDecimal.ZERO;
             updateOtherEmployeeDetails.setNumberOfPayPeriodsNIContributions(numberOfPayPeriodsNIContribution.add(BigDecimal.ONE));
+            // Update earnings at LEL, LEL to PT, and PT to UEL YTD
+            BigDecimal earningsAtLELYtd = otherEmployeeDetails.getEarningsAtLELYtd();
+            earningsAtLELYtd = earningsAtLELYtd != null ? earningsAtLELYtd : BigDecimal.ZERO;
+            logger.info("earningsAtLELYtd: {}", earningsAtLELYtd);
+            updateOtherEmployeeDetails.setEarningsAtLELYtd(earningsAtLELYtd.add(paySlip.getEarningsAtLEL()));
+            BigDecimal earningsLelToPtYtd = otherEmployeeDetails.getEarningsLelToPtYtd();
+            earningsLelToPtYtd = earningsLelToPtYtd != null ? earningsLelToPtYtd : BigDecimal.ZERO;
+            logger.info("earningsLelToPtYtd: {}", earningsLelToPtYtd);
+            updateOtherEmployeeDetails.setEarningsLelToPtYtd(earningsLelToPtYtd.add(paySlip.getEarningsLelToPt()));
+            BigDecimal earningsPtToUelYtd = otherEmployeeDetails.getEarningsPtToUelYtd();
+            earningsPtToUelYtd = earningsPtToUelYtd != null ? earningsPtToUelYtd : BigDecimal.ZERO;
+            logger.info("earningsPtToUelYtd: {}", earningsPtToUelYtd);
+            updateOtherEmployeeDetails.setEarningsPtToUelYtd(earningsPtToUelYtd.add(paySlip.getEarningsPtToUel()));
         }
         catch (Exception e) {
-            logger.error("Error updating National Insurance contributions in OtherEmployeeDetails: ", e);
-            throw new InvalidComputationException("Failed to update National Insurance contributions in OtherEmployeeDetails"+ e.getMessage(),e);
+            logger.error("Error updating National Insurance contributions in OtherEmployeeDetails: {}", e.getMessage());
+            throw new InvalidComputationException("Failed to update National Insurance contributions in OtherEmployeeDetails "+ e.getMessage(),e);
         }
         try{
             if (paySlip.isHasPensionEligible()) {

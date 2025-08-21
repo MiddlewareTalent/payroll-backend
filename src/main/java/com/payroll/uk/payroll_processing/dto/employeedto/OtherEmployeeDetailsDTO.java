@@ -11,6 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class OtherEmployeeDetailsDTO {
 
+    private BigDecimal totalTaxablePayInThisEmployment = BigDecimal.ZERO;
+
+
+
     private BigDecimal numberOfPayPeriodsEmergencyTaxCodeUsed=BigDecimal.ZERO;
     private BigDecimal totalAllowanceUsedDuringEmergencyCode=BigDecimal.ZERO;
     // Personal Allowance related fields
@@ -36,6 +40,9 @@ public class OtherEmployeeDetailsDTO {
     private BigDecimal numberOfPayPeriodsIncomeTaxPaid = BigDecimal.ZERO;
 
     // National Insurance related fields
+    private BigDecimal earningsAtLELYtd;
+    private BigDecimal earningsLelToPtYtd;
+    private BigDecimal earningsPtToUelYtd;
     private BigDecimal totalEmployeeNIContributionInCompany= BigDecimal.ZERO;
     private BigDecimal employeeNIContribution= BigDecimal.ZERO;
     //    private int numberOfNIPaidYearsInCompany= 0;

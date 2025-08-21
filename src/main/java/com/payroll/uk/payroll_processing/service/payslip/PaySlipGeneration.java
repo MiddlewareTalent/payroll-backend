@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,6 +28,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 @Service
 public class PaySlipGeneration {
@@ -63,6 +65,7 @@ public class PaySlipGeneration {
 
 
 
+    @Transactional
      PaySlipCreateDto fillPaySlip(String employeeId){
         if (employeeId.isBlank()) {
             throw new IllegalArgumentException("Employee ID cannot be null or empty");
@@ -78,12 +81,12 @@ public class PaySlipGeneration {
         }
         String periodEnd = getPeriodEndMonthYear(employerDetails.getCompanyDetails().getPayDate());
 
-        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
-        logger.info("exists: {}", exists);
-        if (exists) {
-            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
-            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
-        }
+//        boolean exists = paySlipRepository.existsByEmployeeIdAndPeriodEnd(employeeDetails.getEmployeeId(), periodEnd);
+//        logger.info("exists: {}", exists);
+//        if (exists) {
+//            logger.error("Payslip already exists for employee ID: {} and period end: {}", employeeId, periodEnd);
+//            throw new ResourceConflictException("Payslip already exists for " + periodEnd + " for employee ID " + employeeId);
+//        }
 
          validateData.validateEmployeeDetails(employeeDetails);
          validateData.validateEmployerDetails(employerDetails);
@@ -171,6 +174,7 @@ public class PaySlipGeneration {
                         taxCodeService.calculateTaxableIncome(
                                 paySlipCreate.getGrossPayTotal().add(currentKCodeAmount), paySlipCreate.getPersonalAllowance()
                         ));
+
             }
             else {
                 paySlipCreate.setTaxableIncome(
@@ -224,12 +228,16 @@ public class PaySlipGeneration {
             throw new InvalidComputationException("Failed to calculate income tax for payslip", e);
         }
         // National Insurance calculation
+
+         HashMap<String,BigDecimal> niContributionData;
         try {
-
-
-            BigDecimal NI = nationalInsuranceCalculator.calculateEmployeeNIContribution(paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxYear(),
+            niContributionData = nationalInsuranceCalculator.calculateEmployeeNIContribution(paySlipCreate.getGrossPayTotal(), paySlipCreate.getTaxYear(),
                     paySlipCreate.getPayPeriod(), paySlipCreate.getNiLetter());
+            BigDecimal NI = niContributionData.get("niContribution");
             paySlipCreate.setEmployeeNationalInsurance(NI);
+            paySlipCreate.setEarningsAtLEL(niContributionData.get("earningsAtLEL"));
+            paySlipCreate.setEarningsLelToPt(niContributionData.get("earningsLelToPt"));
+            paySlipCreate.setEarningsPtToUel(niContributionData.get("earningsPtToUel"));
             logger.info("successfully completed the Employee NI calculation ");
 
             paySlipCreate.setEmployersNationalInsurance(
