@@ -104,6 +104,11 @@ public class EmployeeDetailsDTOMapper {
     }
     public OtherEmployeeDetailsDTO mapToOtherEmployeeDetailsDTO(OtherEmployeeDetails otherEmployeeDetails) {
         OtherEmployeeDetailsDTO otherEmployeeDetailsDTO = new OtherEmployeeDetailsDTO();
+
+=======
+//        otherEmployeeDetailsDTO.setPreviouslyUsedPersonalAllowance(otherEmployeeDetails.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetailsDTO.setTotalPersonalAllowanceInCompany(otherEmployeeDetails.getTotalPersonalAllowanceInCompany());
+
         otherEmployeeDetailsDTO.setTotalTaxablePayInThisEmployment(otherEmployeeDetails.getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : otherEmployeeDetails.getTotalTaxablePayInThisEmployment());
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsEmergencyTaxCodeUsed(otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed()== null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed());
         otherEmployeeDetailsDTO.setTotalAllowanceUsedDuringEmergencyCode(otherEmployeeDetails.getTotalAllowanceUsedDuringEmergencyCode());
@@ -383,6 +388,11 @@ public class EmployeeDetailsDTOMapper {
     }
     public OtherEmployeeDetails mapToOtherEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
         OtherEmployeeDetails otherEmployeeDetails = new OtherEmployeeDetails();
+
+=======
+//        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
+
         otherEmployeeDetails.setTotalTaxablePayInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment());
         otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
         otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());

@@ -69,6 +69,31 @@
 			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- JAXB: For XML marshalling/unmarshalling with Java 21 -->
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-xjc</artifactId>
+			<version>4.0.2</version>
+		</dependency>
+
+		<!-- Spring WS: Needed if using WebServiceTemplate for SOAP/XML posts -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web-services</artifactId>
+		</dependency>
+
+		<!-- Optional: For WS-Security, if HMRC endpoint requires UsernameToken, certificates, or signing -->
+		<dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-ws-security</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -107,6 +132,32 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.basedir}/src/main/resources/xsd/FullPaymentSubmission-2026-v1-0.xsd</source>
+								<source>${project.basedir}/src/main/resources/xsd/EmployerPaymentSummary-2026-v1-0.xsd</source>
+								<source>${project.basedir}/src/main/resources/xsd/envelope-v2-0-HMRC.xsd</source>
+								<source>${project.basedir}/src/main/resources/xsd/NINOverificationRequest-v1-2.xsd</source>
+							</sources>
+							<outputDirectory>${project.build.directory}/generated-sources/jaxb</outputDirectory>
+							<clearOutputDir>true</clearOutputDir>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
