@@ -13,7 +13,6 @@ import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.PaySlipRepository;
 import com.payroll.uk.payroll_processing.service.*;
 import com.payroll.uk.payroll_processing.service.incometax.TaxCodeService;
-import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculation;
 import com.payroll.uk.payroll_processing.service.ni.NationalInsuranceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +42,6 @@ public class PaySlipGeneration {
     private TaxCodeService taxCodeService;
     @Autowired
     private PersonalAllowanceCalculation personalAllowanceCalculation;
-    @Autowired
-    private NationalInsuranceCalculation nationalInsuranceCalculation;
     @Autowired
     private PaySlipCreateDTOMapper paySlipCreateDtoMapper;
     @Autowired
