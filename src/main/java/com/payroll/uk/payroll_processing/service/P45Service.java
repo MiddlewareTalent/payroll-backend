@@ -49,7 +49,8 @@ public class P45Service {
         //set 4
         dtoData.setEmployeeLeavingDate(employeeData.getEmploymentEndDate());
         //set 5
-        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan() != null && employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan().compareTo(BigDecimal.ZERO) > 0);
+//        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan() != null && employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan().compareTo(BigDecimal.ZERO) > 0);
+        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan().getHasStudentLoan());
         //set 6
         if (!isNonCumulativeTaxCode(employeeData.getTaxCode())){
             dtoData.setTaxCodeAtLeaving(employeeData.getTaxCode());
@@ -72,10 +73,10 @@ public class P45Service {
                 throw new DataValidationException("Total earnings amount YTD cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalPayToDate(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD());
-            if (employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate().compareTo(BigDecimal.ZERO)<0){
+            if (employeeData.getOtherEmployeeDetails().getTotalIncomeTaxYTD().compareTo(BigDecimal.ZERO)<0){
                 throw new DataValidationException("Total income tax pay to Date cannot be zero or negative for employee: " + employeeId);
             }
-            dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate());
+            dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalIncomeTaxYTD());
         }
         //set 8
         if (isNonCumulativeTaxCode(employeeData.getTaxCode())){

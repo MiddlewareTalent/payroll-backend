@@ -2,7 +2,9 @@ package com.payroll.uk.payroll_processing.controller;
 
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
+import com.payroll.uk.payroll_processing.entity.ChangeField;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
+import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHistory;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.service.FileStorageService;
 import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService;
@@ -119,6 +121,33 @@ public class EmployeeDetailsController {
             @PathVariable("gender") EmployeeDetails.Gender gender) {
 
         return employeeDetailsService.isEligibleForAutoEnrollment(annualIncome, dateOfBirth, taxYear, gender);
+    }
+
+    @GetMapping("/employee-history/{employeeId}")
+    public ResponseEntity<List<EmploymentHistory>> getEmployeeChangeHistory(@PathVariable String employeeId) {
+        List<EmploymentHistory> changeHistory = employeeDetailsService.getEmployeeChangeHistory(employeeId);
+        return ResponseEntity.ok(changeHistory);
+    }
+    @GetMapping("/all/employment-history")
+    public ResponseEntity<List<EmploymentHistory>> getAllEmploymentHistories() {
+        List<EmploymentHistory> allHistories = employeeDetailsService.getAllEmployeeChangeHistory();
+        return ResponseEntity.ok(allHistories);
+    }
+
+
+    @GetMapping("/employment-history/{employeeId}/field")
+    public ResponseEntity<List<EmploymentHistory>> getEmployeeChangedData(
+            @PathVariable String employeeId,
+            @RequestParam ChangeField changeField) {
+
+        List<EmploymentHistory> changes =
+                employeeDetailsService.getEmployeeChangedData(employeeId, changeField);
+
+        if (changes.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 if no changes
+        }
+
+        return ResponseEntity.ok(changes);
     }
 
 
