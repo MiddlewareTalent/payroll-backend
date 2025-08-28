@@ -1,22 +1,11 @@
 package com.payroll.uk.payroll_processing.dto.mapper;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.payroll.uk.payroll_processing.dto.historydto.EmploymentHistoryDTO;
-import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
-import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
-import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
 import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHistory;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Component
@@ -84,6 +73,9 @@ public class EmploymentHistoryDTOMapper {
         employmentHistory.setStudentLoanPlanTypeChanged(employmentHistoryDTO.isStudentLoanPlanTypeChanged());
         employmentHistory.setPostgraduateLoanPlanTypeChanged(employmentHistoryDTO.isPostgraduateLoanPlanTypeChanged());
 
+        // Set timestamps
+        employmentHistory.setUpdatedAt(LocalDateTime.now());
+
         return employmentHistory;
     }
     public EmploymentHistoryDTO mapToEmploymentHistoryDTO(EmploymentHistory employmentHistory){
@@ -147,6 +139,9 @@ public class EmploymentHistoryDTOMapper {
         employmentHistoryDTO.setStudentLoanPlanTypeChanged(employmentHistory.isStudentLoanPlanTypeChanged());
         employmentHistoryDTO.setPostgraduateLoanPlanTypeChanged(employmentHistory.isPostgraduateLoanPlanTypeChanged());
 
+        // Set timestamps
+        employmentHistoryDTO.setUpdatedAt(employmentHistory.getUpdatedAt());
+
         return employmentHistoryDTO;
     }
 
@@ -197,6 +192,7 @@ public class EmploymentHistoryDTOMapper {
         employmentHistory.setDeductionAmountInPostgraduateLoan(employeeDetails.getPostGraduateLoan().getDeductionAmountInPostgraduateLoan());
         employmentHistory.setTotalDeductionAmountInPostgraduateLoan(employeeDetails.getPostGraduateLoan().getTotalDeductionAmountInPostgraduateLoan());
         employmentHistory.setPostgraduateLoanPlanType(employeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType());
+        employmentHistory.setUpdatedAt(LocalDateTime.now());
         return employmentHistory;
 
     }

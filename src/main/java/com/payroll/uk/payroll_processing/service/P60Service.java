@@ -47,6 +47,7 @@ public class P60Service {
             throw new DataValidationException("Employer details not found");
         }
         logger.info("Validating data for employee ID: {}", employeeId);
+        validateData.validateP60Data(employeeData,employerData);
         P60DTO dtoData= new P60DTO();
         dtoData.setEmployeeId(employeeData.getEmployeeId());
         dtoData.setFirstName(employeeData.getFirstName());

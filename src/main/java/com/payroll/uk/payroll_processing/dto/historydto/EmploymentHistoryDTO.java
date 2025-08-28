@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -213,4 +214,7 @@ public class EmploymentHistoryDTO {
     private boolean studentLoanPlanTypeChanged = false;
     @Column(name = "Post_graduate_loan_plan_type_changed",nullable = false)
     private boolean postgraduateLoanPlanTypeChanged = false;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt;
 }

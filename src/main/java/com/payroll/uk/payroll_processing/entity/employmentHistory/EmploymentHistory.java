@@ -1,6 +1,5 @@
 package com.payroll.uk.payroll_processing.entity.employmentHistory;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
@@ -15,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -223,4 +223,9 @@ public class EmploymentHistory {
     private boolean studentLoanPlanTypeChanged = false;
     @Column(name = "Post_graduate_loan_plan_type_changed",nullable = false)
     private boolean postgraduateLoanPlanTypeChanged = false;
+
+    @Column(name = "updated_at", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt;
+
 }

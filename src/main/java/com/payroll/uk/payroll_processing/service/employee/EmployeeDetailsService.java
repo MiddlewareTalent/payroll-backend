@@ -157,7 +157,7 @@ public class EmployeeDetailsService {
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
 
-        Map<String, Boolean> changedFields = validateChangesDatas(existingEmployeeDetails, employeeDetailsDTO);
+        Map<String, Boolean> changedFields = validateChangesData(existingEmployeeDetails, employeeDetailsDTO);
 
         if (!changedFields.isEmpty()) {
             EmploymentHistory historyData = employmentHistoryRepository.save(
@@ -400,7 +400,7 @@ public class EmployeeDetailsService {
     }
 
 
-    public boolean validateChangesData(EmployeeDetails existingEmployeeDetails,EmployeeDetailsDTO employeeDetailsDTO){
+    /*public boolean validateChangesData(EmployeeDetails existingEmployeeDetails,EmployeeDetailsDTO employeeDetailsDTO){
 
         if (!(existingEmployeeDetails.getTaxCode().equals(employeeDetailsDTO.getTaxCode()) )){
             logging.warn("Tax code has been changed from {} to {}", existingEmployeeDetails.getTaxCode(), employeeDetailsDTO.getTaxCode());
@@ -448,10 +448,10 @@ public class EmployeeDetailsService {
         }
 
         return false;
-    }
+    }*/
 
 
-    public Map<String, Boolean> validateChangesDatas(EmployeeDetails existingEmployeeDetails, EmployeeDetailsDTO employeeDetailsDTO) {
+    public Map<String, Boolean> validateChangesData(EmployeeDetails existingEmployeeDetails, EmployeeDetailsDTO employeeDetailsDTO) {
         Map<String, Boolean> changes = new LinkedHashMap<>();
 
         if (!existingEmployeeDetails.getTaxCode().equals(employeeDetailsDTO.getTaxCode())) {
@@ -513,7 +513,8 @@ public class EmployeeDetailsService {
         }
         List<EmploymentHistory> historyList = employmentHistoryRepository.findByEmployeeId(employeeId);
         if (historyList.isEmpty()) {
-            throw new ResourceNotFoundException("No change history found for employee ID: " + employeeId);
+//            throw new ResourceNotFoundException("No change history found for employee ID: " + employeeId);
+            return Collections.emptyList();
         }
         logging.info("Successfully fetched change history for employee ID: {}", employeeId);
         return historyList;
@@ -521,7 +522,8 @@ public class EmployeeDetailsService {
     public List<EmploymentHistory> getAllEmployeeChangeHistory() {
         List<EmploymentHistory> historyList = employmentHistoryRepository.findAll();
         if (historyList.isEmpty()) {
-            throw new ResourceNotFoundException("No change history found for any employee");
+//            throw new ResourceNotFoundException("No change history found for any employee");
+            return Collections.emptyList();
         }
         logging.info("Successfully fetched change history for all employees");
         return historyList;
