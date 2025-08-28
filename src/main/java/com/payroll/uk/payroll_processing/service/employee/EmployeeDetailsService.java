@@ -3,14 +3,18 @@ package com.payroll.uk.payroll_processing.service.employee;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
+import com.payroll.uk.payroll_processing.dto.mapper.EmploymentHistoryDTOMapper;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.ChangeField;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
+import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHistory;
 import com.payroll.uk.payroll_processing.exception.*;
 import com.payroll.uk.payroll_processing.repository.BankDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.repository.EmployerDetailsRepository;
+import com.payroll.uk.payroll_processing.repository.EmploymentHistoryRepository;
 import com.payroll.uk.payroll_processing.service.TaxThresholdService;
 import com.payroll.uk.payroll_processing.service.ValidateData;
 import com.payroll.uk.payroll_processing.utils.TaxPeriodUtils;
@@ -21,7 +25,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,16 +41,22 @@ public class EmployeeDetailsService {
     private final EmployerDetailsRepository employerDetailsRepository;
     private final TaxThresholdService taxThresholdService;
     private  final ValidateData validateData;
+    private final EmploymentHistoryRepository employmentHistoryRepository;
+    private final EmploymentHistoryDTOMapper employmentHistoryDTOMapper;
 
     public EmployeeDetailsService(EmployeeDetailsRepository employeeDetailsRepository,
                                   EmployeeDetailsDTOMapper employeeDetailsDTOMapper,BankDetailsRepository bankDetailsRepository, EmployerDetailsRepository employerDetailsRepository,
-                                  TaxThresholdService taxThresholdService,ValidateData validateData) {
+                                  TaxThresholdService taxThresholdService,ValidateData validateData,
+                                  EmploymentHistoryRepository employmentHistoryRepository,
+                                  EmploymentHistoryDTOMapper employmentHistoryDTOMapper) {
         this.employeeDetailsRepository = employeeDetailsRepository;
         this.employeeDetailsDTOMapper = employeeDetailsDTOMapper;
         this.bankDetailsRepository = bankDetailsRepository;
         this.employerDetailsRepository = employerDetailsRepository;
         this.taxThresholdService = taxThresholdService;
         this.validateData = validateData;
+        this.employmentHistoryRepository = employmentHistoryRepository;
+        this.employmentHistoryDTOMapper = employmentHistoryDTOMapper;
     }
     // Save employee details
     public EmployeeDetailsDTO saveEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO){
@@ -144,6 +156,16 @@ public class EmployeeDetailsService {
 
         EmployeeDetails existingEmployeeDetails = employeeDetailsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeDetailsDTO.getEmployeeId()));
+
+        Map<String, Boolean> changedFields = validateChangesData(existingEmployeeDetails, employeeDetailsDTO);
+
+        if (!changedFields.isEmpty()) {
+            EmploymentHistory historyData = employmentHistoryRepository.save(
+                    employmentHistoryDTOMapper.updatedToEmploymentHistory(existingEmployeeDetails, changedFields)
+            );
+            logging.info("Employee changes history saved with ID: {}", historyData.getId());
+        }
+
 
         EmployeeDetails updatedEmployeeDetails = employeeDetailsDTOMapper.mapToUpdateEmployeeDetails(employeeDetailsDTO);
         updatedEmployeeDetails.getBankDetails().setId(existingEmployeeDetails.getBankDetails().getId());
@@ -375,6 +397,161 @@ public class EmployeeDetailsService {
 
         // Format to 2-digit number with leading zeros: e.g., 01, 02, ... 10
         return String.format("%s%02d", prefix, nextNumber);
+    }
+
+
+    /*public boolean validateChangesData(EmployeeDetails existingEmployeeDetails,EmployeeDetailsDTO employeeDetailsDTO){
+
+        if (!(existingEmployeeDetails.getTaxCode().equals(employeeDetailsDTO.getTaxCode()) )){
+            logging.warn("Tax code has been changed from {} to {}", existingEmployeeDetails.getTaxCode(), employeeDetailsDTO.getTaxCode());
+            return true;
+        }
+        if(! existingEmployeeDetails.getNiLetter().equals(employeeDetailsDTO.getNiLetter())){
+            logging.warn("NI letter has been changed from {} to {}", existingEmployeeDetails.getNiLetter(), employeeDetailsDTO.getNiLetter());
+            return true;
+        }
+        if (! existingEmployeeDetails.getAddress().equals(employeeDetailsDTO.getAddress())){
+            logging.warn("Address has been changed from {} to {}", existingEmployeeDetails.getAddress(), employeeDetailsDTO.getAddress());
+            return true;
+        }
+        if (! existingEmployeeDetails.getPostCode().equals(employeeDetailsDTO.getPostCode())){
+            logging.warn("Post code has been changed from {} to {}", existingEmployeeDetails.getPostCode(), employeeDetailsDTO.getPostCode());
+            return true;
+        }
+        if (existingEmployeeDetails.getAnnualIncomeOfEmployee().compareTo(employeeDetailsDTO.getAnnualIncomeOfEmployee()) != 0) {
+            logging.warn("Annual income has been changed from {} to {}",
+                    existingEmployeeDetails.getAnnualIncomeOfEmployee(),
+                    employeeDetailsDTO.getAnnualIncomeOfEmployee());
+            return true;
+        }
+
+
+        if (! existingEmployeeDetails.getDateOfBirth().equals(employeeDetailsDTO.getDateOfBirth())){
+            logging.warn("Date of birth has been changed from {} to {}", existingEmployeeDetails.getDateOfBirth(), employeeDetailsDTO.getDateOfBirth());
+            return true;
+        }
+        if (! existingEmployeeDetails.getNationalInsuranceNumber().equals(employeeDetailsDTO.getNationalInsuranceNumber())){
+            logging.warn("National Insurance Number has been changed from {} to {}", existingEmployeeDetails.getNationalInsuranceNumber(), employeeDetailsDTO.getNationalInsuranceNumber());
+            return true;
+        }
+        if (!existingEmployeeDetails.getPayrollId().equals(employeeDetailsDTO.getPayrollId())){
+            logging.warn("Payroll ID has been changed from {} to {}", existingEmployeeDetails.getPayrollId(), employeeDetailsDTO.getPayrollId());
+            return true;
+        }
+        if (!existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType().equals(employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType())){
+            logging.warn("Student loan plan type has been changed from {} to {}", existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType(), employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType());
+            return true;
+        }
+        if (!existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType().equals(employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType())){
+            logging.warn("Postgraduate loan plan type has been changed from {} to {}", existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType(), employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType());
+            return true;
+        }
+
+        return false;
+    }*/
+
+
+    public Map<String, Boolean> validateChangesData(EmployeeDetails existingEmployeeDetails, EmployeeDetailsDTO employeeDetailsDTO) {
+        Map<String, Boolean> changes = new LinkedHashMap<>();
+
+        if (!existingEmployeeDetails.getTaxCode().equals(employeeDetailsDTO.getTaxCode())) {
+            logging.warn("Tax code has been changed from {} to {}", existingEmployeeDetails.getTaxCode(), employeeDetailsDTO.getTaxCode());
+            changes.put("taxCodeChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getNiLetter().equals(employeeDetailsDTO.getNiLetter())) {
+            logging.warn("NI letter has been changed from {} to {}", existingEmployeeDetails.getNiLetter(), employeeDetailsDTO.getNiLetter());
+            changes.put("niLetterChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getAddress().equals(employeeDetailsDTO.getAddress())) {
+            logging.warn("Address has been changed from {} to {}", existingEmployeeDetails.getAddress(), employeeDetailsDTO.getAddress());
+            changes.put("addressChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getPostCode().equals(employeeDetailsDTO.getPostCode())) {
+            logging.warn("Post code has been changed from {} to {}", existingEmployeeDetails.getPostCode(), employeeDetailsDTO.getPostCode());
+            changes.put("postCodeChanged", true);
+        }
+
+        if (existingEmployeeDetails.getAnnualIncomeOfEmployee().compareTo(employeeDetailsDTO.getAnnualIncomeOfEmployee()) != 0) {
+            logging.warn("Annual income has been changed from {} to {}", existingEmployeeDetails.getAnnualIncomeOfEmployee(), employeeDetailsDTO.getAnnualIncomeOfEmployee());
+            changes.put("annualIncomeChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getDateOfBirth().equals(employeeDetailsDTO.getDateOfBirth())) {
+            logging.warn("Date of birth has been changed from {} to {}", existingEmployeeDetails.getDateOfBirth(), employeeDetailsDTO.getDateOfBirth());
+            changes.put("dateOfBirthChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getNationalInsuranceNumber().equals(employeeDetailsDTO.getNationalInsuranceNumber())) {
+            logging.warn("National Insurance Number has been changed from {} to {}", existingEmployeeDetails.getNationalInsuranceNumber(), employeeDetailsDTO.getNationalInsuranceNumber());
+            changes.put("nationalInsuranceNumberChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getPayrollId().equals(employeeDetailsDTO.getPayrollId())) {
+            logging.warn("Payroll ID has been changed from {} to {}", existingEmployeeDetails.getPayrollId(), employeeDetailsDTO.getPayrollId());
+            changes.put("payrollIdChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType().equals(employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType())) {
+            logging.warn("Student loan plan type has been changed from {} to {}", existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType(), employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType());
+            changes.put("studentLoanPlanTypeChanged", true);
+        }
+
+        if (!existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType().equals(employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType())) {
+            logging.warn("Postgraduate loan plan type has been changed from {} to {}", existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType(), employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType());
+            changes.put("postgraduateLoanPlanTypeChanged", true);
+        }
+
+        return changes; // map of all changed fields
+    }
+
+    public List<EmploymentHistory> getEmployeeChangeHistory(String employeeId) {
+        if (employeeId == null || employeeId.isEmpty()) {
+            throw new DataValidationException("Employee ID cannot be null or empty");
+        }
+        List<EmploymentHistory> historyList = employmentHistoryRepository.findByEmployeeId(employeeId);
+        if (historyList.isEmpty()) {
+//            throw new ResourceNotFoundException("No change history found for employee ID: " + employeeId);
+            return Collections.emptyList();
+        }
+        logging.info("Successfully fetched change history for employee ID: {}", employeeId);
+        return historyList;
+    }
+    public List<EmploymentHistory> getAllEmployeeChangeHistory() {
+        List<EmploymentHistory> historyList = employmentHistoryRepository.findAll();
+        if (historyList.isEmpty()) {
+//            throw new ResourceNotFoundException("No change history found for any employee");
+            return Collections.emptyList();
+        }
+        logging.info("Successfully fetched change history for all employees");
+        return historyList;
+    }
+
+    public List<EmploymentHistory> getEmployeeChangedData(String employeeId, ChangeField changeField) {
+
+        if (employeeId == null || employeeId.isEmpty()) {
+            throw new DataValidationException("Employee ID cannot be null or empty");
+        }
+
+
+        return switch (changeField) {
+            case NI_LETTER -> employmentHistoryRepository.findByEmployeeIdAndNiLetterChangedTrue(employeeId);
+            case ADDRESS -> employmentHistoryRepository.findByEmployeeIdAndAddressChangedTrue(employeeId);
+            case TAX_CODE -> employmentHistoryRepository.findByEmployeeIdAndTaxCodeChangedTrue(employeeId);
+            case POST_CODE -> employmentHistoryRepository.findByEmployeeIdAndPostCodeChangedTrue(employeeId);
+            case ANNUAL_INCOME -> employmentHistoryRepository.findByEmployeeIdAndAnnualIncomeChangedTrue(employeeId);
+            case DATE_OF_BIRTH -> employmentHistoryRepository.findByEmployeeIdAndDateOfBirthChangedTrue(employeeId);
+            case NATIONAL_INSURANCE_NUMBER ->
+                    employmentHistoryRepository.findByEmployeeIdAndNationalInsuranceNumberChangedTrue(employeeId);
+            case PAYROLL_ID -> employmentHistoryRepository.findByEmployeeIdAndPayrollIdChangedTrue(employeeId);
+            case STUDENT_LOAN_PLAN ->
+                    employmentHistoryRepository.findByEmployeeIdAndStudentLoanPlanTypeChangedTrue(employeeId);
+            case POSTGRAD_LOAN_PLAN ->
+                    employmentHistoryRepository.findByEmployeeIdAndPostgraduateLoanPlanTypeChangedTrue(employeeId);
+            default -> List.of(); // empty list
+        };
     }
 
 

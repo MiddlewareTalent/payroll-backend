@@ -108,12 +108,12 @@ public class EmployeeDetailsDTOMapper {
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsEmergencyTaxCodeUsed(otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed()== null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed());
         otherEmployeeDetailsDTO.setTotalAllowanceUsedDuringEmergencyCode(otherEmployeeDetails.getTotalAllowanceUsedDuringEmergencyCode());
 
-        otherEmployeeDetailsDTO.setUsedPersonalAllowance(otherEmployeeDetails.getUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(otherEmployeeDetails.getTotalUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(otherEmployeeDetails.getRemainingPersonalAllowance());
+        otherEmployeeDetailsDTO.setUsedPersonalAllowance(otherEmployeeDetails.getUsedPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(otherEmployeeDetails.getTotalUsedPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getTotalUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(otherEmployeeDetails.getRemainingPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getRemainingPersonalAllowance());
         otherEmployeeDetailsDTO.setTotalEarningsAmountYTD(otherEmployeeDetails.getTotalEarningsAmountYTD());
         otherEmployeeDetailsDTO.setTotalEarningsAmountInThisEmployment(otherEmployeeDetails.getTotalEarningsAmountInThisEmployment());
-        otherEmployeeDetailsDTO.setTotalTaxPayToDate(otherEmployeeDetails.getTotalTaxPayToDate());
+        otherEmployeeDetailsDTO.setTotalIncomeTaxYTD(otherEmployeeDetails.getTotalIncomeTaxYTD());
         otherEmployeeDetailsDTO.setIncomeTaxPaid(otherEmployeeDetails.getIncomeTaxPaid());
         otherEmployeeDetailsDTO.setTotalIncomeTaxPaidInThisEmployment(otherEmployeeDetails.getTotalIncomeTaxPaidInThisEmployment());
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsIncomeTaxPaid(otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid() == null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid());
@@ -241,6 +241,17 @@ public class EmployeeDetailsDTOMapper {
         PreviousEmploymentData previousEmploymentData;
         if (employeeDetailsDTO.getPreviousEmploymentDataDTO()!=null){
             previousEmploymentData=mapToPreviousEmploymentData(employeeDetailsDTO.getPreviousEmploymentDataDTO());
+//            employeeDetails.getPreviousEmploymentData().setPreviousTotalTaxToDate();
+//            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(previousEmploymentData.getPreviousTotalTaxToDate());
+//            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEmploymentData.getPreviousTotalPayToDate());
+
+            BigDecimal previousTaxPaidAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate();
+            BigDecimal taxPaidAmount=employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(taxPaidAmount.add(previousTaxPaidAmount));
+
+            BigDecimal previousEarningAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate();
+            BigDecimal earningAmount=employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEarningAmount.add(earningAmount));
         }
         else {
             previousEmploymentData = new PreviousEmploymentData();
@@ -340,32 +351,27 @@ public class EmployeeDetailsDTOMapper {
 
         employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails); // Always set*/
 
-        StudentLoan studentLoan;
+//        StudentLoan studentLoan;
         if (employeeDetailsDTO.getStudentLoanDto() != null) {
-            studentLoan = mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto());
-        } else {
-            studentLoan = new StudentLoan();
-            studentLoan.setStudentLoanDefaults(); // Now it's safe
+            employeeDetails.setStudentLoan(mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto()));
         }
-        employeeDetails.setStudentLoan(studentLoan); // Always set
-        PostGraduateLoan postGraduateLoan;
         if (employeeDetailsDTO.getPostGraduateLoanDto() != null) {
-            postGraduateLoan = mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto());
-        } else {
-            postGraduateLoan = new PostGraduateLoan();
-            postGraduateLoan.setPostgraduateDefaults();
+            employeeDetails.setPostGraduateLoan(mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto()));
         }
-        employeeDetails.setPostGraduateLoan(postGraduateLoan);
 
-        PreviousEmploymentData previousEmploymentData;
+//        PreviousEmploymentData previousEmploymentData;
         if (employeeDetailsDTO.getPreviousEmploymentDataDTO()!=null){
-            previousEmploymentData=mapToPreviousEmploymentData(employeeDetailsDTO.getPreviousEmploymentDataDTO());
+            employeeDetails.setPreviousEmploymentData(mapToPreviousEmploymentData(employeeDetailsDTO.getPreviousEmploymentDataDTO()));
+
+            BigDecimal previousTaxPaidAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate();
+           BigDecimal taxPaidAmount=employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(taxPaidAmount.add(previousTaxPaidAmount));
+
+            BigDecimal previousEarningAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate();
+            BigDecimal earningAmount=employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEarningAmount.add(earningAmount));
         }
-        else {
-            previousEmploymentData = new PreviousEmploymentData();
-            previousEmploymentData.setDefaultsIfNull(); // Now it's safe
-        }
-        employeeDetails.setPreviousEmploymentData(previousEmploymentData);
+
 
 
         return employeeDetails;
@@ -384,33 +390,33 @@ public class EmployeeDetailsDTOMapper {
     public OtherEmployeeDetails mapToOtherEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
         OtherEmployeeDetails otherEmployeeDetails = new OtherEmployeeDetails();
         otherEmployeeDetails.setTotalTaxablePayInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment());
-        otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
-        otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());
+        otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
+        otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());
 
-        otherEmployeeDetails.setUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance());
-        otherEmployeeDetails.setTotalUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance());
-        otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance().subtract(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance()));
-        otherEmployeeDetails.setTotalEarningsAmountYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate());
+        otherEmployeeDetails.setUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance());
+        otherEmployeeDetails.setTotalUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance());
+        otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance().subtract(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance()) );
+        otherEmployeeDetails.setTotalEarningsAmountYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate().add(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment()==null? BigDecimal.ZERO:employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment()));
 
-        otherEmployeeDetails.setTotalEarningsAmountInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment());
-        otherEmployeeDetails.setIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid());
+        otherEmployeeDetails.setTotalEarningsAmountInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment());
+        otherEmployeeDetails.setIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid());
 
-        otherEmployeeDetails.setTotalIncomeTaxPaidInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment());
-        otherEmployeeDetails.setTotalTaxPayToDate(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate());
+        otherEmployeeDetails.setTotalIncomeTaxPaidInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment());
+        otherEmployeeDetails.setTotalIncomeTaxYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate().add(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment()==null? BigDecimal.ZERO:employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment()));
 
         otherEmployeeDetails.setNumberOfPayPeriodsIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsIncomeTaxPaid() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsIncomeTaxPaid());
 
-        otherEmployeeDetails.setTotalEmployeeNIContributionInCompany(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany());
-        otherEmployeeDetails.setEmployeeNIContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution());
+        otherEmployeeDetails.setTotalEmployeeNIContributionInCompany(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany());
+        otherEmployeeDetails.setEmployeeNIContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution());
         otherEmployeeDetails.setNumberOfPayPeriodsNIContributions(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsNIContributions()== null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsNIContributions());
         otherEmployeeDetails.setEarningsAtLELYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsAtLELYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsAtLELYtd());
         otherEmployeeDetails.setEarningsLelToPtYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsLelToPtYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsLelToPtYtd());
         otherEmployeeDetails.setEarningsPtToUelYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsPtToUelYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsPtToUelYtd());
 
-        otherEmployeeDetails.setTotalAmountPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution());
+        otherEmployeeDetails.setTotalAmountPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution());
         otherEmployeeDetails.setNumberOfPayPeriodsPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsPensionContribution()== null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsPensionContribution());
-        otherEmployeeDetails.setPensionContributeAmount(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount());
-        otherEmployeeDetails.setRemainingKCodeAmount(employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual());
+        otherEmployeeDetails.setPensionContributeAmount(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount());
+        otherEmployeeDetails.setRemainingKCodeAmount(employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual() == null ? BigDecimal.ZERO : employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual());
         return otherEmployeeDetails;
 
     }
@@ -445,13 +451,13 @@ public class EmployeeDetailsDTOMapper {
             studentLoan.setHasStudentLoan(studentLoanDto.getHasStudentLoan());
         }
         studentLoan.setNumberOfPayPeriodsOfStudentLoan(studentLoanDto.getNumberOfPayPeriodsOfStudentLoan()== null ? BigDecimal.ZERO : studentLoanDto.getNumberOfPayPeriodsOfStudentLoan());
-       studentLoan.setDeductionAmountInStudentLoan(studentLoanDto.getDeductionAmountInStudentLoan());
+       studentLoan.setDeductionAmountInStudentLoan(studentLoanDto.getDeductionAmountInStudentLoan() == null ? BigDecimal.ZERO : studentLoanDto.getDeductionAmountInStudentLoan());
 
 //       studentLoan.setMonthlyDeductionAmountInStudentLoan(studentLoanDto.getMonthlyDeductionAmountInStudentLoan());
 //       studentLoan.setWeeklyDeductionAmountInStudentLoan(studentLoanDto.getWeeklyDeductionAmountInStudentLoan());
 //       studentLoan.setYearlyDeductionAmountInStudentLoan(studentLoanDto.getYearlyDeductionAmountInStudentLoan());
 
-       studentLoan.setTotalDeductionAmountInStudentLoan(studentLoanDto.getTotalDeductionAmountInStudentLoan());
+       studentLoan.setTotalDeductionAmountInStudentLoan(studentLoanDto.getTotalDeductionAmountInStudentLoan() == null ? BigDecimal.ZERO : studentLoanDto.getTotalDeductionAmountInStudentLoan());
        return studentLoan;
 
 
@@ -464,9 +470,9 @@ public class EmployeeDetailsDTOMapper {
         PostGraduateLoanDTO postGraduateLoanDto=new PostGraduateLoanDTO();
         postGraduateLoanDto.setHasPostgraduateLoan(postGraduateLoan.getHasPostgraduateLoan());
         postGraduateLoanDto.setPostgraduateLoanPlanType(postGraduateLoan.getPostgraduateLoanPlanType());
-        postGraduateLoanDto.setDeductionAmountInPostgraduateLoan(postGraduateLoan.getDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setDeductionAmountInPostgraduateLoan(postGraduateLoan.getDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoan.getDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setNumberOfPayPeriodsOfPostgraduateLoan(postGraduateLoan.getNumberOfPayPeriodsOfPostgraduateLoan()== null ? BigDecimal.ZERO : postGraduateLoan.getNumberOfPayPeriodsOfPostgraduateLoan());
-        postGraduateLoanDto.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan());
         /*postGraduateLoanDto.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getMonthlyDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoan.getWeeklyDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setYearlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getYearlyDeductionAmountInPostgraduateLoan());*/
@@ -480,8 +486,8 @@ public class EmployeeDetailsDTOMapper {
         PostGraduateLoan postGraduateLoan=new PostGraduateLoan();
         postGraduateLoan.setHasPostgraduateLoan(postGraduateLoanDto.getHasPostgraduateLoan());
         postGraduateLoan.setPostgraduateLoanPlanType(postGraduateLoanDto.getPostgraduateLoanPlanType());
-        postGraduateLoan.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan());
-        postGraduateLoan.setDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoanDto.getDeductionAmountInPostgraduateLoan());
         postGraduateLoan.setNumberOfPayPeriodsOfPostgraduateLoan(postGraduateLoanDto.getNumberOfPayPeriodsOfPostgraduateLoan()== null ? BigDecimal.ZERO : postGraduateLoanDto.getNumberOfPayPeriodsOfPostgraduateLoan());
         /*postGraduateLoan.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getMonthlyDeductionAmountInPostgraduateLoan());
         postGraduateLoan.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getWeeklyDeductionAmountInPostgraduateLoan());
@@ -493,8 +499,8 @@ public class EmployeeDetailsDTOMapper {
         PreviousEmploymentData previousEmployment= new PreviousEmploymentData();
         previousEmployment.setPreviousEmploymentEndDate(previousEmploymentDataDTO.getPreviousEmploymentEndDate());
         previousEmployment.setPreviousTaxCode(previousEmploymentDataDTO.getPreviousTaxCode());
-        previousEmployment.setPreviousTotalTaxToDate(previousEmploymentDataDTO.getPreviousTotalTaxToDate());
-        previousEmployment.setPreviousTotalPayToDate(previousEmploymentDataDTO.getPreviousTotalPayToDate());
+        previousEmployment.setPreviousTotalTaxToDate(previousEmploymentDataDTO.getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : previousEmploymentDataDTO.getPreviousTotalTaxToDate());
+        previousEmployment.setPreviousTotalPayToDate(previousEmploymentDataDTO.getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : previousEmploymentDataDTO.getPreviousTotalPayToDate());
         return previousEmployment;
 
     }

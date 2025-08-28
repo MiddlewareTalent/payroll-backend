@@ -61,9 +61,9 @@ public class OtherEmployeeDetails {
     @PositiveOrZero(message = "Total earnings amount in this employment must be zero or positive")
     private  BigDecimal totalEarningsAmountInThisEmployment= BigDecimal.ZERO;
 
-    @Column(name = "total_tax_pay_to_date")
+    @Column(name = "total_income_tax_ytd")
     @PositiveOrZero(message = "Total tax pay to date must be zero or positive")
-    private BigDecimal totalTaxPayToDate = BigDecimal.ZERO;
+    private BigDecimal totalIncomeTaxYTD = BigDecimal.ZERO;
 
     // Income Tax related fields
     @PositiveOrZero(message = "Income tax paid must be zero or positive")
@@ -141,7 +141,7 @@ public class OtherEmployeeDetails {
         if (pensionContributeAmount == null) pensionContributeAmount = BigDecimal.ZERO;
         if (remainingKCodeAmount == null) remainingKCodeAmount = BigDecimal.ZERO;
         if (totalEarningsAmountInThisEmployment ==null) totalEarningsAmountInThisEmployment = BigDecimal.ZERO;
-        if (totalTaxPayToDate==null) totalTaxPayToDate = BigDecimal.ZERO;
+        if (totalIncomeTaxYTD==null) totalIncomeTaxYTD = BigDecimal.ZERO;
         if (totalTaxablePayInThisEmployment == null) totalTaxablePayInThisEmployment = BigDecimal.ZERO;
         if (earningsAtLELYtd == null) earningsAtLELYtd = BigDecimal.ZERO;
         if (earningsLelToPtYtd == null) earningsLelToPtYtd = BigDecimal.ZERO;

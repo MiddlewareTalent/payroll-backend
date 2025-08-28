@@ -398,4 +398,48 @@ public class ValidateData {
            throw new DataValidationException("Payroll ID is required for P45 data");
        }
     }
+
+    public void validateP60Data(EmployeeDetails employeeDetails,EmployerDetails employerDetails){
+        if (employeeDetails.getEmployeeId()==null || employeeDetails.getEmployeeId().isEmpty()) {
+            throw new DataValidationException("Employee ID is required for P60 data");
+        }
+
+        if (employeeDetails.getFirstName()==null || employeeDetails.getFirstName().isEmpty()) {
+            throw new DataValidationException("First name is required for P60 data");
+        }
+        if (employeeDetails.getLastName()==null || employeeDetails.getLastName().isEmpty()) {
+            throw new DataValidationException("Last name is required for P60 data");
+        }
+        if (employeeDetails.getNationalInsuranceNumber()==null || employeeDetails.getNationalInsuranceNumber().isEmpty()) {
+            throw new DataValidationException("National Insurance number is required for P60 data");
+        }
+        if (employeeDetails.getTaxYear()==null || employeeDetails.getTaxYear().isEmpty()) {
+            throw new DataValidationException("Tax year is required for P60 data");
+        }
+
+        if (employeeDetails.getTaxCode()==null || employeeDetails.getTaxCode().isEmpty()) {
+            throw new DataValidationException("Tax code at leaving is required for P60 data");
+        }
+        if (employeeDetails.getPayrollId()==null||employeeDetails.getPayrollId().isEmpty()){
+            throw new DataValidationException("Payroll ID is required for P60 data");
+        }
+        if (employeeDetails.getAddress() == null || employeeDetails.getAddress().isEmpty()) {
+            throw new DataValidationException("Employee address is required for P60 data");
+        }
+        if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().isEmpty()) {
+            throw new DataValidationException("Employee post code is required for P60 data");
+        }
+        if (employerDetails.getTaxOffice().getPayeReference()==null || employerDetails.getTaxOffice().getPayeReference().isEmpty()) {
+            throw new DataValidationException("Employer PAYE reference is required for P60 data");
+        }
+        if (employerDetails.getCompanyDetails().getCompanyAddress() == null || employerDetails.getCompanyDetails().getCompanyAddress().isEmpty()) {
+            throw new DataValidationException("Employer company address is required for P60 data");
+        }
+        if (employerDetails.getCompanyDetails().getCompanyPostCode() == null || employerDetails.getCompanyDetails().getCompanyPostCode().isEmpty()) {
+            throw new DataValidationException("Employer company post code is required for P60 data");
+        }
+        if (employerDetails.getCompanyDetails().getCompanyName() == null || employerDetails.getCompanyDetails().getCompanyName().isEmpty()) {
+            throw new DataValidationException("Employer company name is required for P60 data");
+        }
+    }
 }
