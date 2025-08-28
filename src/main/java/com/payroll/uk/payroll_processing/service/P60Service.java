@@ -53,7 +53,8 @@ public class P60Service {
         dtoData.setFirstName(employeeData.getFirstName());
         dtoData.setLastName(employeeData.getLastName());
         dtoData.setEmployeeNationalInsuranceNumber(employeeData.getNationalInsuranceNumber());
-        dtoData.setTaxYear(employeeData.getTaxYear());
+        String endYear = employeeData.getTaxYear().substring(5);
+        dtoData.setTaxYear(endYear);
         dtoData.setPayrollId(employeeData.getPayrollId());
         dtoData.setPreviousEmploymentPay(employeeData.getPreviousEmploymentData().getPreviousTotalPayToDate()==null? BigDecimal.ZERO:employeeData.getPreviousEmploymentData().getPreviousTotalPayToDate());
         dtoData.setPreviousEmploymentTaxDeducted(employeeData.getPreviousEmploymentData().getPreviousTotalTaxToDate() ==null? BigDecimal.ZERO:employeeData.getPreviousEmploymentData().getPreviousTotalTaxToDate());
@@ -128,6 +129,9 @@ public class P60Service {
         logger.info("Employer details set for P60 of employee ID: {}", employeeId);
 
 
+
+        logger.info("P60 generation completed for employee ID: {}", employeeId);
+        logger.info("Generated P60 Data: {}", dtoData);
 
         return dtoData;
 
