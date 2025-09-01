@@ -8,6 +8,8 @@ import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHist
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import com.payroll.uk.payroll_processing.service.FileStorageService;
 import com.payroll.uk.payroll_processing.service.employee.EmployeeDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/employee-details")
 public class EmployeeDetailsController {
+    private static final Logger logging= LoggerFactory.getLogger("EmployeeDetailsController.class");
     @Autowired
     private EmployeeDetailsRepository employeeDetailsRepository;
 
@@ -37,6 +40,7 @@ public class EmployeeDetailsController {
     }
     @PostMapping("/create")
     public ResponseEntity<?> createEmployeeDetails(@RequestBody EmployeeDetailsDTO employeeDetailsDTO) {
+        logging.info("Creating employee Data: {}", employeeDetailsDTO);
         EmployeeDetailsDTO createdEmployee = employeeDetailsService.saveEmployeeDetails(employeeDetailsDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
     }
@@ -46,7 +50,7 @@ public class EmployeeDetailsController {
     public Map<String,String> uploadDocuments(
                                              @RequestParam(value = "p45Document", required = false) MultipartFile p45File,
                                              @RequestParam(value = "starterChecklist", required = false) MultipartFile starterChecklistFile) throws IOException {
-
+        logging.info("Uploading documents: P45 - {}, Starter Checklist - {}", p45File != null ? p45File.getOriginalFilename() : "No File", starterChecklistFile != null ? starterChecklistFile.getOriginalFilename() : "No File");
             return fileStorageService.storeEmployeeDocuments(p45File, starterChecklistFile);
 //            return ResponseEntity.ok("Documents uploaded successfully");
 

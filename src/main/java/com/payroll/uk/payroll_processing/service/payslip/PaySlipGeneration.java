@@ -93,8 +93,8 @@ public class PaySlipGeneration {
         try{
             paySlipCreate.setFirstName(employeeDetails.getFirstName());
             paySlipCreate.setLastName(employeeDetails.getLastName());
-            paySlipCreate.setAddress(employeeDetails.getAddress());
-            paySlipCreate.setPostCode(employeeDetails.getPostCode());
+/*            paySlipCreate.setAddress(employeeDetails.getAddress());
+            paySlipCreate.setPostCode(employeeDetails.getPostCode());*/
             paySlipCreate.setEmployeeId(employeeDetails.getEmployeeId());
             paySlipCreate.setRegion(employeeDetails.getRegion());
             paySlipCreate.setTaxYear(employerDetails.getCompanyDetails().getCurrentTaxYear());

@@ -3,6 +3,7 @@ package com.payroll.uk.payroll_processing.service;
 import com.payroll.uk.payroll_processing.dto.customdto.NIContributionDTO;
 import com.payroll.uk.payroll_processing.dto.customdto.P60DTO;
 import com.payroll.uk.payroll_processing.dto.customdto.StatutoryPaymentDTO;
+import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
 import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHistory;
@@ -34,6 +35,8 @@ public class P60Service {
     private ValidateData validateData;
     @Autowired
     private EmploymentHistoryRepository employmentHistoryRepository;
+    @Autowired
+    private EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
 
     public P60DTO generateP60File(String employeeId){
         logger.info("Generating P60 for employee ID: {}", employeeId);
@@ -119,8 +122,9 @@ public class P60Service {
         dtoData.setStudentLoanDeducted(employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan() ==null? BigDecimal.ZERO:employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan());
         dtoData.setPostgraduateLoanDeducted(employeeData.getPostGraduateLoan().getTotalDeductionAmountInPostgraduateLoan() ==null? BigDecimal.ZERO:employeeData.getPostGraduateLoan().getTotalDeductionAmountInPostgraduateLoan());
         logger.info("Loan details set for P60 of employee ID: {}", employeeId);
-        dtoData.setEmployeeAddress(employeeData.getAddress());
-        dtoData.setEmployeePostCode(employeeData.getPostCode());
+       /* dtoData.setEmployeeAddress(employeeData.getAddress());
+        dtoData.setEmployeePostCode(employeeData.getPostCode());*/
+        dtoData.setEmployeeAddressDTO(employeeDetailsDTOMapper.changeToEmployeeAddressDTO(employeeData.getEmployeeAddress()));
         logger.info("Address details set for P60 of employee ID: {}", employeeId);
         dtoData.setEmployerPAYEReference(employerData.getTaxOffice().getPayeReference());
         dtoData.setCompanyName(employerData.getCompanyDetails().getCompanyName());

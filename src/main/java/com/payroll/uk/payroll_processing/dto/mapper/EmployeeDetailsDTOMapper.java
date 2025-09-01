@@ -3,8 +3,10 @@ package com.payroll.uk.payroll_processing.dto.mapper;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.*;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.EmployeeAddress;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.*;
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
 import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import org.slf4j.Logger;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class EmployeeDetailsDTOMapper {
@@ -33,8 +37,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setRegion(employeeDetails.getRegion());
         employeeDetailsDTO.setDateOfBirth(employeeDetails.getDateOfBirth());
         employeeDetailsDTO.setEmployeeId(employeeDetails.getEmployeeId());
-        employeeDetailsDTO.setAddress(employeeDetails.getAddress());
-        employeeDetailsDTO.setPostCode(employeeDetails.getPostCode());
+//        employeeDetailsDTO.setAddress(employeeDetails.getAddress());
+//        employeeDetailsDTO.setPostCode(employeeDetails.getPostCode());
         employeeDetailsDTO.setTaxYear(employeeDetails.getTaxYear());
         employeeDetailsDTO.setEmploymentType(employeeDetails.getEmploymentType());
 //        employeeDetailsDTO.setDirector(employeeDetails.isDirector());
@@ -65,6 +69,10 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setStarterChecklistDocument(employeeDetails.getStarterChecklistDocument());
         employeeDetailsDTO.setHasStarterChecklistDocumentSubmitted(employeeDetails.isHasStarterChecklistDocumentSubmitted());
 
+        // Employee Address
+        if (employeeDetails.getEmployeeAddress() != null) {
+            employeeDetailsDTO.setEmployeeAddressDTO(changeToEmployeeAddressDTO(employeeDetails.getEmployeeAddress()));
+        }
         // Null check before mapping nested objects
         if (employeeDetails.getBankDetails() != null) {
             employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
@@ -143,8 +151,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setRegion(employeeDetailsDTO.getRegion());
         employeeDetails.setDateOfBirth(employeeDetailsDTO.getDateOfBirth());
         employeeDetails.setEmployeeId(employeeDetailsDTO.getEmployeeId());
-        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
-        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
+//        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
+//        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
         employeeDetails.setWorkingCompanyName(employeeDetailsDTO.getWorkingCompanyName());
         employeeDetails.setEmploymentType(employeeDetailsDTO.getEmploymentType());
         employeeDetails.setTaxYear(employeeDetailsDTO.getTaxYear());
@@ -159,6 +167,19 @@ public class EmployeeDetailsDTOMapper {
 
         employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
         employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
+        //Employee Address
+        if (employeeDetailsDTO.getEmployeeAddressDTO()!=null){
+            // Validate the address first
+            List<String> validationErrors = validateEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO());
+            if (!validationErrors.isEmpty()){
+                throw new DataValidationException("Invalid Employee Address: " + String.join(";",validationErrors));
+            }
+            //If validation passes, map address
+            employeeDetails.setEmployeeAddress(mapToEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO()));
+        }
+        else {
+            throw new DataValidationException("Employee address is required");
+        }
         if(!employeeDetailsDTO.isHasEmergencyCode()){
             employeeDetails.setHasEmergencyCode(checkIfEmergencyTaxCode(employeeDetails.getTaxCode()));
         }else {
@@ -273,8 +294,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setRegion(employeeDetailsDTO.getRegion());
         employeeDetails.setDateOfBirth(employeeDetailsDTO.getDateOfBirth());
         employeeDetails.setEmployeeId(employeeDetailsDTO.getEmployeeId());
-        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
-        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
+//        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
+//        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
         employeeDetails.setWorkingCompanyName(employeeDetailsDTO.getWorkingCompanyName());
         employeeDetails.setEmploymentType(employeeDetailsDTO.getEmploymentType());
         employeeDetails.setTaxYear(employeeDetailsDTO.getTaxYear());
@@ -289,6 +310,20 @@ public class EmployeeDetailsDTOMapper {
 
         employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
         employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
+        //Employee Address
+        if (employeeDetailsDTO.getEmployeeAddressDTO()!=null){
+            // Validate the address first
+            List<String> validationErrors = validateEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO());
+            if (!validationErrors.isEmpty()){
+                throw new DataValidationException("Invalid Employee Address : " +String.join(";",validationErrors));
+            }
+            //If validation passes, map address
+            employeeDetails.setEmployeeAddress(mapToEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO()));
+        }
+        else {
+            throw new DataValidationException("Employee address is required");
+        }
+        //Emergency Tax Code
         if(!employeeDetailsDTO.isHasEmergencyCode()){
             employeeDetails.setHasEmergencyCode(checkIfEmergencyTaxCode(employeeDetails.getTaxCode()));
         }else {
@@ -513,6 +548,31 @@ public class EmployeeDetailsDTOMapper {
         return previousEmploymentDataDTO;
     }
 
+    public EmployeeAddress mapToEmployeeAddress(EmployeeAddressDTO employeeAddressDTO) {
+        EmployeeAddress employeeAddress = new EmployeeAddress();
+        employeeAddress.setAddressLine1(employeeAddressDTO.getAddressLine1());
+        employeeAddress.setAddressLine2(employeeAddressDTO.getAddressLine2());
+        employeeAddress.setAddressLine3(employeeAddressDTO.getAddressLine3());
+        employeeAddress.setAddressLine4(employeeAddressDTO.getAddressLine4());
+        employeeAddress.setPostcode(employeeAddressDTO.getPostcode());
+        employeeAddress.setCity(employeeAddressDTO.getCity());
+        employeeAddress.setForeignCountry(employeeAddressDTO.getForeignCountry());
+
+        return employeeAddress;
+    }
+    public EmployeeAddressDTO changeToEmployeeAddressDTO(EmployeeAddress employeeAddress) {
+        EmployeeAddressDTO employeeAddressDTO = new EmployeeAddressDTO();
+        employeeAddressDTO.setAddressLine1(employeeAddress.getAddressLine1());
+        employeeAddressDTO.setAddressLine2(employeeAddress.getAddressLine2());
+        employeeAddressDTO.setAddressLine3(employeeAddress.getAddressLine3());
+        employeeAddressDTO.setAddressLine4(employeeAddress.getAddressLine4());
+        employeeAddressDTO.setPostcode(employeeAddress.getPostcode());
+        employeeAddressDTO.setCity(employeeAddress.getCity());
+        employeeAddressDTO.setForeignCountry(employeeAddress.getForeignCountry());
+
+        return employeeAddressDTO;
+    }
+
     private boolean checkIfEmergencyTaxCode(String code) {
         if (code == null) return false;
         if(code.matches("1257LM1")||code.matches("1257LW1")||code.matches("1257LX")){
@@ -597,10 +657,50 @@ public class EmployeeDetailsDTOMapper {
     }
 
 
-    /*public BigDecimal calculatePreviouslyUsedPersonalAllowance(String taxCode, LocalDate leavingDate){
 
-    }*/
+    public List<String> validateEmployeeAddress(EmployeeAddressDTO employeeAddressDTO){
+        logger.info("Validating Employee Address: {}", employeeAddressDTO);
 
+        List<String> errors=new ArrayList<>();
+       boolean isUK=employeeAddressDTO.getForeignCountry()==null || employeeAddressDTO.getForeignCountry().isBlank();
+        // Line 1 is always required
+       if (employeeAddressDTO.getAddressLine1()==null || employeeAddressDTO.getAddressLine1().isBlank()){
+           errors.add("Address Line 1 is required");
+           logger.warn("Validation error: Address Line 1 is required");
+       }
+       if (isUK){
+           // UK-specific rules
+           if (employeeAddressDTO.getPostcode()==null || employeeAddressDTO.getPostcode().isBlank()){
+               errors.add("Postcode is required for UK addresses");
+                logger.warn("Validation error: Postcode is required for UK addresses");
+           }
+           if (employeeAddressDTO.getForeignCountry()!=null && !employeeAddressDTO.getForeignCountry().isBlank()){
+               errors.add("Foreign country must be empty for UK addresses");
+                logger.warn("Validation error: Foreign country must be empty for UK addresses");
+           }
+       }
+       else {
+           // Non-UK rules
+           if (employeeAddressDTO.getForeignCountry()==null || employeeAddressDTO.getForeignCountry().isBlank()){
+               errors.add("Foreign country is required for any non-UK address");
+                logger.warn("Validation error: Foreign country is required for any non-UK address");
+           }
+           if (employeeAddressDTO.getPostcode()!=null && !employeeAddressDTO.getPostcode().isBlank()){
+               errors.add("Postcode must be empty for non-UK addresses");
+                logger.warn("Validation error: Postcode must be empty for non-UK addresses");
+           }
+           // At least two lines required
+           int lineCount=0;
+           if (employeeAddressDTO.getAddressLine1() !=null && !employeeAddressDTO.getAddressLine1().isBlank()) lineCount++;
+           if (employeeAddressDTO.getAddressLine2() !=null && !employeeAddressDTO.getAddressLine2().isBlank()) lineCount++;
+           if (lineCount<2){
+               errors.add(" At least two address lines are required for non-UK addresses");
+                logger.warn("Validation error: At least two address lines are required for non-UK addresses");
+           }
+       }
+       return  errors;
+
+    }
 
 
 
