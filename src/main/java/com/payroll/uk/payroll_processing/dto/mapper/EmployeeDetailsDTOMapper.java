@@ -5,7 +5,6 @@ import com.payroll.uk.payroll_processing.dto.employeedto.*;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.*;
-import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,12 +97,17 @@ public class EmployeeDetailsDTOMapper {
         bankDetailsDTO.setSortCode(bankDetails.getSortCode());
         bankDetailsDTO.setBankAddress(bankDetails.getBankAddress());
         bankDetailsDTO.setBankPostCode(bankDetails.getBankPostCode());
-
+//        bankDetailsDTO.setPaymentReference(bankDetails.getPaymentReference());
+//        bankDetailsDTO.setTelephone(bankDetails.getTelephone());
+//        bankDetailsDTO.setPaymentLeadDays(bankDetails.getPaymentLeadDays());
+//        bankDetailsDTO.setIsRTIReturnsIncluded(bankDetails.getIsRTIReturnsIncluded());
         return bankDetailsDTO;
 
     }
     public OtherEmployeeDetailsDTO mapToOtherEmployeeDetailsDTO(OtherEmployeeDetails otherEmployeeDetails) {
         OtherEmployeeDetailsDTO otherEmployeeDetailsDTO = new OtherEmployeeDetailsDTO();
+//        otherEmployeeDetailsDTO.setPreviouslyUsedPersonalAllowance(otherEmployeeDetails.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetailsDTO.setTotalPersonalAllowanceInCompany(otherEmployeeDetails.getTotalPersonalAllowanceInCompany());
         otherEmployeeDetailsDTO.setTotalTaxablePayInThisEmployment(otherEmployeeDetails.getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : otherEmployeeDetails.getTotalTaxablePayInThisEmployment());
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsEmergencyTaxCodeUsed(otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed()== null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed());
         otherEmployeeDetailsDTO.setTotalAllowanceUsedDuringEmergencyCode(otherEmployeeDetails.getTotalAllowanceUsedDuringEmergencyCode());
@@ -175,6 +179,12 @@ public class EmployeeDetailsDTOMapper {
         }else {
             employeeDetails.setPreviouslyUsedPersonalAllowance(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
         }
+       /* if(employeeDetailsDTO.getTotalPersonalAllowance()==null){
+            employeeDetails.setTotalPersonalAllowance(new BigDecimal("12570"));
+        }
+        else {
+            employeeDetails.setTotalPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance());
+        }*/
 
         employeeDetails.setHasPensionEligible(employeeDetailsDTO.isHasPensionEligible());
 
@@ -258,6 +268,7 @@ public class EmployeeDetailsDTOMapper {
             previousEmploymentData.setDefaultsIfNull(); // Now it's safe
         }
         employeeDetails.setPreviousEmploymentData(previousEmploymentData);
+
 
 
         return employeeDetails;
@@ -373,6 +384,14 @@ public class EmployeeDetailsDTOMapper {
         }
 
 
+//        if (employeeDetailsDTO.getStudentLoanDto()!=null){
+//            employeeDetails.setStudentLoan(mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto()));
+//        }
+//        if (employeeDetailsDTO.getPostGraduateLoanDto()!=null){
+//            employeeDetails.setPostGraduateLoan(mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto()));
+//        }
+
+
 
         return employeeDetails;
     }
@@ -385,10 +404,16 @@ public class EmployeeDetailsDTOMapper {
         bankDetails.setSortCode(employeeDetailsDTO.getBankDetailsDTO().getSortCode());
         bankDetails.setBankAddress(employeeDetailsDTO.getBankDetailsDTO().getBankAddress());
         bankDetails.setBankPostCode(employeeDetailsDTO.getBankDetailsDTO().getBankPostCode());
+//        bankDetails.setPaymentReference(employeeDetailsDTO.getBankDetailsDTO().getPaymentReference());
+//        bankDetails.setTelephone(employeeDetailsDTO.getBankDetailsDTO().getTelephone());
+//        bankDetails.setPaymentLeadDays(employeeDetailsDTO.getBankDetailsDTO().getPaymentLeadDays());
+//        bankDetails.setIsRTIReturnsIncluded(employeeDetailsDTO.getBankDetailsDTO().getIsRTIReturnsIncluded());
         return bankDetails;
     }
     public OtherEmployeeDetails mapToOtherEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
         OtherEmployeeDetails otherEmployeeDetails = new OtherEmployeeDetails();
+//        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
+//        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
         otherEmployeeDetails.setTotalTaxablePayInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment());
         otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
         otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());
