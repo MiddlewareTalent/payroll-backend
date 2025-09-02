@@ -27,7 +27,7 @@ public class OtherEmployeeDetailsDTO {
     private BigDecimal totalEarningsAmountYTD = BigDecimal.ZERO;
 
 
-    private BigDecimal totalTaxPayToDate = BigDecimal.ZERO;
+    private BigDecimal totalIncomeTaxYTD = BigDecimal.ZERO;
 
     // Income Tax related fields
     private BigDecimal incomeTaxPaid;

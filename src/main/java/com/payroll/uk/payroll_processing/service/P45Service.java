@@ -1,6 +1,7 @@
 package com.payroll.uk.payroll_processing.service;
 
 import com.payroll.uk.payroll_processing.dto.customdto.P45DTO;
+import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
@@ -21,6 +22,8 @@ public class P45Service {
     private EmployerDetailsRepository employerDetailsRepository;
     @Autowired
     private EmployeeDetailsRepository employeeDetailsRepository;
+    @Autowired
+    private EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
     @Autowired
     private ValidateData validateData;
     public P45DTO generateP45File(String employeeId){
@@ -49,7 +52,8 @@ public class P45Service {
         //set 4
         dtoData.setEmployeeLeavingDate(employeeData.getEmploymentEndDate());
         //set 5
-        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan() != null && employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan().compareTo(BigDecimal.ZERO) > 0);
+//        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan() != null && employeeData.getStudentLoan().getTotalDeductionAmountInStudentLoan().compareTo(BigDecimal.ZERO) > 0);
+        dtoData.setStudentLoanToContinue(employeeData.getStudentLoan().getHasStudentLoan());
         //set 6
         if (!isNonCumulativeTaxCode(employeeData.getTaxCode())){
             dtoData.setTaxCodeAtLeaving(employeeData.getTaxCode());
@@ -72,10 +76,14 @@ public class P45Service {
                 throw new DataValidationException("Total earnings amount YTD cannot be zero or negative for employee: " + employeeId);
             }
             dtoData.setTotalPayToDate(employeeData.getOtherEmployeeDetails().getTotalEarningsAmountYTD());
+
+            if (employeeData.getOtherEmployeeDetails().getTotalIncomeTaxYTD().compareTo(BigDecimal.ZERO)<0){
+
             if (employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate().compareTo(BigDecimal.ZERO)<=0){
+
                 throw new DataValidationException("Total income tax pay to Date cannot be zero or negative for employee: " + employeeId);
             }
-            dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalTaxPayToDate());
+            dtoData.setTotalTaxToDate(employeeData.getOtherEmployeeDetails().getTotalIncomeTaxYTD());
         }
         //set 8
         if (isNonCumulativeTaxCode(employeeData.getTaxCode())){
@@ -95,8 +103,9 @@ public class P45Service {
         //set 11
         dtoData.setEmployeeDateOfBirth(employeeData.getDateOfBirth());
         //set 12
-        dtoData.setEmployeeAddress(employeeData.getAddress());
-        dtoData.setEmployeePostCode(employeeData.getPostCode());
+       /* dtoData.setEmployeeAddress(employeeData.getAddress());
+        dtoData.setEmployeePostCode(employeeData.getPostCode());*/
+        dtoData.setEmployeeAddressDTO(employeeDetailsDTOMapper.changeToEmployeeAddressDTO(employeeData.getEmployeeAddress()));
         //set 13
         dtoData.setCompanyName(employerDetails.getCompanyDetails().getCompanyName());
         dtoData.setCompanyAddress(employerDetails.getCompanyDetails().getCompanyAddress());

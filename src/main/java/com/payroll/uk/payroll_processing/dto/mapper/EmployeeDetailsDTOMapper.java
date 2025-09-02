@@ -3,8 +3,13 @@ package com.payroll.uk.payroll_processing.dto.mapper;
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.*;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
+import com.payroll.uk.payroll_processing.entity.EmployeeAddress;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.*;
+
+import com.payroll.uk.payroll_processing.exception.DataValidationException;
+import com.payroll.uk.payroll_processing.exception.ResourceNotFoundException;
+
 import com.payroll.uk.payroll_processing.repository.EmployeeDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class EmployeeDetailsDTOMapper {
@@ -32,8 +39,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setRegion(employeeDetails.getRegion());
         employeeDetailsDTO.setDateOfBirth(employeeDetails.getDateOfBirth());
         employeeDetailsDTO.setEmployeeId(employeeDetails.getEmployeeId());
-        employeeDetailsDTO.setAddress(employeeDetails.getAddress());
-        employeeDetailsDTO.setPostCode(employeeDetails.getPostCode());
+//        employeeDetailsDTO.setAddress(employeeDetails.getAddress());
+//        employeeDetailsDTO.setPostCode(employeeDetails.getPostCode());
         employeeDetailsDTO.setTaxYear(employeeDetails.getTaxYear());
         employeeDetailsDTO.setEmploymentType(employeeDetails.getEmploymentType());
 //        employeeDetailsDTO.setDirector(employeeDetails.isDirector());
@@ -64,6 +71,10 @@ public class EmployeeDetailsDTOMapper {
         employeeDetailsDTO.setStarterChecklistDocument(employeeDetails.getStarterChecklistDocument());
         employeeDetailsDTO.setHasStarterChecklistDocumentSubmitted(employeeDetails.isHasStarterChecklistDocumentSubmitted());
 
+        // Employee Address
+        if (employeeDetails.getEmployeeAddress() != null) {
+            employeeDetailsDTO.setEmployeeAddressDTO(changeToEmployeeAddressDTO(employeeDetails.getEmployeeAddress()));
+        }
         // Null check before mapping nested objects
         if (employeeDetails.getBankDetails() != null) {
             employeeDetailsDTO.setBankDetailsDTO(mapToBanKDetailsDTO(employeeDetails.getBankDetails()));
@@ -112,12 +123,12 @@ public class EmployeeDetailsDTOMapper {
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsEmergencyTaxCodeUsed(otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed()== null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsEmergencyTaxCodeUsed());
         otherEmployeeDetailsDTO.setTotalAllowanceUsedDuringEmergencyCode(otherEmployeeDetails.getTotalAllowanceUsedDuringEmergencyCode());
 
-        otherEmployeeDetailsDTO.setUsedPersonalAllowance(otherEmployeeDetails.getUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(otherEmployeeDetails.getTotalUsedPersonalAllowance());
-        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(otherEmployeeDetails.getRemainingPersonalAllowance());
+        otherEmployeeDetailsDTO.setUsedPersonalAllowance(otherEmployeeDetails.getUsedPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setTotalUsedPersonalAllowance(otherEmployeeDetails.getTotalUsedPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getTotalUsedPersonalAllowance());
+        otherEmployeeDetailsDTO.setRemainingPersonalAllowance(otherEmployeeDetails.getRemainingPersonalAllowance() == null ? BigDecimal.ZERO : otherEmployeeDetails.getRemainingPersonalAllowance());
         otherEmployeeDetailsDTO.setTotalEarningsAmountYTD(otherEmployeeDetails.getTotalEarningsAmountYTD());
         otherEmployeeDetailsDTO.setTotalEarningsAmountInThisEmployment(otherEmployeeDetails.getTotalEarningsAmountInThisEmployment());
-        otherEmployeeDetailsDTO.setTotalTaxPayToDate(otherEmployeeDetails.getTotalTaxPayToDate());
+        otherEmployeeDetailsDTO.setTotalIncomeTaxYTD(otherEmployeeDetails.getTotalIncomeTaxYTD());
         otherEmployeeDetailsDTO.setIncomeTaxPaid(otherEmployeeDetails.getIncomeTaxPaid());
         otherEmployeeDetailsDTO.setTotalIncomeTaxPaidInThisEmployment(otherEmployeeDetails.getTotalIncomeTaxPaidInThisEmployment());
         otherEmployeeDetailsDTO.setNumberOfPayPeriodsIncomeTaxPaid(otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid() == null ? BigDecimal.ZERO : otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid());
@@ -147,8 +158,8 @@ public class EmployeeDetailsDTOMapper {
         employeeDetails.setRegion(employeeDetailsDTO.getRegion());
         employeeDetails.setDateOfBirth(employeeDetailsDTO.getDateOfBirth());
         employeeDetails.setEmployeeId(employeeDetailsDTO.getEmployeeId());
-        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
-        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
+//        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
+//        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
         employeeDetails.setWorkingCompanyName(employeeDetailsDTO.getWorkingCompanyName());
         employeeDetails.setEmploymentType(employeeDetailsDTO.getEmploymentType());
         employeeDetails.setTaxYear(employeeDetailsDTO.getTaxYear());
@@ -163,6 +174,19 @@ public class EmployeeDetailsDTOMapper {
 
         employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
         employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
+        //Employee Address
+        if (employeeDetailsDTO.getEmployeeAddressDTO()!=null){
+            // Validate the address first
+            List<String> validationErrors = validateEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO());
+            if (!validationErrors.isEmpty()){
+                throw new DataValidationException("Invalid Employee Address: " + String.join(";",validationErrors));
+            }
+            //If validation passes, map address
+            employeeDetails.setEmployeeAddress(mapToEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO()));
+        }
+        else {
+            throw new DataValidationException("Employee address is required");
+        }
         if(!employeeDetailsDTO.isHasEmergencyCode()){
             employeeDetails.setHasEmergencyCode(checkIfEmergencyTaxCode(employeeDetails.getTaxCode()));
         }else {
@@ -251,6 +275,17 @@ public class EmployeeDetailsDTOMapper {
         PreviousEmploymentData previousEmploymentData;
         if (employeeDetailsDTO.getPreviousEmploymentDataDTO()!=null){
             previousEmploymentData=mapToPreviousEmploymentData(employeeDetailsDTO.getPreviousEmploymentDataDTO());
+//            employeeDetails.getPreviousEmploymentData().setPreviousTotalTaxToDate();
+//            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(previousEmploymentData.getPreviousTotalTaxToDate());
+//            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEmploymentData.getPreviousTotalPayToDate());
+
+            BigDecimal previousTaxPaidAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate();
+            BigDecimal taxPaidAmount=employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(taxPaidAmount.add(previousTaxPaidAmount));
+
+            BigDecimal previousEarningAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate();
+            BigDecimal earningAmount=employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEarningAmount.add(earningAmount));
         }
         else {
             previousEmploymentData = new PreviousEmploymentData();
@@ -258,12 +293,142 @@ public class EmployeeDetailsDTOMapper {
         }
         employeeDetails.setPreviousEmploymentData(previousEmploymentData);
 
+
+
+        return employeeDetails;
+    }
+    public EmployeeDetails mapToUpdateEmployeeDetails(EmployeeDetailsDTO employeeDetailsDTO) {
+        EmployeeDetails employeeDetails = employeeDetailsRepository.findByEmployeeId(employeeDetailsDTO.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + employeeDetailsDTO.getEmployeeId() + " not found"));
+        // Map DTO to Entity
+//        employeeDetails.setId(employeeDetailsDTO.getId());
+        employeeDetails.setFirstName(employeeDetailsDTO.getFirstName());
+        employeeDetails.setLastName(employeeDetailsDTO.getLastName());
+        employeeDetails.setEmail(employeeDetailsDTO.getEmail());
+        employeeDetails.setRegion(employeeDetailsDTO.getRegion());
+        employeeDetails.setDateOfBirth(employeeDetailsDTO.getDateOfBirth());
+        employeeDetails.setEmployeeId(employeeDetailsDTO.getEmployeeId());
+//        employeeDetails.setAddress(employeeDetailsDTO.getAddress());
+//        employeeDetails.setPostCode(employeeDetailsDTO.getPostCode());
+        employeeDetails.setWorkingCompanyName(employeeDetailsDTO.getWorkingCompanyName());
+        employeeDetails.setEmploymentType(employeeDetailsDTO.getEmploymentType());
+        employeeDetails.setTaxYear(employeeDetailsDTO.getTaxYear());
+//        employeeDetails.setDirector(employeeDetailsDTO.isDirector());
+        employeeDetails.setGender(employeeDetailsDTO.getGender());
+        employeeDetails.setEmployeeDepartment(employeeDetailsDTO.getEmployeeDepartment());
+        employeeDetails.setEmploymentStartedDate(employeeDetailsDTO.getEmploymentStartedDate());
+        employeeDetails.setPayPeriod(employeeDetailsDTO.getPayPeriod());
+        employeeDetails.setEmploymentEndDate(employeeDetailsDTO.getEmploymentEndDate());
+        employeeDetails.setAnnualIncomeOfEmployee(employeeDetailsDTO.getAnnualIncomeOfEmployee());
+        employeeDetails.setHasMarriedEmployee(employeeDetailsDTO.isHasMarriedEmployee());
+
+        employeeDetails.setPayPeriodOfIncomeOfEmployee(calculateIncomeTaxBasedOnPayPeriod(employeeDetailsDTO.getAnnualIncomeOfEmployee(),employeeDetailsDTO.getPayPeriod()));
+        employeeDetails.setTaxCode(employeeDetailsDTO.getTaxCode());
+        //Employee Address
+        if (employeeDetailsDTO.getEmployeeAddressDTO()!=null){
+            // Validate the address first
+            List<String> validationErrors = validateEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO());
+            if (!validationErrors.isEmpty()){
+                throw new DataValidationException("Invalid Employee Address : " +String.join(";",validationErrors));
+            }
+            //If validation passes, map address
+            employeeDetails.setEmployeeAddress(mapToEmployeeAddress(employeeDetailsDTO.getEmployeeAddressDTO()));
+        }
+        else {
+            throw new DataValidationException("Employee address is required");
+        }
+        //Emergency Tax Code
+        if(!employeeDetailsDTO.isHasEmergencyCode()){
+            employeeDetails.setHasEmergencyCode(checkIfEmergencyTaxCode(employeeDetails.getTaxCode()));
+        }else {
+            employeeDetails.setHasEmergencyCode(employeeDetailsDTO.isHasEmergencyCode());
+        }
+
+
+        employeeDetails.setNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber());
+        employeeDetails.setNiLetter(employeeDetailsDTO.getNiLetter());
+//        employeeDetails.setEmployerId(employeeDetailsDTO.getEmployerId());
+
+        if (employeeDetailsDTO.getPreviouslyUsedPersonalAllowance()==null){
+            employeeDetails.setPreviouslyUsedPersonalAllowance(BigDecimal.ZERO);
+        }else {
+            employeeDetails.setPreviouslyUsedPersonalAllowance(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
+        }
+
+        employeeDetails.setHasPensionEligible(employeeDetailsDTO.isHasPensionEligible());
+
+        //K Code Taxable Adjustment
+        if(isKTaxCode(employeeDetails.getTaxCode())) {
+            BigDecimal kCodeAmount = calculateTaxWithKCode(employeeDetails.getTaxCode());
+            employeeDetails.setKCodeTaxableAdjustmentAnnual(kCodeAmount);
+        }
+        else {
+            employeeDetails.setKCodeTaxableAdjustmentAnnual(BigDecimal.ZERO);
+        }
+
+        //Document Upload
+        employeeDetails.setP45Document(employeeDetailsDTO.getP45Document());
+        if(employeeDetails.getP45Document().isEmpty()){
+            employeeDetails.setHasP45DocumentSubmitted(false);
+        }
+        else {
+            employeeDetails.setHasP45DocumentSubmitted(employeeDetailsDTO.isHasP45DocumentSubmitted());
+        }
+        employeeDetails.setStarterChecklistDocument(employeeDetailsDTO.getStarterChecklistDocument());
+        if(employeeDetails.getStarterChecklistDocument().isEmpty()){
+            employeeDetails.setHasStarterChecklistDocumentSubmitted(false);
+        }
+        else{
+            employeeDetails.setHasStarterChecklistDocumentSubmitted(employeeDetailsDTO.isHasStarterChecklistDocumentSubmitted());
+        }
+
+        // Null check before mapping nested DTOs
+        if (employeeDetailsDTO.getBankDetailsDTO() != null) {
+            employeeDetails.setBankDetails(mapToBankDetails(employeeDetailsDTO));
+        }
+
+      /*  OtherEmployeeDetails otherEmployeeDetails;
+
+        if (employeeDetailsDTO.getOtherEmployeeDetailsDTO() != null) {
+            otherEmployeeDetails = mapToOtherEmployeeDetails(employeeDetailsDTO);
+        } else {
+            otherEmployeeDetails = new OtherEmployeeDetails();
+            otherEmployeeDetails.setDefaultsIfNull(); // Now it's safe
+//            otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetails.getTotalPersonalAllowance().subtract(employeeDetails.getPreviouslyUsedPersonalAllowance()));
+            otherEmployeeDetails.setRemainingKCodeAmount(employeeDetails.getKCodeTaxableAdjustmentAnnual());
+        }
+
+        employeeDetails.setOtherEmployeeDetails(otherEmployeeDetails); // Always set*/
+
+//        StudentLoan studentLoan;
+        if (employeeDetailsDTO.getStudentLoanDto() != null) {
+            employeeDetails.setStudentLoan(mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto()));
+        }
+        if (employeeDetailsDTO.getPostGraduateLoanDto() != null) {
+            employeeDetails.setPostGraduateLoan(mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto()));
+        }
+
+//        PreviousEmploymentData previousEmploymentData;
+        if (employeeDetailsDTO.getPreviousEmploymentDataDTO()!=null){
+            employeeDetails.setPreviousEmploymentData(mapToPreviousEmploymentData(employeeDetailsDTO.getPreviousEmploymentDataDTO()));
+
+            BigDecimal previousTaxPaidAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate();
+           BigDecimal taxPaidAmount=employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalIncomeTaxPaidInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalIncomeTaxYTD(taxPaidAmount.add(previousTaxPaidAmount));
+
+            BigDecimal previousEarningAmount=employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate();
+            BigDecimal earningAmount=employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetails.getOtherEmployeeDetails().getTotalEarningsAmountInThisEmployment();
+            employeeDetails.getOtherEmployeeDetails().setTotalEarningsAmountYTD(previousEarningAmount.add(earningAmount));
+        }
+
+
 //        if (employeeDetailsDTO.getStudentLoanDto()!=null){
 //            employeeDetails.setStudentLoan(mapToStudentLoan(employeeDetailsDTO.getStudentLoanDto()));
 //        }
 //        if (employeeDetailsDTO.getPostGraduateLoanDto()!=null){
 //            employeeDetails.setPostGraduateLoan(mapToPostGraduateLoan(employeeDetailsDTO.getPostGraduateLoanDto()));
 //        }
+
 
 
         return employeeDetails;
@@ -288,33 +453,33 @@ public class EmployeeDetailsDTOMapper {
 //        otherEmployeeDetails.setPreviouslyUsedPersonalAllowance(otherEmployeeDetailsDTO.getPreviouslyUsedPersonalAllowance());
 //        otherEmployeeDetails.setTotalPersonalAllowanceInCompany(otherEmployeeDetailsDTO.getTotalPersonalAllowanceInCompany());
         otherEmployeeDetails.setTotalTaxablePayInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalTaxablePayInThisEmployment());
-        otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
-        otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());
+        otherEmployeeDetails.setTotalAllowanceUsedDuringEmergencyCode(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAllowanceUsedDuringEmergencyCode());
+        otherEmployeeDetails.setNumberOfPayPeriodsEmergencyTaxCodeUsed(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsEmergencyTaxCodeUsed());
 
-        otherEmployeeDetails.setUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance());
-        otherEmployeeDetails.setTotalUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance());
-        otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance().subtract(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance()));
-        otherEmployeeDetails.setTotalEarningsAmountYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate());
+        otherEmployeeDetails.setUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getUsedPersonalAllowance());
+        otherEmployeeDetails.setTotalUsedPersonalAllowance(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalUsedPersonalAllowance());
+        otherEmployeeDetails.setRemainingPersonalAllowance(employeeDetailsDTO.getTotalPersonalAllowance().subtract(employeeDetailsDTO.getPreviouslyUsedPersonalAllowance()) );
+        otherEmployeeDetails.setTotalEarningsAmountYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalPayToDate().add(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment()==null? BigDecimal.ZERO:employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment()));
 
-        otherEmployeeDetails.setTotalEarningsAmountInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment());
-        otherEmployeeDetails.setIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid());
+        otherEmployeeDetails.setTotalEarningsAmountInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEarningsAmountInThisEmployment());
+        otherEmployeeDetails.setIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getIncomeTaxPaid());
 
-        otherEmployeeDetails.setTotalIncomeTaxPaidInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment());
-        otherEmployeeDetails.setTotalTaxPayToDate(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate());
+        otherEmployeeDetails.setTotalIncomeTaxPaidInThisEmployment(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment());
+        otherEmployeeDetails.setTotalIncomeTaxYTD(employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : employeeDetailsDTO.getPreviousEmploymentDataDTO().getPreviousTotalTaxToDate().add(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment()==null? BigDecimal.ZERO:employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalIncomeTaxPaidInThisEmployment()));
 
         otherEmployeeDetails.setNumberOfPayPeriodsIncomeTaxPaid(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsIncomeTaxPaid() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsIncomeTaxPaid());
 
-        otherEmployeeDetails.setTotalEmployeeNIContributionInCompany(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany());
-        otherEmployeeDetails.setEmployeeNIContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution());
+        otherEmployeeDetails.setTotalEmployeeNIContributionInCompany(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalEmployeeNIContributionInCompany());
+        otherEmployeeDetails.setEmployeeNIContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEmployeeNIContribution());
         otherEmployeeDetails.setNumberOfPayPeriodsNIContributions(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsNIContributions()== null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsNIContributions());
         otherEmployeeDetails.setEarningsAtLELYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsAtLELYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsAtLELYtd());
         otherEmployeeDetails.setEarningsLelToPtYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsLelToPtYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsLelToPtYtd());
         otherEmployeeDetails.setEarningsPtToUelYtd(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsPtToUelYtd() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getEarningsPtToUelYtd());
 
-        otherEmployeeDetails.setTotalAmountPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution());
+        otherEmployeeDetails.setTotalAmountPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getTotalAmountPensionContribution());
         otherEmployeeDetails.setNumberOfPayPeriodsPensionContribution(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsPensionContribution()== null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getNumberOfPayPeriodsPensionContribution());
-        otherEmployeeDetails.setPensionContributeAmount(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount());
-        otherEmployeeDetails.setRemainingKCodeAmount(employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual());
+        otherEmployeeDetails.setPensionContributeAmount(employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount() == null ? BigDecimal.ZERO : employeeDetailsDTO.getOtherEmployeeDetailsDTO().getPensionContributeAmount());
+        otherEmployeeDetails.setRemainingKCodeAmount(employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual() == null ? BigDecimal.ZERO : employeeDetailsDTO.getKCodeTaxableAdjustmentAnnual());
         return otherEmployeeDetails;
 
     }
@@ -349,13 +514,13 @@ public class EmployeeDetailsDTOMapper {
             studentLoan.setHasStudentLoan(studentLoanDto.getHasStudentLoan());
         }
         studentLoan.setNumberOfPayPeriodsOfStudentLoan(studentLoanDto.getNumberOfPayPeriodsOfStudentLoan()== null ? BigDecimal.ZERO : studentLoanDto.getNumberOfPayPeriodsOfStudentLoan());
-       studentLoan.setDeductionAmountInStudentLoan(studentLoanDto.getDeductionAmountInStudentLoan());
+       studentLoan.setDeductionAmountInStudentLoan(studentLoanDto.getDeductionAmountInStudentLoan() == null ? BigDecimal.ZERO : studentLoanDto.getDeductionAmountInStudentLoan());
 
 //       studentLoan.setMonthlyDeductionAmountInStudentLoan(studentLoanDto.getMonthlyDeductionAmountInStudentLoan());
 //       studentLoan.setWeeklyDeductionAmountInStudentLoan(studentLoanDto.getWeeklyDeductionAmountInStudentLoan());
 //       studentLoan.setYearlyDeductionAmountInStudentLoan(studentLoanDto.getYearlyDeductionAmountInStudentLoan());
 
-       studentLoan.setTotalDeductionAmountInStudentLoan(studentLoanDto.getTotalDeductionAmountInStudentLoan());
+       studentLoan.setTotalDeductionAmountInStudentLoan(studentLoanDto.getTotalDeductionAmountInStudentLoan() == null ? BigDecimal.ZERO : studentLoanDto.getTotalDeductionAmountInStudentLoan());
        return studentLoan;
 
 
@@ -368,9 +533,9 @@ public class EmployeeDetailsDTOMapper {
         PostGraduateLoanDTO postGraduateLoanDto=new PostGraduateLoanDTO();
         postGraduateLoanDto.setHasPostgraduateLoan(postGraduateLoan.getHasPostgraduateLoan());
         postGraduateLoanDto.setPostgraduateLoanPlanType(postGraduateLoan.getPostgraduateLoanPlanType());
-        postGraduateLoanDto.setDeductionAmountInPostgraduateLoan(postGraduateLoan.getDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setDeductionAmountInPostgraduateLoan(postGraduateLoan.getDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoan.getDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setNumberOfPayPeriodsOfPostgraduateLoan(postGraduateLoan.getNumberOfPayPeriodsOfPostgraduateLoan()== null ? BigDecimal.ZERO : postGraduateLoan.getNumberOfPayPeriodsOfPostgraduateLoan());
-        postGraduateLoanDto.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan());
+        postGraduateLoanDto.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoan.getTotalDeductionAmountInPostgraduateLoan());
         /*postGraduateLoanDto.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getMonthlyDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoan.getWeeklyDeductionAmountInPostgraduateLoan());
         postGraduateLoanDto.setYearlyDeductionAmountInPostgraduateLoan(postGraduateLoan.getYearlyDeductionAmountInPostgraduateLoan());*/
@@ -384,8 +549,8 @@ public class EmployeeDetailsDTOMapper {
         PostGraduateLoan postGraduateLoan=new PostGraduateLoan();
         postGraduateLoan.setHasPostgraduateLoan(postGraduateLoanDto.getHasPostgraduateLoan());
         postGraduateLoan.setPostgraduateLoanPlanType(postGraduateLoanDto.getPostgraduateLoanPlanType());
-        postGraduateLoan.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan());
-        postGraduateLoan.setDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setTotalDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoanDto.getTotalDeductionAmountInPostgraduateLoan());
+        postGraduateLoan.setDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getDeductionAmountInPostgraduateLoan() == null ? BigDecimal.ZERO : postGraduateLoanDto.getDeductionAmountInPostgraduateLoan());
         postGraduateLoan.setNumberOfPayPeriodsOfPostgraduateLoan(postGraduateLoanDto.getNumberOfPayPeriodsOfPostgraduateLoan()== null ? BigDecimal.ZERO : postGraduateLoanDto.getNumberOfPayPeriodsOfPostgraduateLoan());
         /*postGraduateLoan.setMonthlyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getMonthlyDeductionAmountInPostgraduateLoan());
         postGraduateLoan.setWeeklyDeductionAmountInPostgraduateLoan(postGraduateLoanDto.getWeeklyDeductionAmountInPostgraduateLoan());
@@ -397,8 +562,8 @@ public class EmployeeDetailsDTOMapper {
         PreviousEmploymentData previousEmployment= new PreviousEmploymentData();
         previousEmployment.setPreviousEmploymentEndDate(previousEmploymentDataDTO.getPreviousEmploymentEndDate());
         previousEmployment.setPreviousTaxCode(previousEmploymentDataDTO.getPreviousTaxCode());
-        previousEmployment.setPreviousTotalTaxToDate(previousEmploymentDataDTO.getPreviousTotalTaxToDate());
-        previousEmployment.setPreviousTotalPayToDate(previousEmploymentDataDTO.getPreviousTotalPayToDate());
+        previousEmployment.setPreviousTotalTaxToDate(previousEmploymentDataDTO.getPreviousTotalTaxToDate() == null ? BigDecimal.ZERO : previousEmploymentDataDTO.getPreviousTotalTaxToDate());
+        previousEmployment.setPreviousTotalPayToDate(previousEmploymentDataDTO.getPreviousTotalPayToDate() == null ? BigDecimal.ZERO : previousEmploymentDataDTO.getPreviousTotalPayToDate());
         return previousEmployment;
 
     }
@@ -409,6 +574,31 @@ public class EmployeeDetailsDTOMapper {
         previousEmploymentDataDTO.setPreviousTotalTaxToDate(previousEmploymentData.getPreviousTotalTaxToDate());
         previousEmploymentDataDTO.setPreviousTotalPayToDate(previousEmploymentData.getPreviousTotalPayToDate());
         return previousEmploymentDataDTO;
+    }
+
+    public EmployeeAddress mapToEmployeeAddress(EmployeeAddressDTO employeeAddressDTO) {
+        EmployeeAddress employeeAddress = new EmployeeAddress();
+        employeeAddress.setAddressLine1(employeeAddressDTO.getAddressLine1());
+        employeeAddress.setAddressLine2(employeeAddressDTO.getAddressLine2());
+        employeeAddress.setAddressLine3(employeeAddressDTO.getAddressLine3());
+        employeeAddress.setAddressLine4(employeeAddressDTO.getAddressLine4());
+        employeeAddress.setPostcode(employeeAddressDTO.getPostcode());
+        employeeAddress.setCity(employeeAddressDTO.getCity());
+        employeeAddress.setForeignCountry(employeeAddressDTO.getForeignCountry());
+
+        return employeeAddress;
+    }
+    public EmployeeAddressDTO changeToEmployeeAddressDTO(EmployeeAddress employeeAddress) {
+        EmployeeAddressDTO employeeAddressDTO = new EmployeeAddressDTO();
+        employeeAddressDTO.setAddressLine1(employeeAddress.getAddressLine1());
+        employeeAddressDTO.setAddressLine2(employeeAddress.getAddressLine2());
+        employeeAddressDTO.setAddressLine3(employeeAddress.getAddressLine3());
+        employeeAddressDTO.setAddressLine4(employeeAddress.getAddressLine4());
+        employeeAddressDTO.setPostcode(employeeAddress.getPostcode());
+        employeeAddressDTO.setCity(employeeAddress.getCity());
+        employeeAddressDTO.setForeignCountry(employeeAddress.getForeignCountry());
+
+        return employeeAddressDTO;
     }
 
     private boolean checkIfEmergencyTaxCode(String code) {
@@ -495,10 +685,50 @@ public class EmployeeDetailsDTOMapper {
     }
 
 
-    /*public BigDecimal calculatePreviouslyUsedPersonalAllowance(String taxCode, LocalDate leavingDate){
 
-    }*/
+    public List<String> validateEmployeeAddress(EmployeeAddressDTO employeeAddressDTO){
+        logger.info("Validating Employee Address: {}", employeeAddressDTO);
 
+        List<String> errors=new ArrayList<>();
+       boolean isUK=employeeAddressDTO.getForeignCountry()==null || employeeAddressDTO.getForeignCountry().isBlank();
+        // Line 1 is always required
+       if (employeeAddressDTO.getAddressLine1()==null || employeeAddressDTO.getAddressLine1().isBlank()){
+           errors.add("Address Line 1 is required");
+           logger.warn("Validation error: Address Line 1 is required");
+       }
+       if (isUK){
+           // UK-specific rules
+           if (employeeAddressDTO.getPostcode()==null || employeeAddressDTO.getPostcode().isBlank()){
+               errors.add("Postcode is required for UK addresses");
+                logger.warn("Validation error: Postcode is required for UK addresses");
+           }
+           if (employeeAddressDTO.getForeignCountry()!=null && !employeeAddressDTO.getForeignCountry().isBlank()){
+               errors.add("Foreign country must be empty for UK addresses");
+                logger.warn("Validation error: Foreign country must be empty for UK addresses");
+           }
+       }
+       else {
+           // Non-UK rules
+           if (employeeAddressDTO.getForeignCountry()==null || employeeAddressDTO.getForeignCountry().isBlank()){
+               errors.add("Foreign country is required for any non-UK address");
+                logger.warn("Validation error: Foreign country is required for any non-UK address");
+           }
+           if (employeeAddressDTO.getPostcode()!=null && !employeeAddressDTO.getPostcode().isBlank()){
+               errors.add("Postcode must be empty for non-UK addresses");
+                logger.warn("Validation error: Postcode must be empty for non-UK addresses");
+           }
+           // At least two lines required
+           int lineCount=0;
+           if (employeeAddressDTO.getAddressLine1() !=null && !employeeAddressDTO.getAddressLine1().isBlank()) lineCount++;
+           if (employeeAddressDTO.getAddressLine2() !=null && !employeeAddressDTO.getAddressLine2().isBlank()) lineCount++;
+           if (lineCount<2){
+               errors.add(" At least two address lines are required for non-UK addresses");
+                logger.warn("Validation error: At least two address lines are required for non-UK addresses");
+           }
+       }
+       return  errors;
+
+    }
 
 
 

@@ -3,8 +3,10 @@ package com.payroll.uk.payroll_processing.controller;
 import com.payroll.uk.payroll_processing.dto.customdto.EmployeesSummaryInEmployerDTO;
 import com.payroll.uk.payroll_processing.dto.customdto.EmployerDashBoardDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.customdto.P45DTO;
+import com.payroll.uk.payroll_processing.dto.customdto.P60DTO;
 import com.payroll.uk.payroll_processing.service.CustomDTOService;
 import com.payroll.uk.payroll_processing.service.P45Service;
+import com.payroll.uk.payroll_processing.service.P60Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ public class CustomDTOController {
     private CustomDTOService customDTOService;
     @Autowired
     private P45Service p45Service;
+    @Autowired
+    private P60Service p60Service;
     @GetMapping("/employer-dashboard-details")
     public EmployerDashBoardDetailsDTO getEmployerDashboardDetailsData() {
         return customDTOService.createDataForDashboard();
@@ -41,5 +45,11 @@ public class CustomDTOController {
             P45DTO p45Data = p45Service.generateP45File(employeeId);
             return ResponseEntity.ok(p45Data);
 
+    }
+    @GetMapping("/generate/p60/{employeeId}")
+    public ResponseEntity<P60DTO> generateP60(@PathVariable String employeeId) {
+
+        P60DTO p60DTO = p60Service.generateP60File(employeeId);
+        return ResponseEntity.ok(p60DTO);
     }
 }
