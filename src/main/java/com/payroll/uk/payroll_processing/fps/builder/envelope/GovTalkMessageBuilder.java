@@ -3,6 +3,7 @@ package com.payroll.uk.payroll_processing.fps.builder.envelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import org.springframework.stereotype.Component;
 import uk.gov.govtalk.cm.envelope.GovTalkMessage;
 import uk.gov.govtalk.taxation.paye.rti.fullpaymentsubmission._25_26._1.IRenvelope;
 import uk.gov.govtalk.taxation.paye.rti.fullpaymentsubmission._25_26._1.IRheader;
@@ -18,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 
+@Component
 public class GovTalkMessageBuilder {
 
     public GovTalkMessage buildGovTalkMessage(IRenvelope irEnvelope, GovTalkHeaderInfo info) throws Exception {
