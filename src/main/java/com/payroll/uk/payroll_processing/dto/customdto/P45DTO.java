@@ -1,7 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.customdto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeAddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,9 +22,8 @@ public class P45DTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate employeeLeavingDate;
     private boolean employeeGender;
-//    private String employeeAddress;
-//    private String employeePostCode;
-    private EmployeeAddressDTO employeeAddressDTO;
+    private String employeeAddress;
+    private String employeePostCode;
 
     //Employer Details
     private String employerPAYEReference;

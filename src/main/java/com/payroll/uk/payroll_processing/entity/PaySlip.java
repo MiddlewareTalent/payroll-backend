@@ -30,10 +30,10 @@ public class PaySlip {
     private String firstName;
     @Column(name = "lastName")
     private String lastName;
-    /*@Column(name = "address")
+    @Column(name = "address")
     private String address;
     @Column(name = "postCode")
-    private String postCode;*/
+    private String postCode;
     @Column(name = "employeeId")
     private String employeeId;
     @Column(name = "workingCompanyName")

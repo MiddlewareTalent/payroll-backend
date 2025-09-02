@@ -35,9 +35,8 @@ public class EmployeeDetailsDTO {
     @Column(unique = true)
     private String employeeId;
 
-   /* private String address;
-    private String postCode;*/
-    private EmployeeAddressDTO employeeAddressDTO;
+    private String address;
+    private String postCode;
     @Enumerated(EnumType.STRING)
     @Schema(description = "Employment type of the employee", example = "FULL_TIME")
     private EmploymentType employmentType;

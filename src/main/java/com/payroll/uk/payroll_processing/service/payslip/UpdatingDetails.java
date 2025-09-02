@@ -88,7 +88,7 @@ public class UpdatingDetails {
                 updateOtherEmployeeDetails.setTotalUsedPersonalAllowance(totalUsedPersonalAllowance.add(paySlip.getPersonalAllowance()));
 //            BigDecimal remainingPersonalAllowancesAmount = employeeDetailsRepository.findByRemainingPersonalAllowance(employeeDetails.getEmployeeId());
                 updateOtherEmployeeDetails.setRemainingPersonalAllowance(remainingPersonalAllowance.subtract(paySlip.getPersonalAllowance()));
-                logger.info("RemainingPersonalAllowance :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
+                logger.info("otherEmployeeDetails.getRemainingPersonalAllowance() :{}", otherEmployeeDetails.getRemainingPersonalAllowance());
 
             }
         }
@@ -105,7 +105,6 @@ public class UpdatingDetails {
             totalAmountEarned=totalAmountEarned!=null?totalAmountEarned:BigDecimal.ZERO;
 
             updateOtherEmployeeDetails.setTotalEarningsAmountInThisEmployment(totalAmountEarned.add(paySlip.getGrossPayTotal()));
-
 
             BigDecimal previousTotalEarnings = otherEmployeeDetails.getTotalEarningsAmountYTD();
             previousTotalEarnings=previousTotalEarnings!=null?previousTotalEarnings:BigDecimal.ZERO;
@@ -126,9 +125,9 @@ public class UpdatingDetails {
             totalIncomeTaxPaidInCompany = totalIncomeTaxPaidInCompany != null ? totalIncomeTaxPaidInCompany : BigDecimal.ZERO;
             updateOtherEmployeeDetails.setTotalIncomeTaxPaidInThisEmployment(totalIncomeTaxPaidInCompany.add(paySlip.getIncomeTaxTotal()));
 
-             BigDecimal previousTaxPaid = otherEmployeeDetails.getTotalIncomeTaxYTD();
+             BigDecimal previousTaxPaid = otherEmployeeDetails.getTotalTaxPayToDate();
             previousTaxPaid = previousTaxPaid != null ? previousTaxPaid : BigDecimal.ZERO;
-            updateOtherEmployeeDetails.setTotalIncomeTaxYTD(previousTaxPaid.add(paySlip.getIncomeTaxTotal()));
+            updateOtherEmployeeDetails.setTotalTaxPayToDate(previousTaxPaid.add(paySlip.getIncomeTaxTotal()));
 
             BigDecimal numberOfPayPeriodsIncomeTax = otherEmployeeDetails.getNumberOfPayPeriodsIncomeTaxPaid();
             numberOfPayPeriodsIncomeTax = numberOfPayPeriodsIncomeTax != null ? numberOfPayPeriodsIncomeTax : BigDecimal.ZERO;

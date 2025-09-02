@@ -22,8 +22,8 @@ public class PaySlipCreateDto {
 //    private Long id;
     private String firstName;
     private String lastName;
-//    private String address;
-//    private String postCode;
+    private String address;
+    private String postCode;
     private String employeeId;
     private String workingCompanyName;
     @Enumerated(EnumType.STRING)

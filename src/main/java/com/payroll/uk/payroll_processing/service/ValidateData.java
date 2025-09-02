@@ -65,7 +65,7 @@ public class ValidateData {
         if (employerDetailsDto.getTaxOfficeDTO().getAccountsOfficeReference()==null|| employerDetailsDto.getTaxOfficeDTO().getAccountsOfficeReference().isEmpty()) {
             throw new DataValidationException("Account Office reference is required");
         }
-        if (!employerDetailsDto.getTaxOfficeDTO().getAccountsOfficeReference().matches("^\\d{3}P[A-Z](\\d{8}|\\d{7}X)$")){
+        if (!employerDetailsDto.getTaxOfficeDTO().getAccountsOfficeReference().matches("^\\d{3}P[A-Z]{1}(\\d{8}|\\d{7}X)$")){
             throw new DataValidationException("Enter the employer account office reference is not correct format");
         }
     }
@@ -147,15 +147,11 @@ public class ValidateData {
             throw new DataValidationException("Last name is required");
         }
         // Address validations
-        /*if (employeeDetailsDTO.getAddress() == null || employeeDetailsDTO.getAddress().trim().isEmpty()) {
+        if (employeeDetailsDTO.getAddress() == null || employeeDetailsDTO.getAddress().trim().isEmpty()) {
             throw new DataValidationException("Address is required");
         }
         if (employeeDetailsDTO.getPostCode() == null || employeeDetailsDTO.getPostCode().trim().isEmpty()) {
             throw new DataValidationException("Post code is required");
-        }*/
-        //Employee Address
-        if (employeeDetailsDTO.getEmployeeAddressDTO() == null) {
-            throw new DataValidationException("Address is required");
         }
 
         // Email validation
@@ -287,15 +283,11 @@ public class ValidateData {
         if (employeeDetails.getLastName() == null || employeeDetails.getLastName().trim().isEmpty()) {
             throw new DataValidationException("Last name is not found");
         }
-       /* if (employeeDetails.getAddress() == null || employeeDetails.getAddress().trim().isEmpty()) {
+        if (employeeDetails.getAddress() == null || employeeDetails.getAddress().trim().isEmpty()) {
             throw new DataValidationException("Address is not found");
         }
         if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().trim().isEmpty()) {
             throw new DataValidationException("PostCode is not found");
-        }*/
-        //Employee Address
-        if (employeeDetails.getEmployeeAddress() == null) {
-            throw new DataValidationException("Address is not found");
         }
         if (employeeDetails.getRegion() == null ) {
             throw new DataValidationException("Region is not found");
@@ -378,15 +370,11 @@ public class ValidateData {
         if (employeeDetails.getGender() == null) {
             throw new DataValidationException("Employee Gender is required for P45 data");
         }
-       /* if (employeeDetails.getAddress() == null || employeeDetails.getAddress().isEmpty()) {
+        if (employeeDetails.getAddress() == null || employeeDetails.getAddress().isEmpty()) {
             throw new DataValidationException("Employee address is required for P45 data");
         }
         if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().isEmpty()) {
             throw new DataValidationException("Employee post code is required for P45 data");
-        }*/
-        //Employee Address
-        if (employeeDetails.getEmployeeAddress()== null) {
-            throw new DataValidationException("Employee address is required for P45 data");
         }
         if (employerDetails.getTaxOffice().getPayeReference()==null || employerDetails.getTaxOffice().getPayeReference().isEmpty()) {
             throw new DataValidationException("Employer PAYE reference is required for P45 data");
@@ -409,54 +397,5 @@ public class ValidateData {
        if (employeeDetails.getPayrollId()==null||employeeDetails.getPayrollId().isEmpty()){
            throw new DataValidationException("Payroll ID is required for P45 data");
        }
-    }
-
-    public void validateP60Data(EmployeeDetails employeeDetails,EmployerDetails employerDetails){
-        if (employeeDetails.getEmployeeId()==null || employeeDetails.getEmployeeId().isEmpty()) {
-            throw new DataValidationException("Employee ID is required for P60 data");
-        }
-
-        if (employeeDetails.getFirstName()==null || employeeDetails.getFirstName().isEmpty()) {
-            throw new DataValidationException("First name is required for P60 data");
-        }
-        if (employeeDetails.getLastName()==null || employeeDetails.getLastName().isEmpty()) {
-            throw new DataValidationException("Last name is required for P60 data");
-        }
-        if (employeeDetails.getNationalInsuranceNumber()==null || employeeDetails.getNationalInsuranceNumber().isEmpty()) {
-            throw new DataValidationException("National Insurance number is required for P60 data");
-        }
-        if (employeeDetails.getTaxYear()==null || employeeDetails.getTaxYear().isEmpty()) {
-            throw new DataValidationException("Tax year is required for P60 data");
-        }
-
-        if (employeeDetails.getTaxCode()==null || employeeDetails.getTaxCode().isEmpty()) {
-            throw new DataValidationException("Tax code at leaving is required for P60 data");
-        }
-        if (employeeDetails.getPayrollId()==null||employeeDetails.getPayrollId().isEmpty()){
-            throw new DataValidationException("Payroll ID is required for P60 data");
-        }
-       /* if (employeeDetails.getAddress() == null || employeeDetails.getAddress().isEmpty()) {
-            throw new DataValidationException("Employee address is required for P60 data");
-        }
-        if (employeeDetails.getPostCode() == null || employeeDetails.getPostCode().isEmpty()) {
-            throw new DataValidationException("Employee post code is required for P60 data");
-        }*/
-        //Employee Address
-        if (employeeDetails.getEmployeeAddress() == null) {
-            throw new DataValidationException("Employee address is required for P60 data");
-        }
-
-        if (employerDetails.getTaxOffice().getPayeReference()==null || employerDetails.getTaxOffice().getPayeReference().isEmpty()) {
-            throw new DataValidationException("Employer PAYE reference is required for P60 data");
-        }
-        if (employerDetails.getCompanyDetails().getCompanyAddress() == null || employerDetails.getCompanyDetails().getCompanyAddress().isEmpty()) {
-            throw new DataValidationException("Employer company address is required for P60 data");
-        }
-        if (employerDetails.getCompanyDetails().getCompanyPostCode() == null || employerDetails.getCompanyDetails().getCompanyPostCode().isEmpty()) {
-            throw new DataValidationException("Employer company post code is required for P60 data");
-        }
-        if (employerDetails.getCompanyDetails().getCompanyName() == null || employerDetails.getCompanyDetails().getCompanyName().isEmpty()) {
-            throw new DataValidationException("Employer company name is required for P60 data");
-        }
     }
 }

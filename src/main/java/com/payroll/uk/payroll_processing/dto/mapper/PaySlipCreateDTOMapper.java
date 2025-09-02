@@ -12,8 +12,8 @@ public class PaySlipCreateDTOMapper {
         PaySlipCreateDto dto = new PaySlipCreateDto();
         dto.setFirstName(paySlip.getFirstName());
         dto.setLastName(paySlip.getLastName());
-//        dto.setAddress(paySlip.getAddress());
-//        dto.setPostCode(paySlip.getPostCode());
+        dto.setAddress(paySlip.getAddress());
+        dto.setPostCode(paySlip.getPostCode());
         dto.setEmployeeId(paySlip.getEmployeeId());
         dto.setNiCategoryLetter(paySlip.getNiLetter());
         dto.setWorkingCompanyName(paySlip.getWorkingCompanyName());
