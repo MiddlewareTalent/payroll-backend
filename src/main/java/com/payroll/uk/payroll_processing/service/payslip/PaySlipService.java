@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -83,11 +85,12 @@ public class PaySlipService {
         }
         List<PaySlip> paySlips = paySlipRepository.findAllPaySlipsByPeriod(periodEnd);
         if (paySlips.isEmpty()) {
-            throw new DataValidationException("No payslips found for the specified period");
+//            throw new DataValidationException("No payslips found for the specified period");
+            return Collections.emptyList();
         }
         return paySlips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
     }
-    public PaySlipCreateDto getPaySlipByEmployeeIdAndPeriodEnd(String employeeId, String periodEnd) {
+    public List<PaySlipCreateDto> getPaySlipByEmployeeIdAndPeriodEnd(String employeeId, String periodEnd) {
         if (employeeId == null || employeeId.isEmpty()) {
             throw new DataValidationException("Employee ID cannot be null or empty");
         }
@@ -96,9 +99,10 @@ public class PaySlipService {
         }
         List<PaySlip> paySlips = paySlipRepository.findPaySlipsByEmployeeIdAndPeriodEnd(employeeId, periodEnd);
         if (paySlips.isEmpty()) {
-            throw new DataValidationException("No payslips found for the specified employee and period");
+//            throw new DataValidationException("No payslips found for the specified employee and period");
+            return Collections.emptyList();
         }
-        return paySlipCreateDtoMapper.mapToDto(paySlips.getFirst());
+        return paySlips.stream().map(paySlipCreateDtoMapper::mapToDto).toList();
     }
 
 

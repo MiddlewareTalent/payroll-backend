@@ -3,6 +3,7 @@ package com.payroll.uk.payroll_processing.dto.mapper;
 import com.payroll.uk.payroll_processing.dto.historydto.EmploymentHistoryDTO;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employmentHistory.EmploymentHistory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,9 @@ import java.util.Map;
 @Component
 public class EmploymentHistoryDTOMapper {
 
+    @Autowired
+    private EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
+
 
     public EmploymentHistory changeToEmploymentHistory(EmploymentHistoryDTO employmentHistoryDTO) {
         EmploymentHistory employmentHistory = new EmploymentHistory();
@@ -18,8 +22,9 @@ public class EmploymentHistoryDTOMapper {
         employmentHistory.setId(employmentHistoryDTO.getId());
         employmentHistory.setEmployeeId(employmentHistoryDTO.getEmployeeId());
         employmentHistory.setDateOfBirth(employmentHistoryDTO.getDateOfBirth());
-        employmentHistory.setAddress(employmentHistoryDTO.getAddress());
-        employmentHistory.setPostCode(employmentHistoryDTO.getPostCode());
+        /*employmentHistory.setAddress(employmentHistoryDTO.getAddress());
+        employmentHistory.setPostCode(employmentHistoryDTO.getPostCode());*/
+        employmentHistory.setEmployeeAddress(employeeDetailsDTOMapper.mapToEmployeeAddress(employmentHistoryDTO.getEmployeeAddressDTO()));
         employmentHistory.setAnnualIncomeOfEmployee(employmentHistoryDTO.getAnnualIncomeOfEmployee());
         employmentHistory.setTaxCode(employmentHistoryDTO.getTaxCode());
         employmentHistory.setHasEmergencyCode(employmentHistoryDTO.isHasEmergencyCode());
@@ -83,8 +88,9 @@ public class EmploymentHistoryDTOMapper {
         employmentHistoryDTO.setId(employmentHistory.getId());
         employmentHistoryDTO.setEmployeeId(employmentHistory.getEmployeeId());
         employmentHistoryDTO.setDateOfBirth(employmentHistory.getDateOfBirth());
-        employmentHistoryDTO.setAddress(employmentHistory.getAddress());
-        employmentHistoryDTO.setPostCode(employmentHistory.getPostCode());
+       /* employmentHistoryDTO.setAddress(employmentHistory.getAddress());
+        employmentHistoryDTO.setPostCode(employmentHistory.getPostCode());*/
+        employmentHistoryDTO.setEmployeeAddressDTO(employeeDetailsDTOMapper.changeToEmployeeAddressDTO(employmentHistory.getEmployeeAddress()));
         employmentHistoryDTO.setAnnualIncomeOfEmployee(employmentHistory.getAnnualIncomeOfEmployee());
         employmentHistoryDTO.setTaxCode(employmentHistory.getTaxCode());
         employmentHistoryDTO.setHasEmergencyCode(employmentHistory.isHasEmergencyCode());
@@ -149,8 +155,9 @@ public class EmploymentHistoryDTOMapper {
         EmploymentHistory employmentHistory=new EmploymentHistory();
         employmentHistory.setEmployeeId(employeeDetails.getEmployeeId());
         employmentHistory.setDateOfBirth(employeeDetails.getDateOfBirth());
-        employmentHistory.setAddress(employeeDetails.getAddress());
-        employmentHistory.setPostCode(employeeDetails.getPostCode());
+/*        employmentHistory.setAddress(employeeDetails.getAddress());
+        employmentHistory.setPostCode(employeeDetails.getPostCode());*/
+        employmentHistory.setEmployeeAddress(employeeDetails.getEmployeeAddress());
         employmentHistory.setAnnualIncomeOfEmployee(employeeDetails.getAnnualIncomeOfEmployee());
         employmentHistory.setTaxCode(employeeDetails.getTaxCode());
         employmentHistory.setHasEmergencyCode(employeeDetails.isHasEmergencyCode());
@@ -203,7 +210,7 @@ public class EmploymentHistoryDTOMapper {
         history.setTaxCodeChanged(changedFields.getOrDefault("taxCodeChanged", false));
         history.setNiLetterChanged(changedFields.getOrDefault("niLetterChanged", false));
         history.setAddressChanged(changedFields.getOrDefault("addressChanged", false));
-        history.setPostCodeChanged(changedFields.getOrDefault("postCodeChanged", false));
+//        history.setPostCodeChanged(changedFields.getOrDefault("postCodeChanged", false));
         history.setAnnualIncomeChanged(changedFields.getOrDefault("annualIncomeChanged", false));
         history.setDateOfBirthChanged(changedFields.getOrDefault("dateOfBirthChanged", false));
         history.setNationalInsuranceNumberChanged(changedFields.getOrDefault("nationalInsuranceNumberChanged", false));

@@ -1,6 +1,7 @@
 package com.payroll.uk.payroll_processing.service;
 
 import com.payroll.uk.payroll_processing.dto.customdto.P45DTO;
+import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.entity.PayPeriod;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
@@ -21,6 +22,8 @@ public class P45Service {
     private EmployerDetailsRepository employerDetailsRepository;
     @Autowired
     private EmployeeDetailsRepository employeeDetailsRepository;
+    @Autowired
+    private EmployeeDetailsDTOMapper employeeDetailsDTOMapper;
     @Autowired
     private ValidateData validateData;
     public P45DTO generateP45File(String employeeId){
@@ -96,8 +99,9 @@ public class P45Service {
         //set 11
         dtoData.setEmployeeDateOfBirth(employeeData.getDateOfBirth());
         //set 12
-        dtoData.setEmployeeAddress(employeeData.getAddress());
-        dtoData.setEmployeePostCode(employeeData.getPostCode());
+       /* dtoData.setEmployeeAddress(employeeData.getAddress());
+        dtoData.setEmployeePostCode(employeeData.getPostCode());*/
+        dtoData.setEmployeeAddressDTO(employeeDetailsDTOMapper.changeToEmployeeAddressDTO(employeeData.getEmployeeAddress()));
         //set 13
         dtoData.setCompanyName(employerDetails.getCompanyDetails().getCompanyName());
         dtoData.setCompanyAddress(employerDetails.getCompanyDetails().getCompanyAddress());

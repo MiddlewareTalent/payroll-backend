@@ -1,6 +1,7 @@
 package com.payroll.uk.payroll_processing.entity.employmentHistory;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.payroll.uk.payroll_processing.entity.EmployeeAddress;
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
@@ -33,10 +34,13 @@ public class EmploymentHistory {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
-    @Column(name = "address")
+    /*@Column(name = "address")
     private String address;
     @Column(name = "postCode")
-    private String postCode;
+    private String postCode;*/
+    @Embedded
+    @Column(name = "employee_address")
+    private EmployeeAddress employeeAddress;
 
     @Column(name = "annual_income_of_employee")
     @PositiveOrZero(message = "Annual income must be zero or positive")
