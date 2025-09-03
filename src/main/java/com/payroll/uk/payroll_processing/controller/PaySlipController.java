@@ -101,10 +101,10 @@ public class PaySlipController {
 
     }
 
-    @GetMapping("/fetch/payslip/{employeeId}/{periodEnd}")
-    public ResponseEntity<PaySlipCreateDto> getPaySlipByEmployeeIdAndPeriodEnd(@PathVariable String employeeId, @PathVariable String periodEnd) {
+    @GetMapping("/fetch/payslips/{employeeId}/{periodEnd}")
+    public ResponseEntity<List<PaySlipCreateDto>> getPaySlipByEmployeeIdAndPeriodEnd(@PathVariable String employeeId, @PathVariable String periodEnd) {
 
-            PaySlipCreateDto data = paySlipService.getPaySlipByEmployeeIdAndPeriodEnd(employeeId, periodEnd);
+            List<PaySlipCreateDto> data = paySlipService.getPaySlipByEmployeeIdAndPeriodEnd(employeeId, periodEnd);
             return ResponseEntity.ok(data);
 
     }

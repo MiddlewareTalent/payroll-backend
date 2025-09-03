@@ -2,6 +2,7 @@ package com.payroll.uk.payroll_processing.dto.historydto;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeAddressDTO;
 import com.payroll.uk.payroll_processing.entity.NICategoryLetters;
 import com.payroll.uk.payroll_processing.entity.employee.PostGraduateLoan;
 import com.payroll.uk.payroll_processing.entity.employee.StudentLoan;
@@ -28,10 +29,12 @@ public class EmploymentHistoryDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
-    @Column(name = "address")
+   /* @Column(name = "address")
     private String address;
     @Column(name = "postCode")
-    private String postCode;
+    private String postCode;*/
+
+    private EmployeeAddressDTO employeeAddressDTO;
     @Column(name = "annual_income_of_employee")
     @PositiveOrZero(message = "Annual income must be zero or positive")
     private BigDecimal annualIncomeOfEmployee;

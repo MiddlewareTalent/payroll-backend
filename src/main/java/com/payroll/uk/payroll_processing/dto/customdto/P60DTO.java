@@ -1,5 +1,6 @@
 package com.payroll.uk.payroll_processing.dto.customdto;
 
+import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeAddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,8 +32,9 @@ public class P60DTO {
 
     private BigDecimal studentLoanDeducted;
     private BigDecimal postgraduateLoanDeducted;
-    private String employeeAddress;
-    private String employeePostCode;
+//    private String employeeAddress;
+//    private String employeePostCode;
+    private EmployeeAddressDTO employeeAddressDTO;
     private String employerPAYEReference;
     private String companyName;
     private String companyAddress;

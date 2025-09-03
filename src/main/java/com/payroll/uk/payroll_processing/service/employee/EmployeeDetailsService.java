@@ -1,11 +1,13 @@
 package com.payroll.uk.payroll_processing.service.employee;
 
 import com.payroll.uk.payroll_processing.dto.BankDetailsDTO;
+import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeAddressDTO;
 import com.payroll.uk.payroll_processing.dto.employeedto.EmployeeDetailsDTO;
 import com.payroll.uk.payroll_processing.dto.mapper.EmployeeDetailsDTOMapper;
 import com.payroll.uk.payroll_processing.dto.mapper.EmploymentHistoryDTOMapper;
 import com.payroll.uk.payroll_processing.entity.BankDetails;
 import com.payroll.uk.payroll_processing.entity.ChangeField;
+import com.payroll.uk.payroll_processing.entity.EmployeeAddress;
 import com.payroll.uk.payroll_processing.entity.TaxThreshold;
 import com.payroll.uk.payroll_processing.entity.employee.EmployeeDetails;
 import com.payroll.uk.payroll_processing.entity.employer.EmployerDetails;
@@ -24,10 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -81,7 +80,9 @@ public class EmployeeDetailsService {
         if (employeeDetailsRepository.existsByNationalInsuranceNumber(employeeDetailsDTO.getNationalInsuranceNumber())){
             throw new DataValidationException("Employee with this National Insurance Number already exists");
         }
+        logging.info("validating employee details data for ID: {}", employeeDetailsDTO.getEmployeeId());
         validateData.validateEmployeeDetailsData(employeeDetailsDTO);
+        logging.info("validation successful, proceeding to save employee details for ID: {}", employeeDetailsDTO.getEmployeeId());
         String payrollReference = employerDetailsRepository.findByPayrollGivingRef();
 //        if (payrollReference == null || payrollReference.isEmpty()) {
 //            throw new IllegalArgumentException("Payroll Giving Reference not found for the employer");
@@ -99,6 +100,7 @@ public class EmployeeDetailsService {
         else {
             currentPayrollId=generateNextPayrollId(lastPayrollId);
         }
+        logging.info("Generated Payroll ID: {} for Employee ID: {}", currentPayrollId, employeeDetailsDTO.getEmployeeId());
         EmployeeDetails employeeData = employeeDetailsDTOMapper.mapToEmployeeDetails(employeeDetailsDTO);
 
         employeeData.setTotalPersonalAllowance(taxThresholdService.getPersonalAllowance(employeeData.getTaxYear()));
@@ -129,7 +131,8 @@ public class EmployeeDetailsService {
         List<EmployeeDetails> employeeDetailsList = employeeDetailsRepository.findAll();
         List<EmployeeDetailsDTO> employeeDetailsListedData = employeeDetailsList.stream().map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO).toList();
         if(employeeDetailsListedData.isEmpty()) {
-            throw new ResourceNotFoundException("No employee details found ");
+//            throw new ResourceNotFoundException("No employee details found ");
+            return Collections.emptyList();
         }
         logging.info("successfully fetched all employee details");
         return employeeDetailsListedData;
@@ -398,59 +401,6 @@ public class EmployeeDetailsService {
         // Format to 2-digit number with leading zeros: e.g., 01, 02, ... 10
         return String.format("%s%02d", prefix, nextNumber);
     }
-
-
-    /*public boolean validateChangesData(EmployeeDetails existingEmployeeDetails,EmployeeDetailsDTO employeeDetailsDTO){
-
-        if (!(existingEmployeeDetails.getTaxCode().equals(employeeDetailsDTO.getTaxCode()) )){
-            logging.warn("Tax code has been changed from {} to {}", existingEmployeeDetails.getTaxCode(), employeeDetailsDTO.getTaxCode());
-            return true;
-        }
-        if(! existingEmployeeDetails.getNiLetter().equals(employeeDetailsDTO.getNiLetter())){
-            logging.warn("NI letter has been changed from {} to {}", existingEmployeeDetails.getNiLetter(), employeeDetailsDTO.getNiLetter());
-            return true;
-        }
-        if (! existingEmployeeDetails.getAddress().equals(employeeDetailsDTO.getAddress())){
-            logging.warn("Address has been changed from {} to {}", existingEmployeeDetails.getAddress(), employeeDetailsDTO.getAddress());
-            return true;
-        }
-        if (! existingEmployeeDetails.getPostCode().equals(employeeDetailsDTO.getPostCode())){
-            logging.warn("Post code has been changed from {} to {}", existingEmployeeDetails.getPostCode(), employeeDetailsDTO.getPostCode());
-            return true;
-        }
-        if (existingEmployeeDetails.getAnnualIncomeOfEmployee().compareTo(employeeDetailsDTO.getAnnualIncomeOfEmployee()) != 0) {
-            logging.warn("Annual income has been changed from {} to {}",
-                    existingEmployeeDetails.getAnnualIncomeOfEmployee(),
-                    employeeDetailsDTO.getAnnualIncomeOfEmployee());
-            return true;
-        }
-
-
-        if (! existingEmployeeDetails.getDateOfBirth().equals(employeeDetailsDTO.getDateOfBirth())){
-            logging.warn("Date of birth has been changed from {} to {}", existingEmployeeDetails.getDateOfBirth(), employeeDetailsDTO.getDateOfBirth());
-            return true;
-        }
-        if (! existingEmployeeDetails.getNationalInsuranceNumber().equals(employeeDetailsDTO.getNationalInsuranceNumber())){
-            logging.warn("National Insurance Number has been changed from {} to {}", existingEmployeeDetails.getNationalInsuranceNumber(), employeeDetailsDTO.getNationalInsuranceNumber());
-            return true;
-        }
-        if (!existingEmployeeDetails.getPayrollId().equals(employeeDetailsDTO.getPayrollId())){
-            logging.warn("Payroll ID has been changed from {} to {}", existingEmployeeDetails.getPayrollId(), employeeDetailsDTO.getPayrollId());
-            return true;
-        }
-        if (!existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType().equals(employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType())){
-            logging.warn("Student loan plan type has been changed from {} to {}", existingEmployeeDetails.getStudentLoan().getStudentLoanPlanType(), employeeDetailsDTO.getStudentLoanDto().getStudentLoanPlanType());
-            return true;
-        }
-        if (!existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType().equals(employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType())){
-            logging.warn("Postgraduate loan plan type has been changed from {} to {}", existingEmployeeDetails.getPostGraduateLoan().getPostgraduateLoanPlanType(), employeeDetailsDTO.getPostGraduateLoanDto().getPostgraduateLoanPlanType());
-            return true;
-        }
-
-        return false;
-    }*/
-
-
     public Map<String, Boolean> validateChangesData(EmployeeDetails existingEmployeeDetails, EmployeeDetailsDTO employeeDetailsDTO) {
         Map<String, Boolean> changes = new LinkedHashMap<>();
 
@@ -464,15 +414,41 @@ public class EmployeeDetailsService {
             changes.put("niLetterChanged", true);
         }
 
-        if (!existingEmployeeDetails.getAddress().equals(employeeDetailsDTO.getAddress())) {
+       /* if (!existingEmployeeDetails.getAddress().equals(employeeDetailsDTO.getAddress())) {
             logging.warn("Address has been changed from {} to {}", existingEmployeeDetails.getAddress(), employeeDetailsDTO.getAddress());
+            changes.put("addressChanged", true);
+        }*/
+
+//        if (!existingEmployeeDetails.getPostCode().equals(employeeDetailsDTO.getPostCode())) {
+//            logging.warn("Post code has been changed from {} to {}", existingEmployeeDetails.getPostCode(), employeeDetailsDTO.getPostCode());
+//            changes.put("postCodeChanged", true);
+//        }
+
+        EmployeeAddress existingAddress = existingEmployeeDetails.getEmployeeAddress();
+        EmployeeAddressDTO newAddress = employeeDetailsDTO.getEmployeeAddressDTO();
+
+        boolean addressChanged = false;
+
+        if (existingAddress != null && newAddress != null) {
+            if (!Objects.equals(existingAddress.getAddressLine1(), newAddress.getAddressLine1()) ||
+                    !Objects.equals(existingAddress.getAddressLine2(), newAddress.getAddressLine2()) ||
+                    !Objects.equals(existingAddress.getAddressLine3(), newAddress.getAddressLine3()) ||
+                    !Objects.equals(existingAddress.getAddressLine4(), newAddress.getAddressLine4()) ||
+                    !Objects.equals(existingAddress.getPostcode(), newAddress.getPostcode()) ||
+                    !Objects.equals(existingAddress.getCity(), newAddress.getCity()) ||
+                    !Objects.equals(existingAddress.getForeignCountry(), newAddress.getForeignCountry())) {
+                addressChanged = true;
+            }
+        } else if (existingAddress != null || newAddress != null) {
+            // One is null and the other is not
+            addressChanged = true;
+        }
+
+        if (addressChanged) {
+            logging.warn("Address has been changed from {} to {}", existingAddress, newAddress);
             changes.put("addressChanged", true);
         }
 
-        if (!existingEmployeeDetails.getPostCode().equals(employeeDetailsDTO.getPostCode())) {
-            logging.warn("Post code has been changed from {} to {}", existingEmployeeDetails.getPostCode(), employeeDetailsDTO.getPostCode());
-            changes.put("postCodeChanged", true);
-        }
 
         if (existingEmployeeDetails.getAnnualIncomeOfEmployee().compareTo(employeeDetailsDTO.getAnnualIncomeOfEmployee()) != 0) {
             logging.warn("Annual income has been changed from {} to {}", existingEmployeeDetails.getAnnualIncomeOfEmployee(), employeeDetailsDTO.getAnnualIncomeOfEmployee());

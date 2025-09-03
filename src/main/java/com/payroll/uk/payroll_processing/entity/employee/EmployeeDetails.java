@@ -41,10 +41,13 @@ public class EmployeeDetails {
     @Column(unique = true,name = "employee_id")
     private String employeeId;
 
-    @Column(name = "address")
-    private String address;
-    @Column(name = "postCode")
-    private String postCode;
+//    @Column(name = "address")
+//    private String address;
+//    @Column(name = "postCode")
+//    private String postCode;
+    @Embedded
+    @Column(name = "employee_address")
+    private EmployeeAddress employeeAddress;
 
     @Column(name = "working_company_name")
     private String workingCompanyName;
