@@ -131,7 +131,8 @@ public class EmployeeDetailsService {
         List<EmployeeDetails> employeeDetailsList = employeeDetailsRepository.findAll();
         List<EmployeeDetailsDTO> employeeDetailsListedData = employeeDetailsList.stream().map(employeeDetailsDTOMapper::mapToEmployeeDetailsDTO).toList();
         if(employeeDetailsListedData.isEmpty()) {
-            throw new ResourceNotFoundException("No employee details found ");
+//            throw new ResourceNotFoundException("No employee details found ");
+            return Collections.emptyList();
         }
         logging.info("successfully fetched all employee details");
         return employeeDetailsListedData;
